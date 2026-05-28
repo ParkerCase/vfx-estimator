@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -14,6 +15,43 @@ import httpx
 
 from vfx_estimator.config import get_settings
 from vfx_estimator.integrations.xata import XataShotSearch, resolve_xata_rest_base
+
+
+def _print_dept_columns(url: str, table: str) -> None:
+    """List comp/camera/dept-related columns on the historical shots table."""
+    try:
+        import psycopg2
+    except ImportError:
+        print("WARN  psycopg2 not installed")
+        return
+
+    print(f"\nDept columns on '{table}' (comp / cam / mandays / _days):")
+    try:
+        conn = psycopg2.connect(url, connect_timeout=15)
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = %s
+              AND (
+                column_name ILIKE %s OR column_name ILIKE %s
+                OR column_name ILIKE %s OR column_name ILIKE %s
+              )
+            ORDER BY column_name
+            """,
+            (table, "%comp%", "%cam%", "%mandays%", "%_days"),
+        )
+        rows = cur.fetchall()
+        conn.close()
+    except Exception as e:
+        print(f"FAIL  {e}")
+        return
+
+    if not rows:
+        print("  (none found)")
+        return
+    for (name,) in rows:
+        print(f"  {name}")
 
 
 def _check_postgres(url: str, table: str) -> bool:
@@ -103,6 +141,14 @@ def _check_rest(key: str, rest_base: str, table: str) -> bool:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser(description="Verify Xata connection")
+    ap.add_argument(
+        "--schema-depts",
+        action="store_true",
+        help="Print comp/camera/dept column names and exit",
+    )
+    args = ap.parse_args()
+
     get_settings.cache_clear()
     s = get_settings()
     key = (s.xata_api_key or "").strip()
@@ -119,6 +165,13 @@ def main() -> None:
 
     if not raw_url:
         print("FAIL  Set XATA_POSTGRES_URL or XATA_DATABASE_URL (postgresql://...).")
+        sys.exit(1)
+
+    if args.schema_depts:
+        if raw_url.startswith("postgresql://") or raw_url.startswith("postgres://"):
+            _print_dept_columns(raw_url, table)
+            sys.exit(0)
+        print("FAIL  --schema-depts requires a postgresql:// URL")
         sys.exit(1)
 
     ok = False

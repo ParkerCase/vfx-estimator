@@ -39,7 +39,7 @@
     .pill.err{border-color:var(--red);color:var(--red)}
 
     /* ── Layout ── */
-    .wrap{max-width:1280px;margin:0 auto;padding:24px 18px 80px}
+    .wrap{max-width:1600px;margin:0 auto;padding:24px 18px 80px}
 
     /* ── Section labels ── */
     .sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
@@ -204,14 +204,16 @@
     .tab-panel.active{display:block}
 
     /* ── Batch table ── */
-    .batch-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+    .batch-table-wrap{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--r)}
     table.batch-table{width:100%;border-collapse:collapse;font-size:12px}
-    .batch-table th,.batch-table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
-    .batch-table th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);background:var(--surface)}
-    .batch-table tr:last-child td{border-bottom:none}
-    .batch-table tr:hover td{background:rgba(79,142,247,.04)}
+    .batch-table th,.batch-table td{padding:8px 10px;border:1px solid var(--border);text-align:left;vertical-align:top}
+    .batch-table th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+                   background:var(--surface);position:sticky;top:0;z-index:2}
+    .batch-table tbody tr.batch-data-row:nth-child(4n+1) td{background:rgba(255,255,255,0.02)}
+    .batch-table tr.batch-data-row:hover td{background:rgba(79,142,247,.04)}
     .batch-table input[type=number]{width:72px;padding:6px 8px}
-    .batch-table input.bid-dept-inp{width:46px;padding:4px 5px;font-size:11px;text-align:center}
+    .batch-table input.bid-dept-inp{width:40px;padding:3px 4px;font-size:11px;text-align:center}
+    .batch-table .col-desc{max-width:160px;font-size:11px}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
     .conf-badge.hi{background:#1a3a2a;color:var(--green)}
     .conf-badge.mid{background:#3a2e10;color:var(--orange)}
@@ -251,7 +253,7 @@
   <div class="hdr-right">
     <label class="hdr-user" title="Saved with corrections">
       Your name
-      <input type="text" id="user-id" value="che" maxlength="64" autocomplete="nickname"
+      <input type="text" id="user-id" value="" maxlength="64" autocomplete="nickname" placeholder="Your name"
              oninput="saveUserId()" onchange="saveUserId()">
     </label>
     <span id="corr-pill" class="pill">0 corrections</span>
@@ -274,8 +276,8 @@
       <textarea id="shot-desc"
         placeholder="e.g. CG castle establishing shot — wide hero vista, hero lighting, static stone environment, moving camera on crane"></textarea>
       <select id="est-mode" style="padding:10px 12px;min-width:130px;align-self:flex-start">
+        <option value="hybrid" selected>Hybrid (recommended)</option>
         <option value="gemini_rag">Gemini RAG</option>
-        <option value="hybrid">Hybrid</option>
         <option value="numeric_only">Numeric Only</option>
       </select>
       <button class="btn-blue" id="est-btn" onclick="getEstimate()" style="align-self:flex-start;white-space:nowrap">
@@ -444,7 +446,7 @@
 
       <div class="batch-settings">
         <label>Project
-          <input type="text" id="batch-project" value="ANDROMEDA" placeholder="ANDROMEDA">
+          <input type="text" id="batch-project" value="" placeholder="Project name (e.g. ANDROMEDA)">
         </label>
       </div>
       <button class="btn-blue" id="batch-est-btn" onclick="runBatchEstimate()">Run Batch Estimate</button>
@@ -519,7 +521,7 @@ const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
 
 function getUserId() {
   const v = (document.getElementById('user-id')?.value || '').trim();
-  return v || 'che';
+  return v || 'supervisor';
 }
 
 function saveUserId() {
@@ -530,7 +532,7 @@ function saveUserId() {
 
 function loadUserId() {
   try {
-    const saved = localStorage.getItem(USER_ID_STORAGE_KEY);
+    const saved = (localStorage.getItem(USER_ID_STORAGE_KEY) || '').trim();
     if (saved) {
       const el = document.getElementById('user-id');
       if (el) el.value = saved;
@@ -1124,7 +1126,7 @@ function renderBatchResults(data) {
     let cells = `
       <td>${escHtml(row.item_number || String(i + 1))}</td>
       <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}</td>
-      <td style="min-width:140px;max-width:200px">${escHtml(desc)}</td>`;
+      <td class="col-desc">${escHtml(desc)}</td>`;
 
     BID_DEPTS.forEach(dept => {
       const v = depts[dept] ?? 0;

@@ -20,18 +20,29 @@ logger = logging.getLogger(__name__)
 CORRECTIONS_TABLE = "vfx_corrections"
 CORRECTIONS_LOAD_LIMIT = 500
 
-_DEPT_COL_MAP = {
-    "comp_paint": "paint_mandays",
-    "comp_roto": "roto_mandays",
-    "layout": "layout_mandays",
-    "lighting": "lgt_mandays",
-    "animation": "anim_mandays",
-    "fx": "fx_mandays",
-    "matchmove": "matchmove_mandays",
-    "dmp": "dmp_mandays",
-    "cfx": "cfx_mandays",
-    "prep": "prep_mandays",
+# internal dept key -> Postgres column(s), first non-zero wins
+_DEPT_COL_MAP: Dict[str, tuple[str, ...]] = {
+    "camera_track": ("cam_track_days", "cam_track_mandays"),
+    "compositing": ("comp_mandays", "comp_days"),
+    "comp_paint": ("paint_mandays", "comp_paint_days", "paint_days"),
+    "comp_roto": ("roto_mandays", "comp_roto_days", "roto_days"),
+    "layout": ("layout_mandays", "layout_days"),
+    "lighting": ("lgt_mandays", "lighting_days"),
+    "animation": ("anim_mandays", "animation_days"),
+    "fx": ("fx_mandays", "fx_days"),
+    "matchmove": ("matchmove_mandays", "matchmove_days"),
+    "dmp": ("dmp_mandays", "dmp_days"),
+    "cfx": ("cfx_mandays", "cfx_days"),
+    "prep": ("prep_mandays", "prep_days"),
 }
+
+_DEPT_SELECT_COLUMNS: tuple[str, ...] = tuple(
+    dict.fromkeys(
+        col
+        for cols in _DEPT_COL_MAP.values()
+        for col in cols
+    )
+)
 
 CREATE_CORRECTIONS_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS vfx_corrections (
@@ -142,13 +153,15 @@ def _record_from_row(r: Dict[str, Any], day_rate: float) -> Optional[Dict[str, A
     if md <= 0:
         return None
     dept: Dict[str, float] = {}
-    for dept_key, col in _DEPT_COL_MAP.items():
-        try:
-            v = float(r.get(col) or 0)
+    for dept_key, cols in _DEPT_COL_MAP.items():
+        for col in cols:
+            try:
+                v = float(r.get(col) or 0)
+            except (TypeError, ValueError):
+                continue
             if v > 0:
                 dept[dept_key] = v
-        except (TypeError, ValueError):
-            pass
+                break
     return {
         "description": desc,
         "mandays": md,
@@ -342,12 +355,13 @@ class XataShotSearch:
             params.extend([like, like])
         where = sql.SQL(" OR ").join(clauses)
         dr = self.settings.day_rate
+        dept_cols_sql = sql.SQL(", ").join(
+            sql.Identifier(c) for c in _DEPT_SELECT_COLUMNS
+        )
         query = sql.SQL(
             """
             SELECT shot_description, shot_summary, cost, mandays, project,
-                   paint_mandays, roto_mandays, layout_mandays, lgt_mandays,
-                   anim_mandays, fx_mandays, matchmove_mandays, dmp_mandays,
-                   cfx_mandays, prep_mandays,
+                   {dept_cols},
                    COALESCE(mandays, CASE WHEN cost > 0 THEN cost / {day_rate} ELSE 0 END) AS effective_mandays
             FROM {table}
             WHERE ({where})
@@ -356,6 +370,7 @@ class XataShotSearch:
             LIMIT {limit}
             """
         ).format(
+            dept_cols=dept_cols_sql,
             table=table,
             where=where,
             limit=sql.Literal(top_k),

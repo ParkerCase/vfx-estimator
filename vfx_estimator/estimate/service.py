@@ -105,21 +105,37 @@ class EstimatorService:
             pq_aug.screenplay_text_path = None
             pq_aug.screenplay_fdx_path = None
 
+        numeric_dept: Dict[str, float] = {}
         if mode in ("numeric_only", "hybrid") and self.settings.use_legacy_numeric:
             leg = self.legacy.predict(desc_aug if pq_aug else desc_user, pq_aug)
             numeric_md = float(leg.get("per_shot_mandays") or 0)
-            dept = {k: float(v) for k, v in (leg.get("dept_days") or {}).items()}
+            numeric_dept = {k: float(v) for k, v in (leg.get("dept_days") or {}).items()}
             sp_matches = leg.get("screenplay_scene_matches") or sp_matches
+            if mode == "numeric_only":
+                dept = numeric_dept
 
         if mode in ("gemini_rag", "hybrid") and self.gemini:
-            g = self.gemini.estimate(desc_aug, pre_qual=pre_qual)
-            gemini_md = float(g.get("total_days") or 0)
-            reasoning = str(g.get("reasoning") or "")
-            confidence = float(g.get("confidence") or 0.5)
-            if not dept and isinstance(g.get("departments"), dict):
-                for k, v in g["departments"].items():
-                    if isinstance(v, dict):
-                        dept[k] = float(v.get("days") or 0)
+            try:
+                g = self.gemini.estimate(desc_aug, pre_qual=pre_qual)
+            except RuntimeError:
+                g = None
+            if g:
+                gemini_md = float(g.get("total_days") or 0)
+                reasoning = str(g.get("reasoning") or "")
+                confidence = float(g.get("confidence") or 0.5)
+                gemini_dept: Dict[str, float] = {}
+                if isinstance(g.get("departments"), dict):
+                    for k, v in g["departments"].items():
+                        if isinstance(v, dict):
+                            days = float(v.get("days") or 0)
+                        else:
+                            days = float(v or 0)
+                        if days > 0:
+                            gemini_dept[k] = days
+                if gemini_dept:
+                    dept = gemini_dept
+            elif mode == "hybrid" and numeric_dept:
+                dept = numeric_dept
 
         if mode == "numeric_only":
             final = numeric_md or retrieval_med or 1.0

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Optional
 
 from vfx_estimator.config import Settings, get_settings
@@ -10,28 +11,97 @@ from vfx_estimator.llm.gemini_client import generate_json
 from vfx_estimator.retrieval.index import ShotRetrievalIndex
 from vfx_estimator.types import BidPreQual, SimilarShot
 
-# Concise domain rules — shorter guide = better instruction-following on flash models.
-# The full verbose guide caused gemini-2.0-flash to truncate output and echo templates.
 VFX_RULES = """
+ABSOLUTE RULES — override similar shots if they conflict:
+
+1. COMP (compositing) is REQUIRED on EVERY VFX shot without exception.
+   Minimum: 2 days. Hero/establishing shots: 5-8 days.
+   If COMP = 0, your answer is WRONG.
+   Use department key "compositing" for COMP days (not a separate "comp" key).
+
+2. ANIMATION = 0 for any static object (buildings, castles, palaces, environments,
+   vehicles parked, static props).
+   Animation ONLY for: characters, creatures, crowds, moving vehicles.
+
+3. FX is REQUIRED when description mentions: fire, smoke, explosion, water,
+   destruction, blood, sparks, magic, particles, atmosphere.
+   If the word "fire", "smoke", "explosion", "blood", or "destruction" appears — FX must be > 0.
+
+4. DMP is REQUIRED when description mentions: sky replacement, set extension,
+   matte painting, background replacement, 2.5D.
+   If "sky replacement" or "set extension" appears — DMP must be > 0.
+
+5. CAMERA TRACK is REQUIRED when: camera moves (crane, dolly, handheld,
+   tracking shot). NOT needed for locked-off cameras.
+
+6. WIRE REMOVAL / CLEANUP shots: ONLY comp_roto + comp_paint + compositing.
+   layout = 0, animation = 0, lighting = 0, fx = 0. No exceptions.
+
+7. ESTABLISHING shots get hero treatment:
+   lighting >= 6 days, compositing >= 5 days minimum.
+
+8. CROWD SCALE:
+   dozens of people = +5 animation days
+   hundreds of people = +10 animation days
+   thousands of people = +15 animation days
+
 SHOT TYPE:
-  establishing → wide hero vista, full CG environment. MINIMUM 15 days total. Lighting +40%, comp +30%.
-  hero         → close-up / primary frame. All depts +30-50%.
-  background   → CG not primary focus. All depts -20-30%.
-  standard     → baseline; anchor to similar shots.
+  establishing → MINIMUM 18 days total. lighting >=6, compositing >=5.
+  hero         → All depts +30-50%.
+  background   → All depts -20-30%.
+  standard     → Anchor to similar shots.
 
-DEPARTMENT RULES (non-negotiable):
-  Wire / stunt removal   → comp_roto + comp_paint ONLY. All 3D depts must be 0.
-  CG environment / build → layout + lighting + comp_paint. animation = 0 for static.
-  CG character / creature→ layout + animation + cfx + lighting + comp_paint.
-  FX shot (fire/smoke)   → fx + lighting + comp_paint — all three required.
-  Crowd hundreds         → animation +10d. Crowd thousands → animation +15d.
-  Greenscreen            → comp_roto + matchmove (moving cam) + lighting (grade).
-
-TYPICAL DAY RANGES (standard shot; scale for shot-type multiplier above):
+TYPICAL DAY RANGES (standard shot):
   camera_track 1-3d  |  matchmove 1-3d  |  layout 1-4d   |  animation 3-12d
-  cfx 1-4d           |  fx 3-10d        |  lighting 3-9d  |  dmp 1-4d
-  comp_paint 2-7d    |  comp_roto 2-6d  |  prep 0.5-2d
+  cfx 1-4d           |  fx 3-10d        |  lighting 3-9d  |  dmp 2-5d
+  comp_paint 2-6d    |  comp_roto 1-4d  |  compositing 3-8d
 """
+
+
+def _dept_days(data: Dict[str, Any]) -> Dict[str, float]:
+    out: Dict[str, float] = {}
+    depts = data.get("departments")
+    if not isinstance(depts, dict):
+        return out
+    for k, v in depts.items():
+        if isinstance(v, dict):
+            days = float(v.get("days") or 0)
+        else:
+            days = float(v or 0)
+        if days > 0:
+            out[str(k)] = days
+    return out
+
+
+def _set_dept(data: Dict[str, Any], key: str, days: float) -> None:
+    depts = data.setdefault("departments", {})
+    if not isinstance(depts, dict):
+        return
+    depts[key] = {"days": max(0.0, float(days))}
+
+
+def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
+    """Apply hard floors/zeros when Gemini omits mandatory departments."""
+    desc = description.lower()
+    dept = _dept_days(data)
+
+    if dept.get("compositing", 0) <= 0:
+        _set_dept(data, "compositing", 2.0)
+
+    if re.search(r"\b(wire removal|wire remove|wires?)\b", desc):
+        depts = data.get("departments")
+        if isinstance(depts, dict):
+            for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx"):
+                depts.pop(key, None)
+
+    if re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc) and dept.get("fx", 0) <= 0:
+        _set_dept(data, "fx", 3.0)
+
+    if re.search(r"\b(sky replacement|set extension|matte painting)\b", desc) and dept.get("dmp", 0) <= 0:
+        _set_dept(data, "dmp", 2.0)
+
+    dept = _dept_days(data)
+    data["total_days"] = max(0.25, sum(dept.values()))
 
 
 class GeminiMandaysEstimator:
@@ -100,34 +170,22 @@ Return a JSON object. You MUST include ALL FIVE of these fields — missing any 
   "departments" — object where each key is a department name and its value is {{"days": <number>}}.
                   Include ALL departments with non-zero work for this shot.
                   Valid dept names: camera_track, matchmove, layout, animation, cfx, fx,
-                  lighting, dmp, comp_paint, comp_roto, prep
+                  lighting, dmp, comp_paint, comp_roto, compositing, prep
   "total_days"  — float; MUST equal the exact arithmetic sum of all included department days
   "confidence"  — float between 0.0 and 1.0
   "reasoning"   — one sentence: shot type classification and key similar-shot anchor used
 
 Rules:
   - Omit departments with 0 days (do not include them at all)
+  - compositing (COMP) must be included on every VFX shot with days >= 2
   - Compute total_days by summing departments — do not guess it independently
   - Return raw JSON only — no markdown fences, no text before or after the JSON
 """
 
         data = generate_json(prompt, settings=self.settings)
+        _enforce_vfx_rules(description, data)
 
-        # ── Recompute total from dept sums (guards against missing total_days) ──
-        dept_sum = 0.0
-        if isinstance(data.get("departments"), dict):
-            for v in data["departments"].values():
-                if isinstance(v, dict):
-                    try:
-                        dept_sum += float(v.get("days") or 0)
-                    except (TypeError, ValueError):
-                        pass
-                else:
-                    try:
-                        dept_sum += float(v or 0)
-                    except (TypeError, ValueError):
-                        pass
-
+        dept_sum = sum(_dept_days(data).values())
         stated_total = float(data.get("total_days") or 0)
         total = dept_sum if dept_sum > 0 else stated_total
 

@@ -1,0 +1,8 @@
+{
+  "name": "vfx-estimator-ui",
+  "private": true,
+  "description": "Static supervisor UI for VFX Estimator API",
+  "scripts": {
+    "build": "cp estimate_ui.html index.html"
+  }
+}
