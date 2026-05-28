@@ -28,6 +28,9 @@
     .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;
          display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
     .hdr-left{display:flex;align-items:center;gap:16px}
+    .hdr-right{display:flex;align-items:center;gap:12px}
+    .hdr-user{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+    .hdr-user input{width:88px;padding:5px 8px;font-size:12px;border-radius:8px}
     .hdr h1{font-size:15px;font-weight:700;letter-spacing:.2px}
     .hdr h1 span{color:var(--accent)}
     .pill{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--card);
@@ -245,7 +248,14 @@
     <span id="srv-pill" class="pill">checking…</span>
     <span id="training-pill" class="pill hidden"></span>
   </div>
-  <span id="corr-pill" class="pill">0 corrections</span>
+  <div class="hdr-right">
+    <label class="hdr-user" title="Saved with corrections">
+      Your name
+      <input type="text" id="user-id" value="che" maxlength="64" autocomplete="nickname"
+             oninput="saveUserId()" onchange="saveUserId()">
+    </label>
+    <span id="corr-pill" class="pill">0 corrections</span>
+  </div>
 </div>
 
 <div class="wrap">
@@ -505,6 +515,28 @@ const API = (window.location.hostname === 'localhost' || window.location.hostnam
 let _est = null;
 let _selectedFlagType = null;
 const BATCH_API_DAY_RATE = 750; // internal only — not shown in UI
+const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
+
+function getUserId() {
+  const v = (document.getElementById('user-id')?.value || '').trim();
+  return v || 'che';
+}
+
+function saveUserId() {
+  try {
+    localStorage.setItem(USER_ID_STORAGE_KEY, getUserId());
+  } catch {}
+}
+
+function loadUserId() {
+  try {
+    const saved = localStorage.getItem(USER_ID_STORAGE_KEY);
+    if (saved) {
+      const el = document.getElementById('user-id');
+      if (el) el.value = saved;
+    }
+  } catch {}
+}
 
 const FLAG_LABELS = {
   wrong_shot_type:      'Wrong shot type classified',
@@ -779,7 +811,7 @@ async function _save(finalDepts, finalTotal) {
         final_departments: finalDepts,
         ai_total_days: _est?.per_shot_mandays ?? null,
         notes,
-        user_id: 'supervisor',
+        user_id: getUserId(),
       }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -1171,7 +1203,7 @@ async function saveAllBatchCorrections() {
       final_departments: depts,
       ai_total_days: row._ai_total_mandays ?? row.ai_total_mandays,
       notes,
-      user_id: 'che',
+      user_id: getUserId(),
     });
   }
 
@@ -1257,6 +1289,7 @@ document.addEventListener('keydown', e => {
 
 // ── Init ────────────────────────────────────────────────────────────────────
 (async()=>{
+  loadUserId();
   setupBatchDropZone();
   await checkServer();
   await loadStats();
