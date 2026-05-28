@@ -5,15 +5,27 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from vfx_estimator.api.bid_batch import (
+    BatchEstimateRequest,
+    attach_csv_export,
+    parse_bid_csv_upload,
+    run_bid_batch_estimate,
+)
 from vfx_estimator.config import get_settings
 from vfx_estimator.estimate.service import EstimatorService
 from vfx_estimator.integrations.xata import XataShotSearch
 from vfx_estimator.learning.flags import FlagsStore
-from vfx_estimator.types import BidPreQual, FLAG_TYPES, UserCorrection, UserFlag
+from vfx_estimator.types import (
+    FLAG_TYPES,
+    UserCorrection,
+    UserFlag,
+    bid_departments_to_internal,
+)
+from vfx_estimator.types import BidPreQual
 
 _service: Optional[EstimatorService] = None
 _flags: Optional[FlagsStore] = None
@@ -34,14 +46,7 @@ def get_flags() -> FlagsStore:
 
 
 def _compute_adjustment_ranges(dept_days: Dict[str, float], overall_confidence: float) -> Dict[str, Dict]:
-    """Compute slider min/max/step/predicted per department based on confidence.
-
-    Confidence bands:
-      >= 0.8  -> ±50% range
-      >= 0.6  -> ±75% range
-       < 0.6  -> ±100% range
-    Min always clamped to 0.
-    """
+    """Compute slider min/max/step/predicted per department based on confidence."""
     out: Dict[str, Dict] = {}
     for dept, predicted in dept_days.items():
         predicted = float(predicted)
@@ -83,6 +88,10 @@ class CorrectionRequest(BaseModel):
     ai_total_days: Optional[float] = None
 
 
+class BatchCorrectionsRequest(BaseModel):
+    corrections: List[CorrectionRequest]
+
+
 class FlagRequest(BaseModel):
     description: str
     flag_type: str
@@ -93,21 +102,23 @@ class FlagRequest(BaseModel):
     ai_departments: Dict[str, float] = Field(default_factory=dict)
 
 
+def _prepare_batch_service(svc: EstimatorService) -> None:
+    if svc.gemini:
+        svc.gemini.flags = get_flags()
+
+
 # ── App factory ────────────────────────────────────────────────────────────
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="VFX Estimator", version="0.3.0")
+    app = FastAPI(title="VFX Estimator", version="0.4.0")
 
-    # Allow the local HTML file to call the API
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    # ── Health ──────────────────────────────────────────────────────────────
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
@@ -123,45 +134,108 @@ def create_app() -> FastAPI:
             "mode_default": s.estimate_mode,
             "gemini_configured": bool(s.resolved_gemini_key()),
             "legacy_numeric": s.use_legacy_numeric,
-            "day_rate": s.day_rate,
             "xata_mode": XataShotSearch(s).mode,
             "xata_corrections": svc.corrections.storage_backend,
         }
-
-    # ── Estimate ────────────────────────────────────────────────────────────
 
     @app.post("/estimate")
     def estimate(req: EstimateRequest) -> Dict[str, Any]:
         if not req.description.strip():
             raise HTTPException(400, "description required")
         svc = get_service()
-
-        # Reload flags into Gemini estimator so they're fresh
-        if svc.gemini:
-            svc.gemini.flags = get_flags()
+        _prepare_batch_service(svc)
 
         est = svc.estimate(req.description, pre_qual=req.pre_qual, mode=req.mode)
         result = est.model_dump()
 
-        # Compute per-department slider ranges for HITL UI
         dept = {k: float(v) for k, v in (est.dept_days or {}).items() if float(v or 0) > 0}
         result["adjustment_ranges"] = _compute_adjustment_ranges(dept, est.confidence)
         result["dept_confidence"] = {}
 
         return result
 
-    # ── Corrections ─────────────────────────────────────────────────────────
+    @app.post("/estimate/batch")
+    def estimate_batch(req: BatchEstimateRequest) -> Dict[str, Any]:
+        if not req.shots:
+            raise HTTPException(400, "shots required")
+        svc = get_service()
+        _prepare_batch_service(svc)
+        return run_bid_batch_estimate(
+            svc,
+            req.shots,
+            project=req.project,
+            day_rate=req.day_rate,
+            mode=req.mode,
+            pre_qual=req.pre_qual,
+            compute_ranges=_compute_adjustment_ranges,
+        )
+
+    @app.post("/estimate/batch/csv")
+    async def estimate_batch_csv(
+        file: UploadFile = File(...),
+        mode: Optional[str] = Form(None),
+        day_rate: Optional[float] = Form(750),
+        project: Optional[str] = Form(None),
+        pre_qual_json: Optional[str] = Form(None),
+    ) -> Dict[str, Any]:
+        if not file.filename:
+            raise HTTPException(400, "file required")
+        raw = await file.read()
+        if not raw:
+            raise HTTPException(400, "uploaded file is empty")
+
+        shots, artifact = parse_bid_csv_upload(raw)
+        pre_qual: Optional[BidPreQual] = None
+        if pre_qual_json and pre_qual_json.strip():
+            try:
+                pre_qual = BidPreQual.model_validate(json.loads(pre_qual_json))
+            except (json.JSONDecodeError, ValueError) as exc:
+                raise HTTPException(400, f"invalid pre_qual_json: {exc}") from exc
+
+        svc = get_service()
+        _prepare_batch_service(svc)
+        proj = project or (pre_qual.project if pre_qual else None) or "BID"
+        rate = float(day_rate if day_rate is not None else svc.settings.day_rate)
+
+        payload = run_bid_batch_estimate(
+            svc,
+            shots,
+            project=proj,
+            day_rate=rate,
+            mode=mode,
+            pre_qual=pre_qual,
+            compute_ranges=_compute_adjustment_ranges,
+        )
+        return attach_csv_export(payload, artifact=artifact, project=proj, day_rate=rate)
 
     @app.post("/corrections")
     def add_correction(req: CorrectionRequest) -> Dict[str, Any]:
         svc = get_service()
-        svc.record_correction(UserCorrection.model_validate(req.model_dump()))
+        data = req.model_dump()
+        data["final_departments"] = bid_departments_to_internal(data.get("final_departments") or {})
+        svc.record_correction(UserCorrection.model_validate(data))
         total = len(svc.corrections.load())
         return {
             "ok": True,
             "count": total,
             "message": f"Correction saved. {total} total — retrieval index updated.",
         }
+
+    @app.post("/corrections/batch")
+    def add_corrections_batch(req: BatchCorrectionsRequest) -> Dict[str, Any]:
+        if not req.corrections:
+            raise HTTPException(400, "corrections required")
+        svc = get_service()
+        saved = 0
+        for item in req.corrections:
+            if not item.description.strip():
+                raise HTTPException(400, "each correction requires description")
+            data = item.model_dump()
+            data["final_departments"] = bid_departments_to_internal(data.get("final_departments") or {})
+            svc.record_correction(UserCorrection.model_validate(data))
+            saved += 1
+        total = len(svc.corrections.load())
+        return {"ok": True, "saved": saved, "count": total}
 
     @app.get("/corrections")
     def list_corrections() -> Dict[str, Any]:
@@ -203,8 +277,6 @@ def create_app() -> FastAPI:
             "avg_delta_days": round(avg_delta, 2) if avg_delta is not None else None,
         }
 
-    # ── Flags ───────────────────────────────────────────────────────────────
-
     @app.post("/flags")
     def add_flag(req: FlagRequest) -> Dict[str, Any]:
         if req.flag_type not in FLAG_TYPES:
@@ -234,8 +306,6 @@ def create_app() -> FastAPI:
     @app.get("/flags/types")
     def flag_types() -> Dict[str, Any]:
         return {"flag_types": FLAG_TYPES}
-
-    # ── Tuning ──────────────────────────────────────────────────────────────
 
     @app.get("/tuning")
     def get_tuning() -> Dict[str, Any]:

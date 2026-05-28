@@ -6,6 +6,53 @@ from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
+BID_DEPT_MAP: Dict[str, str] = {
+    "CAMERA": "camera_track",
+    "MATCHMOVE": "matchmove",
+    "LAYOUT": "layout",
+    "ANIM": "animation",
+    "CFX": "cfx",
+    "FX": "fx",
+    "LGT": "lighting",
+    "DMP": "dmp",
+    "COMP PAINT": "comp_paint",
+    "COMP ROTO": "comp_roto",
+    "COMP": "compositing",
+}
+
+INTERNAL_TO_BID: Dict[str, str] = {v: k for k, v in BID_DEPT_MAP.items()}
+
+BID_OUTPUT_COLUMNS: List[str] = list(BID_DEPT_MAP.keys()) + ["TOTAL MANDAYS"]
+
+
+def bid_departments_to_internal(dept_days: Dict[str, float]) -> Dict[str, float]:
+    """Map bid column names (or internal keys) to internal department keys."""
+    out: Dict[str, float] = {}
+    for key, val in dept_days.items():
+        if val is None:
+            continue
+        k = str(key).strip()
+        ku = k.upper()
+        internal = BID_DEPT_MAP.get(ku) or BID_DEPT_MAP.get(k)
+        if internal is None and k in INTERNAL_TO_BID:
+            internal = k
+        if internal is None:
+            internal = k
+        out[internal] = out.get(internal, 0.0) + float(val)
+    return out
+
+
+def internal_departments_to_bid(dept_days: Dict[str, float]) -> Dict[str, float]:
+    """Map internal department keys to bid column names; missing columns default to 0."""
+    bid = {col: 0.0 for col in BID_DEPT_MAP}
+    for internal, val in dept_days.items():
+        if not val:
+            continue
+        col = INTERNAL_TO_BID.get(internal) or INTERNAL_TO_BID.get(str(internal))
+        if col:
+            bid[col] = round(float(bid[col]) + float(val), 2)
+    return bid
+
 
 class DeptDays(BaseModel):
     camera_track: float = 0.0

@@ -20,7 +20,6 @@
       --muted:   #7a8499;
       --font:    'Inter', 'Segoe UI', system-ui, sans-serif;
       --r:       10px;
-      --day-rate: 700;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
@@ -37,7 +36,7 @@
     .pill.err{border-color:var(--red);color:var(--red)}
 
     /* ── Layout ── */
-    .wrap{max-width:1020px;margin:0 auto;padding:24px 18px 80px}
+    .wrap{max-width:1280px;margin:0 auto;padding:24px 18px 80px}
 
     /* ── Section labels ── */
     .sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
@@ -137,7 +136,6 @@
     .total-row{display:flex;align-items:center;justify-content:space-between;
                padding-top:12px;border-top:1px solid var(--border);margin-top:6px;flex-wrap:wrap;gap:8px}
     .total-row .big{font-size:20px;font-weight:800;color:var(--accent)}
-    .total-row .cost{font-size:16px;font-weight:700;color:var(--green);margin-left:6px}
 
     /* ── Similar shots ── */
     .sim-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -192,6 +190,50 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .hidden{display:none!important}
     hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+    /* ── Tabs ── */
+    .tab-bar{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
+    .tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
+             color:var(--muted);padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:0}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    /* ── Batch table ── */
+    .batch-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+    table.batch-table{width:100%;border-collapse:collapse;font-size:12px}
+    .batch-table th,.batch-table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .batch-table th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);background:var(--surface)}
+    .batch-table tr:last-child td{border-bottom:none}
+    .batch-table tr:hover td{background:rgba(79,142,247,.04)}
+    .batch-table input[type=number]{width:72px;padding:6px 8px}
+    .batch-table input.bid-dept-inp{width:46px;padding:4px 5px;font-size:11px;text-align:center}
+    .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
+    .conf-badge.hi{background:#1a3a2a;color:var(--green)}
+    .conf-badge.mid{background:#3a2e10;color:var(--orange)}
+    .conf-badge.lo{background:#3a1a1a;color:var(--red)}
+    .batch-drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px;text-align:center;
+                     background:var(--card2);cursor:pointer;transition:border-color .2s}
+    .batch-drop-zone:hover,.batch-drop-zone.drag{border-color:var(--accent)}
+    .batch-settings{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    .batch-settings label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+    .batch-settings input{padding:8px 10px;min-width:120px}
+    .batch-bar{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
+               padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
+               flex-wrap:wrap;gap:10px;margin-top:14px;border-radius:var(--r)}
+    .notes-btn{background:var(--card2);border:1px solid var(--border);color:var(--muted);
+               padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer}
+    .notes-btn:hover,.notes-btn.open{border-color:var(--accent);color:var(--accent)}
+    .batch-notes-row td{background:var(--card2);padding:10px 12px}
+    .batch-notes-row textarea{width:100%;min-height:52px;padding:8px 10px;font-size:12px;resize:vertical}
+    .batch-table .dept-chips{display:flex;flex-wrap:wrap;gap:4px;max-width:280px}
+    .dept-chip{font-size:10px;padding:2px 6px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+    #batch-input{width:100%;min-height:120px;padding:12px 14px;resize:vertical}
+    .batch-summary{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+    .file-drop{border:1px dashed var(--border);border-radius:var(--r);padding:14px;background:var(--card2);
+               font-size:12px;color:var(--muted)}
+    .file-drop input[type=file]{font-size:12px;color:var(--text);margin-top:8px}
   </style>
 </head>
 <body>
@@ -207,6 +249,13 @@
 </div>
 
 <div class="wrap">
+
+  <div class="tab-bar">
+    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')">Single Shot</button>
+    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')">Batch / Bid File</button>
+  </div>
+
+  <div id="tab-single" class="tab-panel active">
 
   <!-- ── Shot Input ── -->
   <div style="margin-bottom:18px">
@@ -312,10 +361,6 @@
           <div class="lbl">Days / Shot</div>
         </div>
         <div class="stat">
-          <div class="val green" id="r-cost">—</div>
-          <div class="lbl">Estimated Cost</div>
-        </div>
-        <div class="stat">
           <div class="val sm" id="r-conf">—</div>
           <div class="lbl">Confidence</div>
         </div>
@@ -336,9 +381,7 @@
         <div>
           <span style="font-size:13px;color:var(--muted)">Adjusted total: </span>
           <span class="big" id="adj-days">—</span>
-          <span class="cost" id="adj-cost">—</span>
         </div>
-        <span style="font-size:11px;color:var(--muted)">$<span id="day-rate-lbl">700</span>/day</span>
       </div>
     </div>
 
@@ -362,6 +405,63 @@
     </div>
 
   </div><!-- /results -->
+
+  </div><!-- /tab-single -->
+
+  <div id="tab-batch" class="tab-panel">
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-label">LVL UP Bid File</div>
+      <div class="batch-drop-zone" id="batch-drop-zone"
+           onclick="document.getElementById('batch-csv-file').click()">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">
+          Drop LVL UP bid CSV here or click to upload
+        </div>
+        <div style="font-size:12px;color:var(--muted)">
+          Expects ITEM# header row · fills CAMERA → COMP · TOTAL MANDAYS
+        </div>
+        <input type="file" id="batch-csv-file" accept=".csv,text/csv" style="display:none"
+               onchange="onBatchFileSelected(this)">
+        <div id="batch-file-name" style="margin-top:8px;font-size:12px;color:var(--accent)"></div>
+      </div>
+
+      <p style="font-size:12px;color:var(--muted);margin:14px 0 8px">Or paste shot descriptions (one per line):</p>
+      <textarea id="batch-input" style="min-height:88px"
+        placeholder="AND_004_001 | Party Girl staggers into bathroom&#10;Hero close-up with face replacement"></textarea>
+      <p style="font-size:11px;color:var(--muted);margin-top:6px">
+        Format: <code>SHOT_CODE | DESCRIPTION</code> or description only.
+      </p>
+
+      <div class="batch-settings">
+        <label>Project
+          <input type="text" id="batch-project" value="ANDROMEDA" placeholder="ANDROMEDA">
+        </label>
+      </div>
+      <button class="btn-blue" id="batch-est-btn" onclick="runBatchEstimate()">Run Batch Estimate</button>
+    </div>
+
+    <div id="batch-results" class="hidden">
+      <div class="card" style="padding-bottom:8px">
+        <div class="batch-table-wrap">
+          <table class="batch-table" id="batch-results-table">
+            <thead>
+              <tr id="batch-thead-row"></tr>
+            </thead>
+            <tbody id="batch-table-body"></tbody>
+          </table>
+        </div>
+        <div class="batch-bar">
+          <span id="batch-summary-bar" style="font-size:13px;color:var(--muted)">—</span>
+          <div class="btn-row" style="margin:0">
+            <button class="btn-green" onclick="saveAllBatchCorrections()">✓ Save All Corrections</button>
+            <button class="btn-ghost" onclick="exportBatchCsv()">↓ Export CSV</button>
+            <span id="batch-save-status" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-batch -->
 
   <!-- ── Stats ── -->
   <div class="card" style="margin-top:4px">
@@ -403,8 +503,8 @@ const API = (window.location.hostname === 'localhost' || window.location.hostnam
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
 let _est = null;
-let _dayRate = 700;
 let _selectedFlagType = null;
+const BATCH_API_DAY_RATE = 750; // internal only — not shown in UI
 
 const FLAG_LABELS = {
   wrong_shot_type:      'Wrong shot type classified',
@@ -437,10 +537,6 @@ function fmt(n, d=1) {
   return typeof n==='number' ? n.toFixed(d) : '—';
 }
 
-function money(days) {
-  return '$' + Math.round(days * _dayRate).toLocaleString();
-}
-
 function deptLabel(k) { return DEPT_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
 function escHtml(s) {
@@ -464,8 +560,6 @@ async function checkServer() {
       tpill.className = 'pill ok';
       tpill.classList.remove('hidden');
     }
-    _dayRate = d.day_rate || 700;
-    document.getElementById('day-rate-lbl').textContent = _dayRate.toLocaleString();
   } catch {
     pill.textContent = '✗ API offline — start with: python -m scripts.run_api';
     pill.className = 'pill err';
@@ -576,13 +670,12 @@ function renderResults(est) {
   const allot = parseInt(document.getElementById('pq-allotments').value) || 1;
 
   document.getElementById('r-days').textContent = fmt(days) + 'd';
-  document.getElementById('r-cost').textContent = money(days);
   document.getElementById('r-conf').textContent = Math.round(conf * 100) + '%';
   document.getElementById('r-mode').textContent = est.mode || '—';
 
   if (allot > 1) {
     const totalDays = est.total_mandays ?? days * allot;
-    document.getElementById('r-total').textContent = fmt(totalDays) + 'd · ' + money(totalDays);
+    document.getElementById('r-total').textContent = fmt(totalDays) + 'd';
     document.getElementById('r-total-stat').classList.remove('hidden');
   } else {
     document.getElementById('r-total-stat').classList.add('hidden');
@@ -638,7 +731,6 @@ function updateAdjTotal() {
   document.querySelectorAll('#dept-sliders input[type=range]').forEach(s => { tot += parseFloat(s.value)||0; });
   tot = Math.round(tot*2)/2;
   document.getElementById('adj-days').textContent = tot.toFixed(1) + 'd';
-  document.getElementById('adj-cost').textContent = '= ' + money(tot);
 }
 
 function renderSimilar(shots) {
@@ -772,6 +864,341 @@ async function submitFlag() {
   }
 }
 
+// ── Tabs ───────────────────────────────────────────────────────────────────
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `tab-${name}`);
+  });
+}
+
+// ── Batch / bid file mode ──────────────────────────────────────────────────
+
+let _batchResult = null;
+
+const BID_DEPTS = [
+  'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM', 'CFX', 'FX',
+  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP',
+];
+const BID_DEPT_SHORT = {
+  CAMERA: 'CAM', MATCHMOVE: 'MM', LAYOUT: 'LAY', ANIM: 'ANIM', CFX: 'CFX', FX: 'FX',
+  LGT: 'LGT', DMP: 'DMP', 'COMP PAINT': 'CP', 'COMP ROTO': 'CR', COMP: 'COMP',
+};
+
+function onBatchFileSelected(input) {
+  const name = input.files?.[0]?.name;
+  document.getElementById('batch-file-name').textContent = name ? `Selected: ${name}` : '';
+}
+
+function setupBatchDropZone() {
+  const zone = document.getElementById('batch-drop-zone');
+  if (!zone) return;
+  ['dragenter', 'dragover'].forEach(ev => {
+    zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    zone.addEventListener(ev, e => {
+      e.preventDefault();
+      zone.classList.remove('drag');
+      if (ev === 'drop' && e.dataTransfer.files?.[0]) {
+        document.getElementById('batch-csv-file').files = e.dataTransfer.files;
+        onBatchFileSelected(document.getElementById('batch-csv-file'));
+      }
+    });
+  });
+}
+
+function confBadge(conf) {
+  const p = Math.round((conf || 0) * 100);
+  const cls = conf >= 0.7 ? 'hi' : conf >= 0.4 ? 'mid' : 'lo';
+  return `<span class="conf-badge ${cls}">${p}%</span>`;
+}
+
+function parseBatchPaste(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const shots = [];
+  let n = 0;
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (lower.startsWith('item#') || lower === 'shot_code | description') continue;
+    n += 1;
+    if (line.includes('|')) {
+      const idx = line.indexOf('|');
+      const code = line.slice(0, idx).trim();
+      const desc = line.slice(idx + 1).trim();
+      shots.push({
+        item_number: String(n),
+        shot_code: code,
+        script_description: desc,
+        number_of_shots: 1,
+      });
+      continue;
+    }
+    if (line.includes(',') && /^[\w.\-]+,/.test(line)) {
+      const idx = line.indexOf(',');
+      shots.push({
+        item_number: String(n),
+        shot_code: line.slice(0, idx).trim(),
+        script_description: line.slice(idx + 1).trim(),
+        number_of_shots: 1,
+      });
+      continue;
+    }
+    shots.push({
+      item_number: String(n),
+      script_description: line,
+      number_of_shots: 1,
+    });
+  }
+  return shots;
+}
+
+function getBatchProject() {
+  return (document.getElementById('batch-project')?.value || 'BID').trim() || 'BID';
+}
+
+async function runBatchEstimate() {
+  const fileInput = document.getElementById('batch-csv-file');
+  const file = fileInput.files && fileInput.files[0];
+  const btn = document.getElementById('batch-est-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Estimating batch…';
+  document.getElementById('batch-results').classList.add('hidden');
+
+  try {
+    const project = getBatchProject();
+    const preQual = buildPreQual();
+    let data;
+
+    if (file) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('day_rate', String(BATCH_API_DAY_RATE));
+      fd.append('project', project);
+      if (preQual) fd.append('pre_qual_json', JSON.stringify(preQual));
+      const r = await fetch(`${API}/estimate/batch/csv`, { method: 'POST', body: fd });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${r.status}`);
+      }
+      data = await r.json();
+    } else {
+      const shots = parseBatchPaste(document.getElementById('batch-input').value);
+      if (!shots.length) {
+        toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
+        return;
+      }
+      const body = { shots, day_rate: BATCH_API_DAY_RATE, project };
+      if (preQual) body.pre_qual = preQual;
+      const r = await fetch(`${API}/estimate/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${r.status}`);
+      }
+      data = await r.json();
+    }
+
+    _batchResult = data;
+    renderBatchResults(data);
+    document.getElementById('batch-results').classList.remove('hidden');
+    document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast(`Batch complete — ${data.count} shots · ${fmt(data.total_mandays)} total mandays`);
+  } catch (e) {
+    toast(`Batch failed: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Batch Estimate';
+  }
+}
+
+function buildBatchTableHeader() {
+  const cols = ['#', 'SHOT CODE', 'DESCRIPTION', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'CONF', ''];
+  document.getElementById('batch-thead-row').innerHTML =
+    cols.map(c => `<th>${c}</th>`).join('');
+}
+
+function readRowDepts(tr) {
+  const depts = {};
+  tr.querySelectorAll('.bid-dept-inp').forEach(inp => {
+    const v = parseFloat(inp.value) || 0;
+    if (v > 0) depts[inp.dataset.dept] = v;
+  });
+  return depts;
+}
+
+function markBatchRowEdited(idx) {
+  if (_batchResult?.shots[idx]) _batchResult.shots[idx]._edited = true;
+}
+
+function updateBatchRowTotals(tr, idx) {
+  const depts = readRowDepts(tr);
+  let days = Object.values(depts).reduce((a, b) => a + b, 0);
+  days = Math.round(days * 2) / 2;
+  tr.querySelector('.batch-row-days').textContent = fmt(days);
+  if (_batchResult?.shots[idx]) {
+    _batchResult.shots[idx].dept_days = depts;
+    _batchResult.shots[idx].total_mandays = days;
+    markBatchRowEdited(idx);
+  }
+  recalcBatchTotals();
+}
+
+function recalcBatchTotals() {
+  if (!_batchResult) return;
+  let totalDays = 0;
+  document.querySelectorAll('#batch-table-body tr.batch-data-row').forEach(tr => {
+    totalDays += parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0;
+  });
+  totalDays = Math.round(totalDays * 2) / 2;
+  document.getElementById('batch-summary-bar').innerHTML =
+    `<strong>${_batchResult.count}</strong> shots &nbsp;|&nbsp; ` +
+    `<strong>${fmt(totalDays)}d</strong> total mandays` +
+    (_batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '');
+  _batchResult.total_mandays = totalDays;
+}
+
+function toggleBatchNotes(i) {
+  const row = document.getElementById(`batch-notes-${i}`);
+  const btn = document.querySelector(`[data-notes-btn="${i}"]`);
+  if (!row) return;
+  const isHidden = row.classList.toggle('hidden');
+  if (btn) btn.classList.toggle('open', !isHidden);
+}
+
+function renderBatchResults(data) {
+  buildBatchTableHeader();
+  const tbody = document.getElementById('batch-table-body');
+  tbody.innerHTML = '';
+  const colSpan = 3 + BID_DEPTS.length + 3;
+
+  (data.shots || []).forEach((row, i) => {
+    const depts = row.dept_days || {};
+    const desc = row.description || row.script_description || '';
+    row._edited = false;
+    row._ai_dept_days = { ...depts };
+    row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
+
+    const tr = document.createElement('tr');
+    tr.className = 'batch-data-row';
+    tr.dataset.idx = String(i);
+
+    let cells = `
+      <td>${escHtml(row.item_number || String(i + 1))}</td>
+      <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}</td>
+      <td style="min-width:140px;max-width:200px">${escHtml(desc)}</td>`;
+
+    BID_DEPTS.forEach(dept => {
+      const v = depts[dept] ?? 0;
+      cells += `<td><input type="number" class="bid-dept-inp" min="0" step="0.5"
+        data-dept="${dept}" data-idx="${i}" value="${v}"
+        oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'), ${i})"></td>`;
+    });
+
+    cells += `
+      <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
+      <td>${confBadge(row.confidence)}</td>
+      <td><button type="button" class="notes-btn" data-notes-btn="${i}"
+          onclick="toggleBatchNotes(${i})" title="Supervisor notes">Notes</button></td>`;
+
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+
+    const notesTr = document.createElement('tr');
+    notesTr.id = `batch-notes-${i}`;
+    notesTr.className = 'batch-notes-row hidden';
+    notesTr.innerHTML = `<td colspan="${colSpan}">
+      <textarea placeholder="Supervisor notes for this shot…"
+        oninput="if(_batchResult?.shots[${i}]){_batchResult.shots[${i}]._notes=this.value;_batchResult.shots[${i}]._edited=true;}"></textarea>
+    </td>`;
+    tbody.appendChild(notesTr);
+  });
+  recalcBatchTotals();
+}
+
+function exportBatchCsv() {
+  if (!_batchResult?.shots?.length) {
+    toast('Run a batch estimate first.', 'warn');
+    return;
+  }
+  if (_batchResult.export_csv_base64) {
+    const bytes = atob(_batchResult.export_csv_base64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = _batchResult.export_csv_filename || `${getBatchProject()}_AI_ESTIMATE.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Bid CSV downloaded.');
+    return;
+  }
+  toast('Re-run estimate via CSV upload to get filled bid sheet export.', 'warn');
+}
+
+async function saveAllBatchCorrections() {
+  if (!_batchResult?.shots?.length) {
+    toast('Run a batch estimate first.', 'warn');
+    return;
+  }
+  const status = document.getElementById('batch-save-status');
+  status.textContent = 'Saving…';
+  const dataRows = document.querySelectorAll('#batch-table-body tr.batch-data-row');
+  const corrections = [];
+
+  for (let i = 0; i < _batchResult.shots.length; i++) {
+    const row = _batchResult.shots[i];
+    if (!row._edited) continue;
+
+    const tr = dataRows[i];
+    const depts = tr ? readRowDepts(tr) : (row.dept_days || {});
+    const finalTotal = Math.round(Object.values(depts).reduce((a, b) => a + b, 0) * 2) / 2;
+    const code = row.shot_code || '';
+    const notesEl = document.querySelector(`#batch-notes-${i} textarea`);
+    const notes = (notesEl?.value || row._notes || '').trim()
+      || (code ? `Bid ${code} · item ${row.item_number || ''}` : 'Batch bid correction');
+
+    corrections.push({
+      description: row.description || row.script_description || '',
+      final_total_days: finalTotal,
+      final_departments: depts,
+      ai_total_days: row._ai_total_mandays ?? row.ai_total_mandays,
+      notes,
+      user_id: 'che',
+    });
+  }
+
+  if (!corrections.length) {
+    status.textContent = '';
+    toast('Edit at least one dept cell or add notes before saving.', 'warn');
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API}/corrections/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ corrections }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    status.textContent = `✓ Saved ${d.saved} corrections`;
+    toast(`Saved ${d.saved} corrections — retrieval index updated.`);
+    loadStats();
+    checkServer();
+  } catch (e) {
+    status.textContent = '✗ Failed';
+    toast('Bulk save failed: ' + e.message, 'err');
+  }
+}
+
 // ── Stats ──────────────────────────────────────────────────────────────────
 
 async function loadStats() {
@@ -830,6 +1257,7 @@ document.addEventListener('keydown', e => {
 
 // ── Init ────────────────────────────────────────────────────────────────────
 (async()=>{
+  setupBatchDropZone();
   await checkServer();
   await loadStats();
 })();
