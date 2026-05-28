@@ -35,3 +35,6 @@ xata = ["psycopg2-binary>=2.9"]
 [project.scripts]
 vfx-eval = "scripts.eval_cv5:main"
 vfx-api = "scripts.run_api:main"
+
+[tool.vercel]
+entrypoint = "api.app:app"

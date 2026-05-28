@@ -399,7 +399,9 @@
 <div id="toast"></div>
 
 <script>
-const API = 'http://127.0.0.1:8090';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:8090'
+  : 'https://vfx-estimator.onrender.com';
 let _est = null;
 let _dayRate = 700;
 let _selectedFlagType = null;
