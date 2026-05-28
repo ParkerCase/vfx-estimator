@@ -22,7 +22,7 @@ from vfx_estimator.api.bid_batch import (
     parse_lvlup_bid_csv,
     run_bid_batch_estimate,
 )
-from vfx_estimator.types import ShotEstimate, bid_departments_to_internal, internal_departments_to_bid
+from vfx_estimator.types import BidPreQual, ShotEstimate, bid_departments_to_internal, internal_departments_to_bid
 
 
 class TestBidDeptMapping:
@@ -210,6 +210,37 @@ class TestBatchEndpoints:
 
 
 class TestRunBidBatch:
+    @patch("vfx_estimator.api.bid_batch.EstimatorService")
+    def test_passes_batch_pre_qual_to_estimate(self, _mock_cls):
+        svc = MagicMock()
+        svc.settings.day_rate = 750
+        svc.gemini = None
+        svc.estimate.return_value = ShotEstimate(
+            description="d",
+            per_shot_mandays=8.0,
+            total_mandays=8.0,
+            cost=6000.0,
+            dept_days={"lighting": 8.0},
+        )
+
+        shot = BidBatchShotItem(script_description="castle vista")
+        pre_qual = BidPreQual(
+            bid_scale_tier="premium_tv",
+            complexity_band="high",
+            director_brief="Photoreal",
+        )
+        run_bid_batch_estimate(
+            svc,
+            [shot],
+            project="ANDROMEDA",
+            pre_qual=pre_qual,
+            compute_ranges=lambda d, c: {},
+        )
+        pq = svc.estimate.call_args.kwargs["pre_qual"]
+        assert pq.bid_scale_tier == "premium_tv"
+        assert pq.complexity_band == "high"
+        assert pq.director_brief == "Photoreal"
+
     @patch("vfx_estimator.api.bid_batch.EstimatorService")
     def test_passes_allotment_to_pre_qual(self, _mock_cls):
         svc = MagicMock()

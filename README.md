@@ -44,7 +44,7 @@ VFX_BYZANTINE_CSV=/path/to/MuseAI-xata/apps/breakdown/data/byzantine_actual_expa
 ```bash
 GEMINI_API_KEY=your_key
 # or GOOGLE_API_KEY=...
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### Xata (optional)
@@ -209,4 +209,3 @@ git commit -m "Initial vfx-estimator service"
 ```
 
 Point `VFX_LEGACY_BREAKDOWN_ROOT` at a checkout of `apps/breakdown`, or copy `retraining_bundle.json` into `vfx-estimator/data/` and set `VFX_TRAINING_JSON` locally so the monorepo is not required at runtime.
-# vfx-estimator

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 BID_DEPT_MAP: Dict[str, str] = {
     "CAMERA": "camera_track",
@@ -77,24 +77,52 @@ class DeptDays(BaseModel):
 
 class BidPreQual(BaseModel):
     project: Optional[str] = None
+    shot_type_override: Optional[str] = None
     complexity_band: Optional[str] = None
     primary_depts: List[str] = Field(default_factory=list)
     bid_scale_tier: Optional[str] = None
     budget_band: Optional[str] = None
     practical_vs_cg: Optional[str] = None
+    practical_cg_ratio: Optional[int] = None
     allotment_n: int = 1
     bid_context_notes: Optional[str] = None
-    director_brief: Dict[str, str] = Field(default_factory=dict)
+    director_brief: Optional[str] = None
+    vfx_assumptions: Optional[str] = None
     screenplay_full_text: Optional[str] = None
     screenplay_text_path: Optional[str] = None
     screenplay_fdx_path: Optional[str] = None
     calibration_anchors: List[Dict[str, Any]] = Field(default_factory=list)
     dept_calibration: Dict[str, Any] = Field(default_factory=dict)
 
+    @field_validator("director_brief", mode="before")
+    @classmethod
+    def _coerce_director_brief(cls, v: Any) -> Optional[str]:
+        if v is None or v == "":
+            return None
+        if isinstance(v, dict):
+            parts = [str(x).strip() for x in v.values() if x]
+            return "\n".join(parts) if parts else None
+        text = str(v).strip()
+        return text or None
+
     def to_legacy_dict(self) -> Dict[str, Any]:
         d = self.model_dump(exclude_none=True)
         if not d.get("primary_depts"):
             d.pop("primary_depts", None)
+        if self.practical_cg_ratio is not None:
+            cg = int(self.practical_cg_ratio)
+            d["practical_vs_cg"] = f"{cg}% CG / {100 - cg}% Practical"
+        notes: List[str] = []
+        if self.shot_type_override:
+            notes.append(f"SHOT TYPE OVERRIDE: {self.shot_type_override}.")
+        if self.director_brief:
+            notes.append(self.director_brief.strip())
+        if self.vfx_assumptions:
+            notes.append(self.vfx_assumptions.strip())
+        if self.bid_context_notes:
+            notes.append(self.bid_context_notes.strip())
+        if notes:
+            d["bid_context_notes"] = "\n\n".join(notes)
         return d
 
 

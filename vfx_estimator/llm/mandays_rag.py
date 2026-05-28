@@ -122,20 +122,54 @@ class GeminiMandaysEstimator:
             )
         return "\n".join(lines) + "\n"
 
+    def _build_project_context(self, pre_qual: Optional[BidPreQual]) -> str:
+        """Project-wide context block (batch / director pre-qual)."""
+        if not pre_qual:
+            return ""
+        has_context = any(
+            getattr(pre_qual, f, None)
+            for f in (
+                "shot_type_override",
+                "bid_scale_tier",
+                "complexity_band",
+                "practical_cg_ratio",
+                "director_brief",
+                "vfx_assumptions",
+            )
+        )
+        if not has_context:
+            return ""
+        lines = ["PROJECT CONTEXT (applies to all shots):"]
+        if pre_qual.shot_type_override:
+            lines.append(f"- Shot type: {pre_qual.shot_type_override}")
+        if pre_qual.bid_scale_tier:
+            lines.append(f"- Scale: {pre_qual.bid_scale_tier}")
+        if pre_qual.complexity_band:
+            lines.append(f"- Complexity: {pre_qual.complexity_band}")
+        if pre_qual.practical_cg_ratio is not None:
+            lines.append(f"- CG ratio: {int(pre_qual.practical_cg_ratio)}% CG")
+        elif pre_qual.practical_vs_cg:
+            lines.append(f"- CG ratio: {pre_qual.practical_vs_cg}")
+        if pre_qual.director_brief:
+            lines.append(f"- Director intent: {pre_qual.director_brief.strip()}")
+        if pre_qual.vfx_assumptions:
+            lines.append(f"- VFX assumptions: {pre_qual.vfx_assumptions.strip()}")
+        lines.append(
+            "This project context overrides generic assumptions — use it "
+            "to calibrate all estimates accordingly."
+        )
+        return "\n".join(lines) + "\n\n"
+
     def _build_brief(self, pre_qual: Optional[BidPreQual]) -> str:
-        """Extract all pre-qualification context into a single brief block."""
+        """Extract allotment and legacy notes not covered by project context."""
         if not pre_qual:
             return ""
         pq = pre_qual.to_legacy_dict()
         lines = []
-        if pq.get("bid_context_notes"):
+        if pq.get("bid_context_notes") and not (
+            pre_qual.director_brief or pre_qual.vfx_assumptions or pre_qual.shot_type_override
+        ):
             lines.append(f"PRODUCTION CONTEXT: {pq['bid_context_notes']}")
-        if pq.get("complexity_band"):
-            lines.append(f"COMPLEXITY BAND: {pq['complexity_band']}")
-        if pq.get("bid_scale_tier"):
-            lines.append(f"BID SCALE: {pq['bid_scale_tier']}")
-        if pq.get("practical_vs_cg"):
-            lines.append(f"PRACTICAL VS CG: {pq['practical_vs_cg']}")
         if pq.get("allotment_n") and int(pq["allotment_n"]) > 1:
             lines.append(
                 f"ALLOTMENTS: {pq['allotment_n']} shots in sequence "
@@ -153,6 +187,7 @@ class GeminiMandaysEstimator:
         k = top_k or self.settings.retrieval_top_k
         hits = self.index.query(description, top_k=k)
 
+        project_ctx = self._build_project_context(pre_qual)
         brief = self._build_brief(pre_qual)
         flags_ctx = self.flags.prompt_context(description)
         similar_block = self._format_similar(hits[:6])
@@ -160,7 +195,7 @@ class GeminiMandaysEstimator:
         prompt = f"""You are a senior VFX supervisor estimating MANDAYS (person-days of work, NOT dollars) for a single shot.
 
 {VFX_RULES}
-{brief}{flags_ctx}
+{project_ctx}{brief}{flags_ctx}
 {similar_block}
 SHOT TO ESTIMATE: "{description}"
 

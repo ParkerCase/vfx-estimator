@@ -7,8 +7,25 @@ from typing import Any, Dict, Optional
 from vfx_estimator.retrieval.index import ShotRetrievalIndex
 from vfx_estimator.types import BidPreQual
 
-_TIER_MULT = {"low": 0.85, "mid": 1.0, "medium": 1.0, "high": 1.15, "hero": 1.35}
-_COMPLEX_MULT = {"low": 0.9, "medium": 1.0, "mid": 1.0, "high": 1.2, "hero": 1.4}
+_TIER_MULT = {
+    "low": 0.85,
+    "indie_low": 0.85,
+    "mid": 1.0,
+    "medium": 1.0,
+    "mid_tier_tv": 1.0,
+    "high": 1.15,
+    "premium_tv": 1.15,
+    "hero": 1.35,
+    "feature_film": 1.35,
+}
+_COMPLEX_MULT = {
+    "low": 0.9,
+    "medium": 1.0,
+    "mid": 1.0,
+    "high": 1.2,
+    "very_high": 1.35,
+    "hero": 1.4,
+}
 
 
 def _round_half(x: float) -> float:

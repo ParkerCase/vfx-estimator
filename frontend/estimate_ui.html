@@ -70,9 +70,9 @@
     .prequal-toggle:hover{color:var(--text);border-color:var(--accent)}
     .prequal-toggle .arrow{transition:transform .2s;font-size:10px}
     .prequal-toggle.open .arrow{transform:rotate(90deg)}
-    #prequal-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
+    #prequal-panel,#batch-prequal-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
                    background:var(--card2);padding:18px;margin-bottom:14px}
-    #prequal-panel.open{display:block}
+    #prequal-panel.open,#batch-prequal-panel.open{display:block}
 
     .pq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media(max-width:600px){.pq-grid{grid-template-columns:1fr}}
@@ -451,6 +451,73 @@
           <input type="text" id="batch-project" value="" placeholder="Project name (e.g. ANDROMEDA)">
         </label>
       </div>
+
+      <div class="prequal-toggle" id="batch-pq-toggle" onclick="toggleBatchPrequal()">
+        <span class="arrow">▶</span>
+        <span>Project Context (optional — improves accuracy)</span>
+      </div>
+
+      <div id="batch-prequal-panel">
+        <div class="pq-grid">
+          <div class="pq-field">
+            <label>Shot Type Override</label>
+            <select id="batch-pq-shot-type">
+              <option value="">Auto-detect</option>
+              <option value="establishing">Establishing</option>
+              <option value="hero">Hero</option>
+              <option value="background">Background</option>
+              <option value="standard">Standard</option>
+              <option value="cleanup">Cleanup</option>
+            </select>
+          </div>
+
+          <div class="pq-field">
+            <label>Complexity Band</label>
+            <select id="batch-pq-complexity">
+              <option value="">Not specified</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="very_high">Very High</option>
+            </select>
+          </div>
+
+          <div class="pq-field">
+            <label>Bid Scale Tier</label>
+            <select id="batch-pq-scale">
+              <option value="">Not specified</option>
+              <option value="indie_low">Indie/Low Budget</option>
+              <option value="mid_tier_tv">Mid-tier TV</option>
+              <option value="premium_tv">Premium TV/Streaming</option>
+              <option value="feature_film">Feature Film</option>
+            </select>
+          </div>
+
+          <div class="pq-field pq-full">
+            <label>Practical vs CG Ratio</label>
+            <div class="pq-ratio-row">
+              <span style="font-size:11px;color:var(--orange);min-width:68px">Practical</span>
+              <input type="range" id="batch-pq-cg-ratio" min="0" max="100" value="100" step="5"
+                     oninput="updateBatchCGRatio()">
+              <span style="font-size:11px;color:var(--accent);min-width:36px">CG</span>
+              <span class="pq-ratio-label" id="batch-pq-ratio-label">100% CG</span>
+            </div>
+          </div>
+
+          <div class="pq-field pq-full">
+            <label>Director Brief / Production Intent</label>
+            <textarea id="batch-pq-director-brief"
+              placeholder="e.g. Photoreal result indistinguishable from plate. Inspired by Blade Runner 2049…"></textarea>
+          </div>
+
+          <div class="pq-field pq-full">
+            <label>Key VFX Assumptions</label>
+            <textarea id="batch-pq-assumptions"
+              placeholder="e.g. Background is full CG. Hero actor is practical on greenscreen…"></textarea>
+          </div>
+        </div>
+      </div>
+
       <button class="btn-blue" id="batch-est-btn" onclick="runBatchEstimate()">Run Batch Estimate</button>
     </div>
 
@@ -644,20 +711,52 @@ function buildPreQual() {
   const assumptions= document.getElementById('pq-assumptions').value.trim();
 
   const pq = { allotment_n: allotments };
+  if (shotType)   pq.shot_type_override = shotType;
   if (complexity) pq.complexity_band = complexity;
   if (scale)      pq.bid_scale_tier  = scale;
-
-  const notes = [brief, assumptions].filter(Boolean).join('\n\n');
-  if (notes) pq.bid_context_notes = notes;
-
-  if (cg < 100) pq.practical_vs_cg = `${cg}% CG / ${100-cg}% Practical`;
-
-  // If shot type explicitly set, inject into notes to guide Gemini
-  if (shotType) {
-    pq.bid_context_notes = `SHOT TYPE OVERRIDE: ${shotType}.\n` + (pq.bid_context_notes || '');
-  }
+  if (cg < 100)   pq.practical_cg_ratio = cg;
+  if (brief)      pq.director_brief = brief;
+  if (assumptions) pq.vfx_assumptions = assumptions;
 
   return Object.keys(pq).length > 1 ? pq : null;
+}
+
+function toggleBatchPrequal() {
+  const toggle = document.getElementById('batch-pq-toggle');
+  const panel = document.getElementById('batch-prequal-panel');
+  toggle.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+
+function updateBatchCGRatio() {
+  const v = parseInt(document.getElementById('batch-pq-cg-ratio').value);
+  const practical = 100 - v;
+  document.getElementById('batch-pq-ratio-label').textContent =
+    v === 100 ? '100% CG' :
+    v === 0   ? '100% Practical' :
+    `${v}% CG / ${practical}% Practical`;
+}
+
+function buildBatchPreQual() {
+  const shotType = document.getElementById('batch-pq-shot-type')?.value;
+  const complexity = document.getElementById('batch-pq-complexity')?.value;
+  const scale = document.getElementById('batch-pq-scale')?.value;
+  const cg = parseInt(document.getElementById('batch-pq-cg-ratio')?.value ?? '100');
+  const brief = document.getElementById('batch-pq-director-brief')?.value.trim();
+  const assumptions = document.getElementById('batch-pq-assumptions')?.value.trim();
+
+  const pq = {};
+  if (shotType) pq.shot_type_override = shotType;
+  if (complexity) pq.complexity_band = complexity;
+  if (scale) pq.bid_scale_tier = scale;
+  if (cg < 100) pq.practical_cg_ratio = cg;
+  if (brief) pq.director_brief = brief;
+  if (assumptions) pq.vfx_assumptions = assumptions;
+
+  const project = getBatchProject();
+  if (project && project !== 'BID') pq.project = project;
+
+  return Object.keys(pq).length ? pq : null;
 }
 
 // ── Estimate ───────────────────────────────────────────────────────────────
@@ -1028,7 +1127,7 @@ async function runBatchEstimate() {
 
   try {
     const project = getBatchProject();
-    const preQual = buildPreQual();
+    const preQual = buildBatchPreQual();
     let data;
 
     if (file) {

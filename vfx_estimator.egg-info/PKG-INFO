@@ -62,7 +62,7 @@ VFX_BYZANTINE_CSV=/path/to/MuseAI-xata/apps/breakdown/data/byzantine_actual_expa
 ```bash
 GEMINI_API_KEY=your_key
 # or GOOGLE_API_KEY=...
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### Xata (optional)
