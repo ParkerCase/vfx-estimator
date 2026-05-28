@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vfx_estimator*"]
+
+[project]
+name = "vfx-estimator"
+version = "0.1.0"
+description = "VFX mandays estimator: ML retrieval + legacy numeric + Gemini RAG + human corrections"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "scikit-learn>=1.3",
+  "pydantic>=2.5",
+  "pydantic-settings>=2.1",
+  "python-dotenv>=1.0",
+  "fastapi>=0.109",
+  "uvicorn[standard]>=0.27",
+  "httpx>=0.26",
+  "psycopg2-binary>=2.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+xata = ["psycopg2-binary>=2.9"]
+
+[project.scripts]
+vfx-eval = "scripts.eval_cv5:main"
+vfx-api = "scripts.run_api:main"

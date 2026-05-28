@@ -1,0 +1,8 @@
+{
+  "estimate_mode": "hybrid",
+  "blend_numeric_weight": 0.55,
+  "blend_gemini_weight": 0.45,
+  "correction_boost": 2.0,
+  "retrieval_top_k": 10,
+  "use_legacy_numeric": true
+}

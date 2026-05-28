@@ -1,0 +1,3 @@
+[console_scripts]
+vfx-api = scripts.run_api:main
+vfx-eval = scripts.eval_cv5:main

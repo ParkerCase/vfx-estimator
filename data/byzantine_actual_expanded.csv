@@ -1,0 +1,420 @@
+shot_number,technical_description,number_of_shots,cost_per_shot,total_cost,total_mandays,day_rate
+1.1,Castle Siracusa Establishing,1,8400.0,8400.0,12.0,700
+2.1,BG extension.,1,6300.0,6300.0,9.0,700
+3.1,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.2,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.3,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.4,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.5,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.6,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.7,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.8,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.9,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.10,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.11,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+3.12,Alottment for set extension and BG replacements for this scene.  Assumes 12 shots based on scene length.,1,6300.0,6300.0,9.0,700
+4.1,Flaming arrows.,1,6300.0,6300.0,9.0,700
+5.1,Flaming arrows.,1,6300.0,6300.0,9.0,700
+6.1,Flaming arrows.,1,6300.0,6300.0,9.0,700
+7.1,Estblishing shot. CG docks and Galleys.,1,11900.0,11900.0,17.0,700
+8.1,Assuming moderate level of DMP set extension for area. Assuming some cleanup is also needed. Assumes 2 shots.,1,7000.0,7000.0,10.0,700
+8.2,Assuming moderate level of DMP set extension for area. Assuming some cleanup is also needed. Assumes 2 shots.,1,7000.0,7000.0,10.0,700
+9.1,CG spear tip and 2d blood drop/small cut.,1,3500.0,3500.0,5.0,700
+10.1,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.2,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.3,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.4,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.5,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.6,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.7,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+10.8,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+11.1,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.2,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.3,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.4,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.5,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.6,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+11.7,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+12.1,CG nose slice.,1,9800.0,9800.0,14.0,700
+13.1,"Establishing shot. CG docks, galleys. Assumes CG crowd for sialors and soliders needed.",1,14000.0,14000.0,20.0,700
+14.1,BG boats and dock extension. Assumes no CG crowd.,1,7700.0,7700.0,11.0,700
+15.1,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.2,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.3,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.4,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.5,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.6,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.7,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+15.8,Allotment for ocean and sky extension around Dromon set. Assumes 8 shots based on script.,1,4900.0,4900.0,7.0,700
+16.1,"Dromon extension, assumes some top deck set is practical. Assumes ocean, sky and dock extension needed. Assumes no crowd needed.",1,9800.0,9800.0,14.0,700
+17.1,CG city.,1,6300.0,6300.0,9.0,700
+18.1,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+18.2,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+18.3,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+18.4,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+19.1,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+19.2,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+19.3,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+19.4,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 4 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+20.1,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.2,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.3,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.4,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.5,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.6,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.7,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.8,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.9,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+20.10,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a moderate level of VFX extension work.,1,7000.0,7000.0,10.0,700
+21.1,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.2,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.3,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.4,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.5,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.6,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.7,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.8,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.9,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+21.10,Allotment for scene set extension/augmentation and cleanup. Based on the script assuming 10 shots need a mild level of VFX extension work.,1,4200.0,4200.0,6.0,700
+22.1,CG Castle.,1,8400.0,8400.0,12.0,700
+23.1,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.2,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.3,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.4,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.5,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.6,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.7,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.8,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.9,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.10,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.11,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.12,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.13,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.14,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+23.15,Alottment for set extension and BG replacements for this scene.  Assumes 15 shots based on scene length.,1,6300.0,6300.0,9.0,700
+24.1,Establishing shot.,1,8400.0,8400.0,12.0,700
+25.1,Establishing shot.,1,8400.0,8400.0,12.0,700
+26.1,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.2,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.3,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.4,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.5,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.6,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.7,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.8,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.9,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.10,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.11,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+26.12,DMP BG replacement. Assumes shot on green screen. DMP cost covered in assets tab. Allotment based on script assumes 12 shots,1,2800.0,2800.0,4.0,700
+27.1,Assumes extension and augmentation of courtyard.,1,9100.0,9100.0,13.0,700
+28.1,Alottment for moderate 2D level set extension/augmentation. Assumes 5 shots based on script.,1,6300.0,6300.0,9.0,700
+28.2,Alottment for moderate 2D level set extension/augmentation. Assumes 5 shots based on script.,1,6300.0,6300.0,9.0,700
+28.3,Alottment for moderate 2D level set extension/augmentation. Assumes 5 shots based on script.,1,6300.0,6300.0,9.0,700
+28.4,Alottment for moderate 2D level set extension/augmentation. Assumes 5 shots based on script.,1,6300.0,6300.0,9.0,700
+28.5,Alottment for moderate 2D level set extension/augmentation. Assumes 5 shots based on script.,1,6300.0,6300.0,9.0,700
+29.1,Assumes CG Camel caravan crowd and 2D set extension/augmentation.,1,15400.0,15400.0,22.0,700
+30.1,Establishing shot.,1,8400.0,8400.0,12.0,700
+31.1,CG carvan crowd extension.,1,13300.0,13300.0,19.0,700
+32.1,CG carvan crowd extension. CG Al-Qayrawan,1,17500.0,17500.0,25.0,700
+33.1,CG city and crowd.,1,17500.0,17500.0,25.0,700
+34.1,CG Great Mosque,1,8400.0,8400.0,12.0,700
+35.1,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.2,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.3,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.4,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.5,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.6,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.7,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.8,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.9,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+35.10,Alottment for moderate CG set extension. Assumes 10 shots based on script.,1,9100.0,9100.0,13.0,700
+36.1,Assumes CG set extension as well as crowd extension.  Assumes 5 shots where crowd is needed.,1,10500.0,10500.0,15.0,700
+36.2,Assumes CG set extension as well as crowd extension.  Assumes 5 shots where crowd is needed.,1,10500.0,10500.0,15.0,700
+36.3,Assumes CG set extension as well as crowd extension.  Assumes 5 shots where crowd is needed.,1,10500.0,10500.0,15.0,700
+36.4,Assumes CG set extension as well as crowd extension.  Assumes 5 shots where crowd is needed.,1,10500.0,10500.0,15.0,700
+36.5,Assumes CG set extension as well as crowd extension.  Assumes 5 shots where crowd is needed.,1,10500.0,10500.0,15.0,700
+37.1,CG carvan crowd extension.,1,13300.0,13300.0,19.0,700
+38.1,CG rock,1,2100.0,2100.0,3.0,700
+39.1,CG Camel stampeed.,1,14000.0,14000.0,20.0,700
+40.1,CG Camel stampeed.,1,14000.0,14000.0,20.0,700
+41.1,CG rock,1,2100.0,2100.0,3.0,700
+42.1,CG rocks. Assumes 3 shots in this scene.,1,4900.0,4900.0,7.0,700
+42.2,CG rocks. Assumes 3 shots in this scene.,1,4900.0,4900.0,7.0,700
+42.3,CG rocks. Assumes 3 shots in this scene.,1,4900.0,4900.0,7.0,700
+43.1,CG rocks. Assumes 5 shots in this scene.,1,4900.0,4900.0,7.0,700
+43.2,CG rocks. Assumes 5 shots in this scene.,1,4900.0,4900.0,7.0,700
+43.3,CG rocks. Assumes 5 shots in this scene.,1,4900.0,4900.0,7.0,700
+43.4,CG rocks. Assumes 5 shots in this scene.,1,4900.0,4900.0,7.0,700
+43.5,CG rocks. Assumes 5 shots in this scene.,1,4900.0,4900.0,7.0,700
+44.1,CG rock. Gore.,1,10500.0,10500.0,15.0,700
+45.1,Add Omar wound. Assumes dragging blood.,1,4200.0,4200.0,6.0,700
+46.1,CG Tunis buildings.,1,13300.0,13300.0,19.0,700
+47.1,CG solider crowd.,1,13300.0,13300.0,19.0,700
+48.1,"CG solider crowd, docks and ships.",1,19600.0,19600.0,28.0,700
+49.1,CG ships,1,14000.0,14000.0,20.0,700
+50.1,CG Castle Siracusa,1,8400.0,8400.0,12.0,700
+51.1,CG ships and Ocean.,1,14000.0,14000.0,20.0,700
+52.1,Ocean extension,1,5600.0,5600.0,8.0,700
+53.1,Ocean extension,1,5600.0,5600.0,8.0,700
+54.1,"CG shiop, ocean and storm",1,18200.0,18200.0,26.0,700
+55.1,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.2,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.3,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.4,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.5,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.6,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.7,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.8,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.9,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+55.10,Allotment for ocean extension out of oar holes for the scene. Assuming 10 shots based on scene.,1,6300.0,6300.0,9.0,700
+56.1,CG Palace,1,8400.0,8400.0,12.0,700
+57.1,CG Mazara Establishing shot.,1,8400.0,8400.0,12.0,700
+58.1,CG ships and long boats. Assumes 2 shots based on script.,1,8400.0,8400.0,12.0,700
+58.2,CG ships and long boats. Assumes 2 shots based on script.,1,8400.0,8400.0,12.0,700
+59.1,Fire and burning buildings,1,4900.0,4900.0,7.0,700
+60.1,CG scimitar and gore.,1,8400.0,8400.0,12.0,700
+61.1,CG scimitar and gore.,1,8400.0,8400.0,12.0,700
+62.1,"CG ships, Ocean extension.",1,6300.0,6300.0,9.0,700
+63.1,CG smoldering Mazara,1,10500.0,10500.0,15.0,700
+64.1,"Alottment for set extension/augmentation. Adding destruction, gore, flies. Assumes 5 shots based on script.",1,8400.0,8400.0,12.0,700
+64.2,"Alottment for set extension/augmentation. Adding destruction, gore, flies. Assumes 5 shots based on script.",1,8400.0,8400.0,12.0,700
+64.3,"Alottment for set extension/augmentation. Adding destruction, gore, flies. Assumes 5 shots based on script.",1,8400.0,8400.0,12.0,700
+64.4,"Alottment for set extension/augmentation. Adding destruction, gore, flies. Assumes 5 shots based on script.",1,8400.0,8400.0,12.0,700
+64.5,"Alottment for set extension/augmentation. Adding destruction, gore, flies. Assumes 5 shots based on script.",1,8400.0,8400.0,12.0,700
+65.1,CG rocks and wound.,1,4900.0,4900.0,7.0,700
+66.1,Rig removal for stunt work.,1,2100.0,2100.0,3.0,700
+67.1,CG scimitar and gore.,1,8400.0,8400.0,12.0,700
+68.1,"Set extension, CG tents",1,7700.0,7700.0,11.0,700
+69.1,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+69.2,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+69.3,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+69.4,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+69.5,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+70.1,CG Roman church establishing,1,8400.0,8400.0,12.0,700
+71.1,Allotment for adding CG church in BG. Assumes 3 shots based on script.,1,7700.0,7700.0,11.0,700
+71.2,Allotment for adding CG church in BG. Assumes 3 shots based on script.,1,7700.0,7700.0,11.0,700
+71.3,Allotment for adding CG church in BG. Assumes 3 shots based on script.,1,7700.0,7700.0,11.0,700
+72.1,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.2,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.3,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.4,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.5,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.6,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.7,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+72.8,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 8 shots for this scene based on the script.,1,3500.0,3500.0,5.0,700
+73.1,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.2,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.3,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.4,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.5,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.6,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+73.7,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 7 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+74.1,"CG soliders, horses.",1,13300.0,13300.0,19.0,700
+75.1,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.2,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.3,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.4,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.5,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.6,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.7,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.8,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.9,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+75.10,Alottment for set extension/augmentation. Adding destruction. Assumes 10 shots based on script.,1,7700.0,7700.0,11.0,700
+76.1,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+76.2,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+76.3,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+76.4,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+76.5,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+76.6,CG Roman Amphitheatre. Assumes 6 shots based on script.,1,7700.0,7700.0,11.0,700
+77.1,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+77.2,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+77.3,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+77.4,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+77.5,Alottment for set extension/augmentation. Adding destruction. Assumes 5 shots based on script.,1,7700.0,7700.0,11.0,700
+78.1,Rig removal. Gore enhancement.,1,2800.0,2800.0,4.0,700
+79.1,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.2,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.3,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.4,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.5,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.6,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.7,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.8,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.9,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+79.10,Allotment for Moderate  Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+80.1,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.2,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.3,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.4,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.5,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.6,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.7,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.8,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.9,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+80.10,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 10 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+81.1,Burning skin.,1,3500.0,3500.0,5.0,700
+82.1,Set extension.,1,5600.0,5600.0,8.0,700
+83.1,Rig removal.,1,1400.0,1400.0,2.0,700
+84.1,Rig Removal. Gore. CG sword.,1,6300.0,6300.0,9.0,700
+85.1,CG Temple.,1,8400.0,8400.0,12.0,700
+86.1,Blood and wounds. CG arrow.,1,7700.0,7700.0,11.0,700
+87.1,Blood and wounds. CG arrow.,1,7700.0,7700.0,11.0,700
+88.1,"Fire, destruction, set extension.",1,9100.0,9100.0,13.0,700
+89.1,Fire enhancement,1,2800.0,2800.0,4.0,700
+90.1,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.2,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.3,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.4,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.5,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.6,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.7,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.8,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.9,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.10,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.11,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.12,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.13,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.14,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+90.15,Alottment for fire enhancement for this scene. Assumes 15 shots based on script.,1,3500.0,3500.0,5.0,700
+91.1,CG beam and fire.,1,9800.0,9800.0,14.0,700
+92.1,CG beam and fire.,1,9800.0,9800.0,14.0,700
+93.1,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.2,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.3,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.4,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.5,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.6,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.7,Allotment for BG burning tent fire. Assumes 7 shots based on script.,1,3500.0,3500.0,5.0,700
+93.1,Stomach gore enhancement,1,3500.0,3500.0,5.0,700
+94.1,Stomach gore enhancement,1,3500.0,3500.0,5.0,700
+95.1,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.2,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.3,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.4,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.5,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.6,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.7,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.8,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.9,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.10,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.11,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.12,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.13,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.14,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.15,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.16,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+95.17,Alottment for fire enhancement for this scene. Assumes 17 shots based on script.,1,3500.0,3500.0,5.0,700
+96.1,CG beam and fire.,1,9800.0,9800.0,14.0,700
+97.1,CG scimitar and gore.,1,8400.0,8400.0,12.0,700
+98.1,CG scimitar and gore.,1,8400.0,8400.0,12.0,700
+99.1,CG Castle Siracusa,1,8400.0,8400.0,12.0,700
+100.1,CG smoldering Mazara,1,10500.0,10500.0,15.0,700
+101.1,CG Castle Siracusa,1,8400.0,8400.0,12.0,700
+102.1,Alottment for Avola Set extension. Assumes 3 shots based on the script.,1,6300.0,6300.0,9.0,700
+102.2,Alottment for Avola Set extension. Assumes 3 shots based on the script.,1,6300.0,6300.0,9.0,700
+102.3,Alottment for Avola Set extension. Assumes 3 shots based on the script.,1,6300.0,6300.0,9.0,700
+103.1,"Dromon extension, assumes some top deck set is practical. Assumes ocean, sky and dock extension needed. Assumes no crowd needed.",1,9800.0,9800.0,14.0,700
+104.1,Siracua gates DMP set extension.,1,6300.0,6300.0,9.0,700
+105.1,Siracua gates DMP set extension.,1,6300.0,6300.0,9.0,700
+106.1,CG Castle Siracusa,1,8400.0,8400.0,12.0,700
+107.1,Alottment for set extension and BG replacements for this scene.  Assumes 4 shots based on scene length.,1,6300.0,6300.0,9.0,700
+107.2,Alottment for set extension and BG replacements for this scene.  Assumes 4 shots based on scene length.,1,6300.0,6300.0,9.0,700
+107.3,Alottment for set extension and BG replacements for this scene.  Assumes 4 shots based on scene length.,1,6300.0,6300.0,9.0,700
+107.4,Alottment for set extension and BG replacements for this scene.  Assumes 4 shots based on scene length.,1,6300.0,6300.0,9.0,700
+108.1,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.2,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.3,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.4,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.5,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.6,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.7,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.8,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.9,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.10,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.11,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.12,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.13,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.14,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.15,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.16,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.17,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.18,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.19,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+108.20,Allotment for adding atmosphere. Assumes 20 shots based on script.,1,2800.0,2800.0,4.0,700
+109.1,CG Boar. Assumes 3 shots based on script.,1,9800.0,9800.0,14.0,700
+109.2,CG Boar. Assumes 3 shots based on script.,1,9800.0,9800.0,14.0,700
+109.3,CG Boar. Assumes 3 shots based on script.,1,9800.0,9800.0,14.0,700
+110.1,"Gore enhancement, add dead wild boars.",1,7000.0,7000.0,10.0,700
+111.1,CG Castle Siracusa,1,5600.0,5600.0,8.0,700
+112.1,CG docks and Dromon,1,7700.0,7700.0,11.0,700
+113.1,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.2,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.3,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.4,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.5,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.6,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.7,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.8,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.9,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.10,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.11,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+113.12,Allotment for ocean extenstion and sky replacement.  Assumes 12 shots based on the script.,1,5600.0,5600.0,8.0,700
+114.1,CG water and Dromon. Assumes practical plate for Mattheous.,1,7700.0,7700.0,11.0,700
+115.1,Digi double Matheous for gore. CG sharks and blood. CG ocean and Dromon.,1,19600.0,19600.0,28.0,700
+116.1,"CG ships, fire, ocean",1,14000.0,14000.0,20.0,700
+117.1,"CG ships, fire, ocean",1,14000.0,14000.0,20.0,700
+118.1,Alottment for set extension and BG replacements for this scene.  Assumes 3 shots based on scene length.,1,6300.0,6300.0,9.0,700
+118.2,Alottment for set extension and BG replacements for this scene.  Assumes 3 shots based on scene length.,1,6300.0,6300.0,9.0,700
+118.3,Alottment for set extension and BG replacements for this scene.  Assumes 3 shots based on scene length.,1,6300.0,6300.0,9.0,700
+118.1,Nose gore.,1,6300.0,6300.0,9.0,700
+119.1,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 3 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+119.2,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 3 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+119.3,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 3 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+120.1,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 2 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+120.2,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 2 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+121.1,CG Castle,1,5600.0,5600.0,8.0,700
+122.1,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+122.2,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+122.3,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+122.4,Allotment for Moderate Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,6300.0,6300.0,9.0,700
+123.1,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+123.2,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+123.3,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+123.4,Allotment for Mild Roman Basilica set extension. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 4 shots for this scene based on the script.,1,2800.0,2800.0,4.0,700
+124.1,Fire and smoke.,1,4900.0,4900.0,7.0,700
+125.1,Fire and smoke.,1,4900.0,4900.0,7.0,700
+126.1,Fire and smoke.,1,4900.0,4900.0,7.0,700
+127.1,Fire and smoke.,1,4900.0,4900.0,7.0,700
+128.1,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.2,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.3,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.4,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.5,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.6,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.7,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.8,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.9,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.10,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.11,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.12,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.13,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.14,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.15,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.16,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.17,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.18,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.19,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.20,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.21,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.22,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.23,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.24,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.25,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.26,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.27,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.28,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.29,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+128.30,Allotment for Roman Basilica set extension. As well as adding smoke. Assuming some set is built and CG is used to to extend the grandness of the building. Assuming 30 shots for this scene based on the script.,1,8400.0,8400.0,12.0,700
+129.1,CG gore and blade. Smoke.,1,9100.0,9100.0,13.0,700
+130.1,CG docks and burning Siracusa extension.,1,11200.0,11200.0,16.0,700
+131.1,CG ships and flaming arrows.,1,8400.0,8400.0,12.0,700
