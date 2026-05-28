@@ -45,24 +45,35 @@ def get_flags() -> FlagsStore:
     return _flags
 
 
+DEPT_MAX_DAYS: Dict[str, float] = {
+    "animation": 25,
+    "fx": 20,
+    "lighting": 15,
+    "compositing": 15,
+    "comp_paint": 12,
+    "comp_roto": 10,
+    "layout": 10,
+    "dmp": 10,
+    "camera_track": 8,
+    "matchmove": 8,
+    "cfx": 10,
+    "prep": 5,
+}
+
+
 def _compute_adjustment_ranges(dept_days: Dict[str, float], overall_confidence: float) -> Dict[str, Dict]:
-    """Compute slider min/max/step/predicted per department based on confidence."""
+    """Compute wide slider min/max/step per department for supervisor HITL."""
     out: Dict[str, Dict] = {}
     for dept, predicted in dept_days.items():
         predicted = float(predicted)
         if predicted <= 0:
             continue
-        if overall_confidence >= 0.8:
-            factor = 0.50
-        elif overall_confidence >= 0.6:
-            factor = 0.75
-        else:
-            factor = 1.00
-        lo = max(0.0, round((predicted * (1 - factor)) * 2) / 2)
-        hi = round((predicted * (1 + factor)) * 2) / 2
+        dept_cap = DEPT_MAX_DAYS.get(dept, 15)
+        hi = max(predicted * 3.0, dept_cap)
+        hi = round(hi * 2) / 2
         out[dept] = {
             "predicted": predicted,
-            "min": lo,
+            "min": 0.0,
             "max": hi,
             "step": 0.5,
             "confidence": overall_confidence,

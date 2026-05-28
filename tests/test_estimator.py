@@ -221,28 +221,27 @@ class TestDepartmentPresenceRules:
 
 
 class TestAdjustmentRanges:
-    def test_high_confidence_50pct_range(self):
+    def test_min_always_zero(self):
         ranges = _compute_adjustment_ranges({"lighting": 8.0}, overall_confidence=0.85)
-        r = ranges["lighting"]
-        assert r["min"] == pytest.approx(4.0, abs=0.5)
-        assert r["max"] == pytest.approx(12.0, abs=0.5)
-        assert r["predicted"] == 8.0
+        assert ranges["lighting"]["min"] == 0.0
 
-    def test_medium_confidence_75pct_range(self):
+    def test_max_is_3x_predicted_or_dept_cap(self):
+        ranges = _compute_adjustment_ranges({"lighting": 8.0}, overall_confidence=0.85)
+        assert ranges["lighting"]["max"] == pytest.approx(24.0, abs=0.5)
+
+    def test_max_uses_dept_cap_when_larger_than_3x(self):
         ranges = _compute_adjustment_ranges({"comp_paint": 4.0}, overall_confidence=0.65)
-        r = ranges["comp_paint"]
-        assert r["min"] == pytest.approx(1.0, abs=0.5)
-        assert r["max"] == pytest.approx(7.0, abs=0.5)
+        assert ranges["comp_paint"]["max"] == pytest.approx(12.0, abs=0.5)
 
-    def test_low_confidence_100pct_range(self):
+    def test_animation_cap_at_25(self):
         ranges = _compute_adjustment_ranges({"animation": 5.0}, overall_confidence=0.45)
-        r = ranges["animation"]
-        assert r["min"] == 0.0  # clamped, never negative
-        assert r["max"] == pytest.approx(10.0, abs=0.5)
+        assert ranges["animation"]["min"] == 0.0
+        assert ranges["animation"]["max"] == pytest.approx(25.0, abs=0.5)
 
-    def test_min_never_negative(self):
+    def test_fx_small_prediction_uses_cap(self):
         ranges = _compute_adjustment_ranges({"fx": 0.5}, overall_confidence=0.3)
-        assert ranges["fx"]["min"] >= 0.0
+        assert ranges["fx"]["min"] == 0.0
+        assert ranges["fx"]["max"] == pytest.approx(20.0, abs=0.5)
 
     def test_zero_predicted_excluded(self):
         ranges = _compute_adjustment_ranges({"lighting": 0.0, "comp_paint": 4.0}, 0.7)
@@ -255,16 +254,16 @@ class TestAdjustmentRanges:
     def test_step_is_half_day(self):
         ranges = _compute_adjustment_ranges({"layout": 3.0}, 0.9)
         assert ranges["layout"]["step"] == 0.5
+        assert ranges["layout"]["max"] == pytest.approx(10.0, abs=0.5)
 
-    def test_boundary_0_8_is_high_band(self):
-        """Exactly 0.80 -> high band -> ±50%."""
-        ranges = _compute_adjustment_ranges({"lighting": 10.0}, overall_confidence=0.80)
-        assert ranges["lighting"]["max"] == pytest.approx(15.0, abs=0.5)
+    def test_confidence_does_not_affect_range(self):
+        hi = _compute_adjustment_ranges({"lighting": 10.0}, overall_confidence=0.80)["lighting"]["max"]
+        lo = _compute_adjustment_ranges({"lighting": 10.0}, overall_confidence=0.60)["lighting"]["max"]
+        assert hi == lo == pytest.approx(30.0, abs=0.5)
 
-    def test_boundary_0_6_is_medium_band(self):
-        """Exactly 0.60 -> medium band -> ±75%."""
-        ranges = _compute_adjustment_ranges({"lighting": 10.0}, overall_confidence=0.60)
-        assert ranges["lighting"]["max"] == pytest.approx(17.5, abs=0.5)
+    def test_unknown_dept_defaults_cap_15(self):
+        ranges = _compute_adjustment_ranges({"obj_track": 2.0}, overall_confidence=0.7)
+        assert ranges["obj_track"]["max"] == pytest.approx(15.0, abs=0.5)
 
     def test_multiple_departments(self):
         depts = {"layout": 2.0, "lighting": 7.0, "comp_paint": 5.0}
@@ -273,6 +272,7 @@ class TestAdjustmentRanges:
         for dept in depts:
             assert dept in ranges
             assert ranges[dept]["predicted"] == depts[dept]
+            assert ranges[dept]["min"] == 0.0
 
 
 # ---------------------------------------------------------------------------

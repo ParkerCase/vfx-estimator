@@ -126,7 +126,9 @@
                padding-left:14px;font-style:italic;margin-top:14px}
 
     /* ── Dept sliders ── */
-    .dept-row{display:grid;grid-template-columns:150px 1fr 68px;gap:10px;align-items:center;margin-bottom:10px}
+    .dept-row{display:grid;grid-template-columns:150px 1fr 60px 36px;gap:10px;align-items:center;margin-bottom:10px}
+    .dept-num-inp{width:60px;padding:4px 6px;font-size:12px;text-align:center;
+                   background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)}
     .dept-name{font-size:13px;font-weight:600}
     .dept-conf{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:2px}
     .ch{background:#1a3a2a;color:var(--green)}.cm{background:#3a2e10;color:var(--orange)}.cl{background:#3a1a1a;color:var(--red)}
@@ -747,17 +749,39 @@ function renderDepts(deptDays, ranges, conf) {
         </div>
         <input type="range" id="sl-${dept}" min="${r.min}" max="${r.max}" step="${r.step}"
                value="${predicted}" data-dept="${dept}" oninput="onSlider(this)">
+        <input type="number" class="dept-num-inp" id="di-${dept}" min="0" step="${r.step}"
+               value="${predicted}" data-dept="${dept}" oninput="onDeptInput(this)">
         <div class="dept-val" id="dv-${dept}">${fmt(predicted)}d</div>
       </div>
-      <div class="range-hint">${r.min}d – ${r.max}d &nbsp;·&nbsp; predicted ${fmt(predicted)}d</div>`;
+      <div class="range-hint">0d – ${r.max}d &nbsp;·&nbsp; predicted ${fmt(predicted)}d</div>`;
     container.appendChild(wrap);
   });
 }
 
-function onSlider(el) {
-  const v = parseFloat(el.value);
-  document.getElementById(`dv-${el.dataset.dept}`).textContent = v.toFixed(1) + 'd';
+function syncDeptValue(dept, rawValue) {
+  const v = Math.max(0, parseFloat(rawValue) || 0);
+  const rounded = Math.round(v * 2) / 2;
+  const slider = document.getElementById(`sl-${dept}`);
+  const inp = document.getElementById(`di-${dept}`);
+  const dv = document.getElementById(`dv-${dept}`);
+  if (slider) {
+    const max = parseFloat(slider.max);
+    if (rounded > max) {
+      slider.max = Math.round(rounded * 1.2 * 2) / 2;
+    }
+    slider.value = rounded;
+  }
+  if (inp) inp.value = rounded;
+  if (dv) dv.textContent = fmt(rounded) + 'd';
   updateAdjTotal();
+}
+
+function onSlider(el) {
+  syncDeptValue(el.dataset.dept, el.value);
+}
+
+function onDeptInput(el) {
+  syncDeptValue(el.dataset.dept, el.value);
 }
 
 function updateAdjTotal() {
