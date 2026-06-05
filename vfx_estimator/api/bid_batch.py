@@ -6,8 +6,9 @@ import base64
 import csv
 import io
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
@@ -123,6 +124,187 @@ def _compute_adjustment_ranges_bid(
     return out
 
 
+def _error_bid_row(
+    shot: BidBatchShotItem,
+    idx: int,
+    exc: Exception,
+    *,
+    day_rate: float,
+) -> Dict[str, Any]:
+    return {
+        "error": str(exc),
+        "item_number": shot.item_number,
+        "shot_code": _resolve_shot_code(shot) or f"shot_{idx + 1}",
+        "description": build_shot_description(shot),
+        "script_description": shot.script_description,
+        "vfx_notes": shot.vfx_notes,
+        "vfx_assumptions": shot.vfx_assumptions,
+        "number_of_shots": max(1, int(shot.number_of_shots or 1)),
+        "dept_days": {},
+        "total_mandays": 0,
+        "cost_per_shot": 0,
+        "confidence": 0,
+        "reasoning": "",
+        "adjustment_ranges": {},
+        "mode": "error",
+        "ai_total_mandays": 0,
+    }
+
+
+def _merge_pre_qual(
+    pre_qual: Optional[BidPreQual],
+    *,
+    project: str,
+    allotment_n: int,
+) -> BidPreQual:
+    pq = BidPreQual(
+        project=project,
+        allotment_n=allotment_n,
+    )
+    if pre_qual:
+        merged = pre_qual.model_dump(exclude_none=True)
+        merged["allotment_n"] = allotment_n
+        merged["project"] = project
+        pq = BidPreQual.model_validate(merged)
+    return pq
+
+
+def estimate_single_shot(
+    shot: BidBatchShotItem,
+    *,
+    svc: EstimatorService,
+    project: str,
+    day_rate: float,
+    mode: Optional[str] = None,
+    pre_qual: Optional[BidPreQual] = None,
+    compute_ranges,
+) -> Dict[str, Any]:
+    n = max(1, int(shot.number_of_shots or 1))
+    pq = _merge_pre_qual(pre_qual, project=project, allotment_n=n)
+    desc = build_shot_description(shot)
+    est = svc.estimate(desc, pre_qual=pq, mode=mode)
+    return _estimate_bid_row(est, shot, day_rate=day_rate, compute_ranges=compute_ranges)
+
+
+def process_batch(
+    shots: List[BidBatchShotItem],
+    *,
+    svc: EstimatorService,
+    project: str,
+    day_rate: float,
+    mode: Optional[str] = None,
+    pre_qual: Optional[BidPreQual] = None,
+    compute_ranges,
+) -> List[Dict[str, Any]]:
+    results: List[Optional[Dict[str, Any]]] = [None] * len(shots)
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_idx = {
+            executor.submit(
+                estimate_single_shot,
+                shot,
+                svc=svc,
+                project=project,
+                day_rate=day_rate,
+                mode=mode,
+                pre_qual=pre_qual,
+                compute_ranges=compute_ranges,
+            ): i
+            for i, shot in enumerate(shots)
+        }
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            try:
+                results[idx] = future.result(timeout=30)
+            except Exception as e:
+                results[idx] = _error_bid_row(shots[idx], idx, e, day_rate=day_rate)
+
+    return [r for r in results if r is not None]
+
+
+def iter_batch_estimate_events(
+    shots: List[BidBatchShotItem],
+    *,
+    svc: EstimatorService,
+    project: str,
+    day_rate: float,
+    mode: Optional[str] = None,
+    pre_qual: Optional[BidPreQual] = None,
+    compute_ranges,
+) -> Iterator[Dict[str, Any]]:
+    """Yield progress/result/error/complete event dicts for SSE streaming."""
+    total = len(shots)
+    results: List[Optional[Dict[str, Any]]] = [None] * total
+    completed = 0
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_idx = {
+            executor.submit(
+                estimate_single_shot,
+                shot,
+                svc=svc,
+                project=project,
+                day_rate=day_rate,
+                mode=mode,
+                pre_qual=pre_qual,
+                compute_ranges=compute_ranges,
+            ): i
+            for i, shot in enumerate(shots)
+        }
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            shot = shots[idx]
+            shot_code = _resolve_shot_code(shot) or f"Shot {idx + 1}"
+            try:
+                result = future.result(timeout=30)
+                results[idx] = result
+            except Exception as e:
+                result = _error_bid_row(shot, idx, e, day_rate=day_rate)
+                results[idx] = result
+                yield {"type": "error", "index": idx, "error": str(e), "data": result}
+                completed += 1
+                yield {
+                    "type": "progress",
+                    "current": completed,
+                    "total": total,
+                    "shot_code": shot_code,
+                    "percent": round((completed / total) * 100) if total else 100,
+                }
+                continue
+
+            completed += 1
+            yield {
+                "type": "progress",
+                "current": completed,
+                "total": total,
+                "shot_code": shot_code,
+                "percent": round((completed / total) * 100) if total else 100,
+            }
+            yield {"type": "result", "index": idx, "data": result}
+
+    valid = [r for r in results if r is not None]
+    total_mandays = round(sum(float(r.get("total_mandays") or 0) for r in valid), 2)
+    total_cost = round(sum(float(r.get("cost_per_shot") or 0) for r in valid), 2)
+    yield {
+        "type": "complete",
+        "count": len(valid),
+        "total_shots": len(valid),
+        "total_mandays": total_mandays,
+        "total_cost": total_cost,
+        "project": project,
+        "day_rate": day_rate,
+        "shots": valid,
+    }
+
+
+def validate_batch_shots(shots: List[BidBatchShotItem]) -> None:
+    if not shots:
+        raise HTTPException(400, "shots required")
+    for i, shot in enumerate(shots):
+        if not build_shot_description(shot).strip():
+            raise HTTPException(400, f"shots[{i}] has no description content")
+
+
 def _estimate_bid_row(
     est: ShotEstimate,
     shot: BidBatchShotItem,
@@ -166,45 +348,30 @@ def run_bid_batch_estimate(
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
 ) -> Dict[str, Any]:
-    if not shots:
-        raise HTTPException(400, "shots required")
-
-    for i, shot in enumerate(shots):
-        if not build_shot_description(shot).strip():
-            raise HTTPException(400, f"shots[{i}] has no description content")
+    validate_batch_shots(shots)
 
     rate = float(day_rate if day_rate is not None else svc.settings.day_rate)
     proj = project or (pre_qual.project if pre_qual else None) or "BID"
 
-    rows: List[Dict[str, Any]] = []
-    total_mandays = 0.0
-    total_cost = 0.0
+    rows = process_batch(
+        shots,
+        svc=svc,
+        project=proj,
+        day_rate=rate,
+        mode=mode,
+        pre_qual=pre_qual,
+        compute_ranges=compute_ranges,
+    )
 
-    for shot in shots:
-        n = max(1, int(shot.number_of_shots or 1))
-        pq = BidPreQual(
-            project=proj,
-            allotment_n=n,
-        )
-        if pre_qual:
-            merged = pre_qual.model_dump(exclude_none=True)
-            merged["allotment_n"] = n
-            merged["project"] = proj
-            pq = BidPreQual.model_validate(merged)
-
-        desc = build_shot_description(shot)
-        est = svc.estimate(desc, pre_qual=pq, mode=mode)
-        row = _estimate_bid_row(est, shot, day_rate=rate, compute_ranges=compute_ranges)
-        rows.append(row)
-        total_mandays += row["total_mandays"]
-        total_cost += row["cost_per_shot"]
+    total_mandays = round(sum(float(r.get("total_mandays") or 0) for r in rows), 2)
+    total_cost = round(sum(float(r.get("cost_per_shot") or 0) for r in rows), 2)
 
     return {
         "count": len(rows),
         "project": proj,
         "day_rate": rate,
-        "total_mandays": round(total_mandays, 2),
-        "total_cost": round(total_cost, 2),
+        "total_mandays": total_mandays,
+        "total_cost": total_cost,
         "shots": rows,
     }
 

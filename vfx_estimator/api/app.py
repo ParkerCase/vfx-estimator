@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import queue
+import threading
 from typing import Any, Dict, List, Optional
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from vfx_estimator.api.bid_batch import (
     BatchEstimateRequest,
     attach_csv_export,
+    iter_batch_estimate_events,
     parse_bid_csv_upload,
     run_bid_batch_estimate,
+    validate_batch_shots,
 )
 from vfx_estimator.config import get_settings
 from vfx_estimator.estimate.service import EstimatorService
@@ -121,8 +129,16 @@ def _prepare_batch_service(svc: EstimatorService) -> None:
 # ── App factory ────────────────────────────────────────────────────────────
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from vfx_estimator.retrieval.index import build_index
+
+    build_index()
+    yield
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="VFX Estimator", version="0.4.0")
+    app = FastAPI(title="VFX Estimator", version="0.4.0", lifespan=lifespan)
 
     app.add_middleware(
         CORSMiddleware,
@@ -149,6 +165,10 @@ def create_app() -> FastAPI:
             "xata_corrections": svc.corrections.storage_backend,
         }
 
+    @app.get("/ping")
+    def ping() -> Dict[str, bool]:
+        return {"ok": True}
+
     @app.post("/estimate")
     def estimate(req: EstimateRequest) -> Dict[str, Any]:
         if not req.description.strip():
@@ -167,8 +187,6 @@ def create_app() -> FastAPI:
 
     @app.post("/estimate/batch")
     def estimate_batch(req: BatchEstimateRequest) -> Dict[str, Any]:
-        if not req.shots:
-            raise HTTPException(400, "shots required")
         svc = get_service()
         _prepare_batch_service(svc)
         return run_bid_batch_estimate(
@@ -179,6 +197,55 @@ def create_app() -> FastAPI:
             mode=req.mode,
             pre_qual=req.pre_qual,
             compute_ranges=_compute_adjustment_ranges,
+        )
+
+    @app.post("/estimate/batch/stream")
+    async def batch_estimate_stream(req: BatchEstimateRequest) -> StreamingResponse:
+        validate_batch_shots(req.shots)
+        svc = get_service()
+        _prepare_batch_service(svc)
+        rate = float(req.day_rate if req.day_rate is not None else svc.settings.day_rate)
+        proj = req.project or (req.pre_qual.project if req.pre_qual else None) or "BID"
+
+        async def generate():
+            event_q: queue.Queue = queue.Queue()
+
+            def run_batch() -> None:
+                try:
+                    for event in iter_batch_estimate_events(
+                        req.shots,
+                        svc=svc,
+                        project=proj,
+                        day_rate=rate,
+                        mode=req.mode,
+                        pre_qual=req.pre_qual,
+                        compute_ranges=_compute_adjustment_ranges,
+                    ):
+                        event_q.put(event)
+                except Exception as exc:
+                    event_q.put({"type": "fatal", "error": str(exc)})
+                finally:
+                    event_q.put(None)
+
+            threading.Thread(target=run_batch, daemon=True).start()
+
+            while True:
+                try:
+                    while True:
+                        item = event_q.get_nowait()
+                        if item is None:
+                            return
+                        yield f"data: {json.dumps(item)}\n\n"
+                except queue.Empty:
+                    await asyncio.sleep(0.05)
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+            },
         )
 
     @app.post("/estimate/batch/csv")
@@ -341,6 +408,9 @@ def create_app() -> FastAPI:
             json.dump(body, f, indent=2)
         get_settings.cache_clear()
         global _service
+        from vfx_estimator.retrieval.index import invalidate_index
+
+        invalidate_index()
         _service = EstimatorService(get_settings())
         return {"ok": True, "path": str(path)}
 

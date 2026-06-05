@@ -5,13 +5,99 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
+from scipy.sparse import vstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from vfx_estimator.config import Settings, get_settings
-from vfx_estimator.data.loaders import TrainingShot
+from vfx_estimator.data.loaders import TrainingShot, load_training_shots
 from vfx_estimator.learning.corrections import CorrectionsStore
 from vfx_estimator.types import SimilarShot
+
+_cached_index: Optional["ShotRetrievalIndex"] = None
+
+
+def build_index(
+    settings: Optional[Settings] = None,
+    corrections: Optional[CorrectionsStore] = None,
+) -> "ShotRetrievalIndex":
+    """Load training + corrections and fit TF-IDF once into the module cache."""
+    global _cached_index
+    settings = settings or get_settings()
+    training = load_training_shots(settings)
+    store = corrections or CorrectionsStore(settings=settings)
+    _cached_index = ShotRetrievalIndex(training, settings=settings, corrections=store)
+    return _cached_index
+
+
+def get_index(
+    settings: Optional[Settings] = None,
+    corrections: Optional[CorrectionsStore] = None,
+) -> "ShotRetrievalIndex":
+    """Return the cached index, rebuilding only if empty."""
+    global _cached_index
+    if _cached_index is None:
+        build_index(settings=settings, corrections=corrections)
+    return _cached_index
+
+
+def invalidate_index() -> None:
+    """Clear the cached index so the next access rebuilds."""
+    global _cached_index
+    _cached_index = None
+
+
+def _rows_from_sources(
+    training: Sequence[TrainingShot],
+    *,
+    settings: Settings,
+    corrections: Optional[CorrectionsStore] = None,
+    extra_rows: Optional[List[Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    correction_boost = float(settings.correction_boost)
+
+    for s in training:
+        rows.append(
+            {
+                "description": s.description,
+                "mandays": float(s.mandays),
+                "cost": float(s.cost or s.mandays * settings.day_rate),
+                "source": "training",
+                "weight": 1.0,
+                "project": s.project,
+                "dept_days": dict(s.dept_days or {}),
+            }
+        )
+
+    if corrections is not None:
+        for c in corrections.as_training_rows():
+            rows.append(
+                {
+                    "description": c["description"],
+                    "mandays": float(c["mandays"]),
+                    "cost": float(c["cost"]),
+                    "source": "correction",
+                    "weight": correction_boost,
+                    "project": "user_correction",
+                    "dept_days": c.get("dept_days") or {},
+                }
+            )
+
+    for r in extra_rows or []:
+        rows.append(
+            {
+                "description": r.get("description", ""),
+                "mandays": float(r.get("mandays") or 0),
+                "cost": float(r.get("cost") or 0),
+                "source": r.get("source", "xata"),
+                "weight": float(r.get("weight", 1.2)),
+                "project": r.get("project"),
+                "dept_days": r.get("dept_days") or {},
+            }
+        )
+
+    return rows
 
 
 class ShotRetrievalIndex:
@@ -25,37 +111,34 @@ class ShotRetrievalIndex:
     ):
         self.settings = settings or get_settings()
         self.correction_boost = float(self.settings.correction_boost)
-        self.rows: List[Dict[str, Any]] = []
+        self.rows = _rows_from_sources(
+            training,
+            settings=self.settings,
+            corrections=corrections,
+            extra_rows=extra_rows,
+        )
+        self._fit_vectors()
 
-        for s in training:
-            self.rows.append(
-                {
-                    "description": s.description,
-                    "mandays": float(s.mandays),
-                    "cost": float(s.cost or s.mandays * self.settings.day_rate),
-                    "source": "training",
-                    "weight": 1.0,
-                    "project": s.project,
-                    "dept_days": dict(s.dept_days or {}),
-                }
-            )
+    def _fit_vectors(self) -> None:
+        descriptions = [r["description"] for r in self.rows if r["description"]]
+        self._vectorizer = TfidfVectorizer(max_features=800, ngram_range=(1, 2), min_df=1)
+        if descriptions:
+            self._matrix = self._vectorizer.fit_transform(descriptions)
+        else:
+            self._matrix = None
 
-        store = corrections or CorrectionsStore(settings=self.settings)
-        for c in store.as_training_rows():
-            self.rows.append(
-                {
-                    "description": c["description"],
-                    "mandays": float(c["mandays"]),
-                    "cost": float(c["cost"]),
-                    "source": "correction",
-                    "weight": self.correction_boost,
-                    "project": "user_correction",
-                    "dept_days": c.get("dept_days") or {},
-                }
-            )
+    def with_extra_rows(self, extra_rows: List[Dict[str, Any]]) -> "ShotRetrievalIndex":
+        """Return an index overlay with extra rows transformed via the fitted vectorizer."""
+        if not extra_rows:
+            return self
 
-        for r in extra_rows or []:
-            self.rows.append(
+        overlay = object.__new__(ShotRetrievalIndex)
+        overlay.settings = self.settings
+        overlay.correction_boost = self.correction_boost
+        overlay._vectorizer = self._vectorizer
+        overlay.rows = list(self.rows)
+        for r in extra_rows:
+            overlay.rows.append(
                 {
                     "description": r.get("description", ""),
                     "mandays": float(r.get("mandays") or 0),
@@ -67,12 +150,15 @@ class ShotRetrievalIndex:
                 }
             )
 
-        descriptions = [r["description"] for r in self.rows if r["description"]]
-        self._vectorizer = TfidfVectorizer(max_features=800, ngram_range=(1, 2), min_df=1)
-        if descriptions:
-            self._matrix = self._vectorizer.fit_transform(descriptions)
+        new_descs = [r.get("description", "") for r in extra_rows if r.get("description")]
+        if new_descs and self._vectorizer is not None:
+            extra_matrix = self._vectorizer.transform(new_descs)
+            overlay._matrix = (
+                vstack([self._matrix, extra_matrix]) if self._matrix is not None else extra_matrix
+            )
         else:
-            self._matrix = None
+            overlay._matrix = self._matrix
+        return overlay
 
     def __len__(self) -> int:
         return len(self.rows)

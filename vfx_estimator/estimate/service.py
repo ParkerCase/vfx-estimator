@@ -11,7 +11,7 @@ from vfx_estimator.integrations.xata import XataShotSearch
 from vfx_estimator.learning.corrections import CorrectionsStore
 from vfx_estimator.llm.mandays_rag import GeminiMandaysEstimator
 from vfx_estimator.numeric.legacy_bridge import LegacyNumericEstimator
-from vfx_estimator.retrieval.index import ShotRetrievalIndex
+from vfx_estimator.retrieval.index import build_index, get_index, invalidate_index
 from vfx_estimator.screenplay.scene_match import fdx_xml_to_plaintext, screenplay_augment_with_metadata
 from vfx_estimator.types import BidPreQual, ShotEstimate, UserCorrection
 
@@ -26,7 +26,7 @@ class EstimatorService:
         self.training = load_training_shots(self.settings)
         self._xata = XataShotSearch(self.settings)
         self.corrections = CorrectionsStore(settings=self.settings)
-        self._rebuild_index()
+        self.index = get_index(settings=self.settings, corrections=self.corrections)
 
         self.legacy = LegacyNumericEstimator(self.settings)
         self.legacy.set_retrieval_index(self.index)
@@ -35,7 +35,8 @@ class EstimatorService:
             self.gemini = GeminiMandaysEstimator(self.index, self.settings)
 
     def _rebuild_index(self) -> None:
-        self.index = ShotRetrievalIndex(self.training, settings=self.settings, corrections=self.corrections)
+        invalidate_index()
+        self.index = build_index(settings=self.settings, corrections=self.corrections)
 
     def reload_corrections(self) -> None:
         self._rebuild_index()
@@ -80,12 +81,10 @@ class EstimatorService:
 
         xata_hits = self._xata.search(desc_user, top_k=5) if self._xata.enabled else []
         if xata_hits:
-            self.index = ShotRetrievalIndex(
-                self.training,
+            self.index = get_index(
                 settings=self.settings,
                 corrections=self.corrections,
-                extra_rows=xata_hits,
-            )
+            ).with_extra_rows(xata_hits)
             if self.gemini:
                 self.gemini.index = self.index
 

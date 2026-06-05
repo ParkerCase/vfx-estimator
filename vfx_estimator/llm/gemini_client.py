@@ -69,7 +69,7 @@ def generate_json(
     max_output_tokens: int = 4096,
     temperature: float = 0.2,
     max_retries: int = 2,
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """Call Gemini and return a parsed JSON dict.
 
     Retries up to max_retries times on empty/malformed responses.
@@ -105,11 +105,18 @@ def generate_json(
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
+        except TimeoutError:
+            return None
         except urllib.error.HTTPError as e:
             err_body = e.read().decode("utf-8", errors="replace")
             last_error = RuntimeError(f"Gemini HTTP {e.code}: {err_body[:400]}")
+            continue
+        except urllib.error.URLError as e:
+            if isinstance(getattr(e, "reason", None), TimeoutError):
+                return None
+            last_error = e
             continue
         except Exception as e:
             last_error = e

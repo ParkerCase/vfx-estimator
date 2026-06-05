@@ -218,6 +218,8 @@ Rules:
 """
 
         data = generate_json(prompt, settings=self.settings)
+        if data is None:
+            raise RuntimeError("Gemini request timed out")
         _enforce_vfx_rules(description, data)
 
         dept_sum = sum(_dept_days(data).values())

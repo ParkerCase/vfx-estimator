@@ -18,7 +18,12 @@ import pytest
 from vfx_estimator.config import get_settings
 from vfx_estimator.data.loaders import TrainingShot
 from vfx_estimator.learning.corrections import CorrectionsStore
-from vfx_estimator.retrieval.index import ShotRetrievalIndex
+from vfx_estimator.retrieval.index import (
+    ShotRetrievalIndex,
+    build_index,
+    get_index,
+    invalidate_index,
+)
 from vfx_estimator.types import UserCorrection
 
 
@@ -27,6 +32,13 @@ def _make_shots(descriptions_and_days: list) -> list:
         TrainingShot(description=d, mandays=m, project="test", cost=m * 700)
         for d, m in descriptions_and_days
     ]
+
+
+@pytest.fixture(autouse=True)
+def _clear_index_cache():
+    invalidate_index()
+    yield
+    invalidate_index()
 
 
 class TestRetrieval:
@@ -183,3 +195,46 @@ class TestOrphanedCorrections:
         sources = {h.source for h in hits}
         assert "correction" in sources
         corr_path.unlink(missing_ok=True)
+
+
+class TestIndexCache:
+    def test_get_index_reuses_cache(self, monkeypatch):
+        shots = _make_shots([("wire removal", 5.0)])
+        monkeypatch.setattr("vfx_estimator.retrieval.index.load_training_shots", lambda _: shots)
+        with tempfile.NamedTemporaryFile(suffix=".jsonl") as f:
+            store = CorrectionsStore(path=Path(f.name))
+            monkeypatch.setattr(
+                "vfx_estimator.retrieval.index.CorrectionsStore",
+                lambda **_: store,
+            )
+            invalidate_index()
+            first = build_index()
+            second = get_index()
+            assert first is second
+
+    def test_invalidate_forces_rebuild(self, monkeypatch):
+        shots = _make_shots([("wire removal", 5.0)])
+        monkeypatch.setattr("vfx_estimator.retrieval.index.load_training_shots", lambda _: shots)
+        with tempfile.NamedTemporaryFile(suffix=".jsonl") as f:
+            store = CorrectionsStore(path=Path(f.name))
+            monkeypatch.setattr(
+                "vfx_estimator.retrieval.index.CorrectionsStore",
+                lambda **_: store,
+            )
+            invalidate_index()
+            first = build_index()
+            invalidate_index()
+            second = build_index()
+            assert first is not second
+
+    def test_with_extra_rows_avoids_refit(self):
+        shots = _make_shots([("wire removal stunt", 5.0)])
+        idx = ShotRetrievalIndex(shots)
+        vectorizer = idx._vectorizer
+        overlay = idx.with_extra_rows(
+            [{"description": "wire removal hero cleanup", "mandays": 7.0, "cost": 4900.0}]
+        )
+        assert overlay._vectorizer is vectorizer
+        assert len(overlay) == 2
+        hits = overlay.query("wire removal hero cleanup")
+        assert hits[0].mandays == 7.0

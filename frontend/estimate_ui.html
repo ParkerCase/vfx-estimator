@@ -241,6 +241,13 @@
     .file-drop{border:1px dashed var(--border);border-radius:var(--r);padding:14px;background:var(--card2);
                font-size:12px;color:var(--muted)}
     .file-drop input[type=file]{font-size:12px;color:var(--text);margin-top:8px}
+
+    /* ── Batch progress ── */
+    #batch-progress{margin-bottom:14px}
+    .progress-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+    .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+                       border-radius:4px;width:0%;transition:width .3s ease}
+    .progress-label{font-size:12px;color:var(--muted);margin-top:6px}
   </style>
 </head>
 <body>
@@ -522,6 +529,12 @@
     </div>
 
     <div id="batch-results" class="hidden">
+      <div id="batch-progress" style="display:none">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-label" id="progress-label">Processing shot 1 of 30…</div>
+      </div>
       <div class="card" style="padding-bottom:8px">
         <div class="batch-table-wrap">
           <table class="batch-table" id="batch-results-table">
@@ -1074,6 +1087,98 @@ function confBadge(conf) {
   return `<span class="conf-badge ${cls}">${p}%</span>`;
 }
 
+function showBatchLoading(on) {
+  const btn = document.getElementById('batch-est-btn');
+  if (on) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span>Estimating batch…';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Run Batch Estimate';
+  }
+}
+
+function clearBatchResults() {
+  document.getElementById('batch-table-body').innerHTML = '';
+  document.getElementById('batch-summary-bar').textContent = '—';
+}
+
+function updateProgress(current, total, label) {
+  const wrap = document.getElementById('batch-progress');
+  const fill = document.getElementById('progress-fill');
+  const lbl = document.getElementById('progress-label');
+  wrap.style.display = 'block';
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  fill.style.width = pct + '%';
+  lbl.textContent = label || `Processing shot ${current} of ${total}… (${pct}%)`;
+}
+
+function hideBatchProgress() {
+  document.getElementById('batch-progress').style.display = 'none';
+}
+
+function appendBatchResultRow(i, row) {
+  if (!document.getElementById('batch-thead-row').innerHTML) {
+    buildBatchTableHeader();
+  }
+  const tbody = document.getElementById('batch-table-body');
+  const colSpan = 3 + BID_DEPTS.length + 3;
+  const depts = row.dept_days || {};
+  const desc = row.description || row.script_description || '';
+  row._edited = false;
+  row._ai_dept_days = { ...depts };
+  row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
+
+  const tr = document.createElement('tr');
+  tr.className = 'batch-data-row';
+  tr.dataset.idx = String(i);
+
+  let cells = `
+    <td>${escHtml(row.item_number || String(i + 1))}</td>
+    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${row.error ? ' <span style="color:var(--red)">⚠</span>' : ''}</td>
+    <td class="col-desc">${escHtml(desc)}</td>`;
+
+  BID_DEPTS.forEach(dept => {
+    const v = depts[dept] ?? 0;
+    cells += `<td><input type="number" class="bid-dept-inp" min="0" step="0.5"
+      data-dept="${dept}" data-idx="${i}" value="${v}"
+      oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'), ${i})"></td>`;
+  });
+
+  cells += `
+    <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
+    <td>${confBadge(row.confidence)}</td>
+    <td><button type="button" class="notes-btn" data-notes-btn="${i}"
+        onclick="toggleBatchNotes(${i})" title="Supervisor notes">Notes</button></td>`;
+
+  tr.innerHTML = cells;
+  tbody.appendChild(tr);
+
+  const notesTr = document.createElement('tr');
+  notesTr.id = `batch-notes-${i}`;
+  notesTr.className = 'batch-notes-row hidden';
+  notesTr.innerHTML = `<td colspan="${colSpan}">
+    <textarea placeholder="Supervisor notes for this shot…"
+      oninput="if(_batchResult?.shots[${i}]){_batchResult.shots[${i}]._notes=this.value;_batchResult.shots[${i}]._edited=true;}"></textarea>
+  </td>`;
+  tbody.appendChild(notesTr);
+  if (_batchResult) recalcBatchTotals();
+}
+
+function updateBatchSummary(results) {
+  if (!_batchResult) return;
+  let totalDays = 0;
+  (results || _batchResult.shots || []).forEach(r => {
+    totalDays += parseFloat(r?.total_mandays) || 0;
+  });
+  totalDays = Math.round(totalDays * 2) / 2;
+  document.getElementById('batch-summary-bar').innerHTML =
+    `<strong>${_batchResult.count}</strong> shots &nbsp;|&nbsp; ` +
+    `<strong>${fmt(totalDays)}d</strong> total mandays` +
+    (_batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '');
+  _batchResult.total_mandays = totalDays;
+}
+
 function parseBatchPaste(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const shots = [];
@@ -1120,16 +1225,14 @@ function getBatchProject() {
 async function runBatchEstimate() {
   const fileInput = document.getElementById('batch-csv-file');
   const file = fileInput.files && fileInput.files[0];
-  const btn = document.getElementById('batch-est-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span>Estimating batch…';
-  document.getElementById('batch-results').classList.add('hidden');
+  const project = getBatchProject();
+  const preQual = buildBatchPreQual();
+
+  showBatchLoading(true);
+  clearBatchResults();
+  document.getElementById('batch-results').classList.remove('hidden');
 
   try {
-    const project = getBatchProject();
-    const preQual = buildBatchPreQual();
-    let data;
-
     if (file) {
       const fd = new FormData();
       fd.append('file', file);
@@ -1141,37 +1244,103 @@ async function runBatchEstimate() {
         const err = await r.json().catch(() => ({}));
         throw new Error(err.detail || `HTTP ${r.status}`);
       }
-      data = await r.json();
-    } else {
-      const shots = parseBatchPaste(document.getElementById('batch-input').value);
-      if (!shots.length) {
-        toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
-        return;
-      }
-      const body = { shots, day_rate: BATCH_API_DAY_RATE, project };
-      if (preQual) body.pre_qual = preQual;
-      const r = await fetch(`${API}/estimate/batch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${r.status}`);
-      }
-      data = await r.json();
+      _batchResult = await r.json();
+      renderBatchResults(_batchResult);
+      document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
+      return;
     }
 
-    _batchResult = data;
-    renderBatchResults(data);
-    document.getElementById('batch-results').classList.remove('hidden');
+    const shots = parseBatchPaste(document.getElementById('batch-input').value);
+    if (!shots.length) {
+      toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
+      document.getElementById('batch-results').classList.add('hidden');
+      return;
+    }
+
+    const totalShots = shots.length;
+    updateProgress(0, totalShots, 'Starting…');
+    buildBatchTableHeader();
+    _batchResult = { count: totalShots, project, day_rate: BATCH_API_DAY_RATE, shots: new Array(totalShots) };
+
+    const payload = { shots, day_rate: BATCH_API_DAY_RATE, project };
+    if (preQual) payload.pre_qual = preQual;
+
+    const response = await fetch(`${API}/estimate/batch/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const results = new Array(totalShots);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let msg;
+        try {
+          msg = JSON.parse(line.slice(6));
+        } catch {
+          continue;
+        }
+
+        if (msg.type === 'progress') {
+          updateProgress(
+            msg.current,
+            msg.total,
+            `Estimating ${msg.shot_code}… (${msg.percent}%)`
+          );
+        }
+
+        if (msg.type === 'result' && msg.data) {
+          results[msg.index] = msg.data;
+          _batchResult.shots[msg.index] = msg.data;
+          appendBatchResultRow(msg.index, msg.data);
+        }
+
+        if (msg.type === 'error' && msg.data) {
+          results[msg.index] = msg.data;
+          _batchResult.shots[msg.index] = msg.data;
+          appendBatchResultRow(msg.index, msg.data);
+        }
+
+        if (msg.type === 'complete') {
+          _batchResult.count = msg.count ?? msg.total_shots ?? totalShots;
+          _batchResult.total_mandays = msg.total_mandays ?? 0;
+          _batchResult.total_cost = msg.total_cost ?? 0;
+          if (msg.shots) _batchResult.shots = msg.shots;
+          updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
+          updateBatchSummary(results);
+          toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
+        }
+
+        if (msg.type === 'fatal') {
+          throw new Error(msg.error || 'Batch stream failed');
+        }
+      }
+    }
+
     document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast(`Batch complete — ${data.count} shots · ${fmt(data.total_mandays)} total mandays`);
   } catch (e) {
     toast(`Batch failed: ${e.message}`, 'err');
+    document.getElementById('batch-results').classList.add('hidden');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Run Batch Estimate';
+    showBatchLoading(false);
+    hideBatchProgress();
   }
 }
 
@@ -1233,50 +1402,9 @@ function renderBatchResults(data) {
   buildBatchTableHeader();
   const tbody = document.getElementById('batch-table-body');
   tbody.innerHTML = '';
-  const colSpan = 3 + BID_DEPTS.length + 3;
-
-  (data.shots || []).forEach((row, i) => {
-    const depts = row.dept_days || {};
-    const desc = row.description || row.script_description || '';
-    row._edited = false;
-    row._ai_dept_days = { ...depts };
-    row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
-
-    const tr = document.createElement('tr');
-    tr.className = 'batch-data-row';
-    tr.dataset.idx = String(i);
-
-    let cells = `
-      <td>${escHtml(row.item_number || String(i + 1))}</td>
-      <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}</td>
-      <td class="col-desc">${escHtml(desc)}</td>`;
-
-    BID_DEPTS.forEach(dept => {
-      const v = depts[dept] ?? 0;
-      cells += `<td><input type="number" class="bid-dept-inp" min="0" step="0.5"
-        data-dept="${dept}" data-idx="${i}" value="${v}"
-        oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'), ${i})"></td>`;
-    });
-
-    cells += `
-      <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
-      <td>${confBadge(row.confidence)}</td>
-      <td><button type="button" class="notes-btn" data-notes-btn="${i}"
-          onclick="toggleBatchNotes(${i})" title="Supervisor notes">Notes</button></td>`;
-
-    tr.innerHTML = cells;
-    tbody.appendChild(tr);
-
-    const notesTr = document.createElement('tr');
-    notesTr.id = `batch-notes-${i}`;
-    notesTr.className = 'batch-notes-row hidden';
-    notesTr.innerHTML = `<td colspan="${colSpan}">
-      <textarea placeholder="Supervisor notes for this shot…"
-        oninput="if(_batchResult?.shots[${i}]){_batchResult.shots[${i}]._notes=this.value;_batchResult.shots[${i}]._edited=true;}"></textarea>
-    </td>`;
-    tbody.appendChild(notesTr);
-  });
-  recalcBatchTotals();
+  _batchResult = data;
+  (data.shots || []).forEach((row, i) => appendBatchResultRow(i, row));
+  updateBatchSummary(data.shots);
 }
 
 function exportBatchCsv() {
@@ -1413,6 +1541,14 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────
+// Ping on load to wake Render if it's sleeping
+fetch(`${API}/ping`).catch(() => {});
+
+// Keep alive every 10 minutes
+setInterval(() => {
+  fetch(`${API}/ping`).catch(() => {});
+}, 10 * 60 * 1000);
+
 (async()=>{
   loadUserId();
   setupBatchDropZone();
