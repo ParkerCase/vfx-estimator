@@ -1,0 +1,7 @@
+api/
+vfx_estimator/
+scripts/
+tests/
+data/
+.venv/
+*.egg-info/
