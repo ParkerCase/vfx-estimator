@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -18,6 +19,45 @@ from vfx_estimator.types import BidPreQual, ShotEstimate, UserCorrection
 
 def _round_half(x: float) -> float:
     return round(float(x) * 2) / 2
+
+
+def enforce_department_minimums(
+    dept_days: Dict[str, float],
+    total_days: float,
+    *,
+    description: str = "",
+) -> Dict[str, float]:
+    """
+    Hard rules that override both Gemini and numeric predictions.
+    These are facts about VFX production, not suggestions.
+    """
+    dept = {k: float(v) for k, v in (dept_days or {}).items() if float(v or 0) > 0}
+    total = max(float(total_days or 0), sum(dept.values()))
+    desc_lower = description.lower()
+    is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc_lower))
+
+    if dept.get("compositing", 0) == 0:
+        if is_wire_cleanup:
+            dept["compositing"] = 2.0
+        elif total <= 5:
+            dept["compositing"] = 2.0
+        elif total <= 10:
+            dept["compositing"] = 3.0
+        elif total <= 20:
+            dept["compositing"] = 4.0
+        else:
+            dept["compositing"] = max(5.0, total * 0.20)
+
+    has_3d = any(dept.get(d, 0) > 0 for d in ("layout", "animation", "lighting", "fx", "dmp"))
+    if has_3d and not is_wire_cleanup:
+        min_comp = max(dept.get("compositing", 0), total * 0.25)
+        if total >= 18:
+            min_comp = max(min_comp, 5.0)
+        if total >= 20:
+            min_comp = max(min_comp, 6.0)
+        dept["compositing"] = _round_half(min_comp)
+
+    return dept
 
 
 class EstimatorService:
@@ -156,6 +196,11 @@ class EstimatorService:
                 }
 
         final = max(0.25, _round_half(final))
+        dept = enforce_department_minimums(dept, final, description=desc_user)
+        dept_sum = sum(float(v) for v in dept.values())
+        if dept_sum > final:
+            final = _round_half(dept_sum)
+
         allot = max(1, int((pre_qual.allotment_n if pre_qual else 1) or 1))
         dr = self.settings.day_rate
 

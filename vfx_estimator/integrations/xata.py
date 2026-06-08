@@ -20,21 +20,70 @@ logger = logging.getLogger(__name__)
 CORRECTIONS_TABLE = "vfx_corrections"
 CORRECTIONS_LOAD_LIMIT = 500
 
-# internal dept key -> Postgres column(s), first non-zero wins
+# internal dept key -> record column(s), first non-zero wins.
+# Live Xata: *_days columns hold data; comp_mandays/comp_days are always empty.
 _DEPT_COL_MAP: Dict[str, tuple[str, ...]] = {
-    "camera_track": ("cam_track_days", "cam_track_mandays"),
-    "compositing": ("comp_mandays", "comp_days"),
-    "comp_paint": ("paint_mandays", "comp_paint_days", "paint_days"),
-    "comp_roto": ("roto_mandays", "comp_roto_days", "roto_days"),
-    "layout": ("layout_mandays", "layout_days"),
-    "lighting": ("lgt_mandays", "lighting_days"),
-    "animation": ("anim_mandays", "animation_days"),
-    "fx": ("fx_mandays", "fx_days"),
-    "matchmove": ("matchmove_mandays", "matchmove_days"),
-    "dmp": ("dmp_mandays", "dmp_days"),
-    "cfx": ("cfx_mandays", "cfx_days"),
-    "prep": ("prep_mandays", "prep_days"),
+    "camera_track": ("cam_track_days", "obj_track_days", "cam_track_mandays"),
+    "compositing": ("comp_days", "comp_mandays"),
+    "comp_paint": ("comp_paint_days", "paint_days", "paint_mandays"),
+    "comp_roto": ("comp_roto_days", "roto_days", "roto_mandays"),
+    "layout": ("layout_days", "layout_mandays"),
+    "lighting": ("lighting_days", "lgt_mandays"),
+    "animation": ("animation_days", "anim_mandays"),
+    "fx": ("fx_days", "fx_mandays"),
+    "matchmove": ("matchmove_days", "matchmove_mandays"),
+    "dmp": ("dmp_days", "dmp_mandays"),
+    "cfx": ("cfx_days", "cfx_mandays"),
+    "prep": ("prep_days", "prep_mandays"),
 }
+
+
+def _record_total_mandays(rec: Dict[str, Any], day_rate: float) -> float:
+    for key in ("total_mandays", "mandays", "per_shot_mandays"):
+        try:
+            v = float(rec.get(key) or 0)
+            if v > 0:
+                return v
+        except (TypeError, ValueError):
+            continue
+    cost = 0.0
+    for key in ("cost", "cost_per_shot", "total_cost"):
+        try:
+            cost = float(rec.get(key) or 0)
+            if cost > 0:
+                break
+        except (TypeError, ValueError):
+            continue
+    if cost > 0 and day_rate > 0:
+        return cost / day_rate
+    return 0.0
+
+
+def _derive_compositing_residual(rec: Dict[str, Any], dept: Dict[str, float], *, day_rate: float) -> float:
+    """Infer COMP integration days when comp_days/comp_mandays are unset in source data."""
+    total = _record_total_mandays(rec, day_rate)
+    if total <= 0:
+        return 0.0
+    residual = total - sum(float(v) for v in dept.values())
+    return max(0.0, residual)
+
+
+def extract_dept_days_from_record(rec: Dict[str, Any], *, day_rate: float) -> Dict[str, float]:
+    dept: Dict[str, float] = {}
+    for dept_key, cols in _DEPT_COL_MAP.items():
+        for col in cols:
+            try:
+                v = float(rec.get(col) or 0)
+            except (TypeError, ValueError):
+                continue
+            if v > 0:
+                dept[dept_key] = v
+                break
+    if dept.get("compositing", 0) <= 0:
+        residual = _derive_compositing_residual(rec, dept, day_rate=day_rate)
+        if residual > 0:
+            dept["compositing"] = residual
+    return dept
 
 _DEPT_SELECT_COLUMNS: tuple[str, ...] = tuple(
     dict.fromkeys(
@@ -140,28 +189,10 @@ def _record_from_row(r: Dict[str, Any], day_rate: float) -> Optional[Dict[str, A
                 break
         except (TypeError, ValueError):
             pass
-    md = 0.0
-    for key in ("mandays", "total_mandays", "per_shot_mandays"):
-        try:
-            md = float(r.get(key) or 0)
-            if md > 0:
-                break
-        except (TypeError, ValueError):
-            pass
-    if md <= 0 and cost > 0 and day_rate > 0:
-        md = cost / day_rate
+    md = _record_total_mandays(r, day_rate)
     if md <= 0:
         return None
-    dept: Dict[str, float] = {}
-    for dept_key, cols in _DEPT_COL_MAP.items():
-        for col in cols:
-            try:
-                v = float(r.get(col) or 0)
-            except (TypeError, ValueError):
-                continue
-            if v > 0:
-                dept[dept_key] = v
-                break
+    dept = extract_dept_days_from_record(r, day_rate=day_rate)
     return {
         "description": desc,
         "mandays": md,

@@ -14,10 +14,20 @@ from vfx_estimator.types import BidPreQual, SimilarShot
 VFX_RULES = """
 ABSOLUTE RULES — override similar shots if they conflict:
 
-1. COMP (compositing) is REQUIRED on EVERY VFX shot without exception.
-   Minimum: 2 days. Hero/establishing shots: 5-8 days.
-   If COMP = 0, your answer is WRONG.
-   Use department key "compositing" for COMP days (not a separate "comp" key).
+COMPOSITING IS MANDATORY ON EVERY SINGLE SHOT — NO EXCEPTIONS:
+- Compositing is the final step that integrates ALL elements
+- If you return comp = 0, your entire answer is wrong
+- Use department key "compositing" for COMP days (not a separate "comp" key)
+- Minimum comp days by total shot size:
+    1-5 day shot:   comp = 2 days minimum
+    5-10 day shot:  comp = 3 days minimum
+    10-20 day shot: comp = 4-5 days minimum
+    20+ day shot:   comp = 5-8 days minimum
+- For shots with 3D elements (lighting, animation, FX, layout):
+    comp must be at least 25% of total days
+- The only exception is if the shot is pure 2D cleanup
+  (wire removal, paint-out only) — even then comp = 2 days minimum
+REMINDER: comp = 0 on any shot is always incorrect.
 
 2. ANIMATION = 0 for any static object (buildings, castles, palaces, environments,
    vehicles parked, static props).
@@ -84,15 +94,36 @@ def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
     """Apply hard floors/zeros when Gemini omits mandatory departments."""
     desc = description.lower()
     dept = _dept_days(data)
+    total = max(float(data.get("total_days") or 0), sum(dept.values()))
 
     if dept.get("compositing", 0) <= 0:
-        _set_dept(data, "compositing", 2.0)
+        if total <= 5:
+            comp = 2.0
+        elif total <= 10:
+            comp = 3.0
+        elif total <= 20:
+            comp = 4.0
+        else:
+            comp = max(5.0, total * 0.20)
+        _set_dept(data, "compositing", comp)
+
+    dept = _dept_days(data)
+    is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc))
+    has_3d = any(dept.get(d, 0) > 0 for d in ("layout", "animation", "lighting", "fx", "dmp"))
+    if has_3d and not is_wire_cleanup:
+        min_comp = max(dept.get("compositing", 0), total * 0.25)
+        if total >= 18:
+            min_comp = max(min_comp, 5.0)
+        if total >= 20:
+            min_comp = max(min_comp, 6.0)
+        _set_dept(data, "compositing", round(min_comp * 2) / 2)
 
     if re.search(r"\b(wire removal|wire remove|wires?)\b", desc):
         depts = data.get("departments")
         if isinstance(depts, dict):
             for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx"):
                 depts.pop(key, None)
+        _set_dept(data, "compositing", 2.0)
 
     if re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc) and dept.get("fx", 0) <= 0:
         _set_dept(data, "fx", 3.0)

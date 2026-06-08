@@ -31,3 +31,25 @@ class TestRecordFromRow:
         }
         rec = _record_from_row(row, day_rate=700.0)
         assert rec["dept_days"]["compositing"] == 3.5
+
+    def test_derives_compositing_residual_when_comp_columns_empty(self):
+        row = {
+            "shot_description": "Hero comp with paint and roto",
+            "total_mandays": 10.0,
+            "comp_paint_days": 2.0,
+            "comp_roto_days": 1.0,
+            "layout_days": 2.0,
+        }
+        rec = _record_from_row(row, day_rate=700.0)
+        assert rec is not None
+        assert rec["dept_days"]["compositing"] == 5.0
+
+    def test_prefers_comp_paint_days_over_empty_paint_mandays(self):
+        row = {
+            "shot_description": "Paint from days col",
+            "mandays": 4,
+            "comp_paint_days": 1.5,
+            "paint_mandays": 0,
+        }
+        rec = _record_from_row(row, day_rate=700.0)
+        assert rec["dept_days"]["comp_paint"] == 1.5

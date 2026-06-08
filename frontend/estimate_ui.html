@@ -244,8 +244,8 @@
 
     /* ── Batch progress ── */
     #batch-progress{margin-bottom:14px}
-    .progress-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
-    .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+    .progress-bar-track,.progress-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+    .progress-bar-fill,.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
                        border-radius:4px;width:0%;transition:width .3s ease}
     .progress-label{font-size:12px;color:var(--muted);margin-top:6px}
   </style>
@@ -272,8 +272,8 @@
 <div class="wrap">
 
   <div class="tab-bar">
-    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')">Single Shot</button>
-    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')">Batch / Bid File</button>
+    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')">⚡ Single Shot</button>
+    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')">📋 Batch / Bid File</button>
   </div>
 
   <div id="tab-single" class="tab-panel active">
@@ -441,7 +441,7 @@
         <div style="font-size:12px;color:var(--muted)">
           Expects ITEM# header row · fills CAMERA → COMP · TOTAL MANDAYS
         </div>
-        <input type="file" id="batch-csv-file" accept=".csv,text/csv" style="display:none"
+        <input type="file" id="batch-csv-file" accept=".csv" style="display:none"
                onchange="onBatchFileSelected(this)">
         <div id="batch-file-name" style="margin-top:8px;font-size:12px;color:var(--accent)"></div>
       </div>
@@ -455,7 +455,7 @@
 
       <div class="batch-settings">
         <label>Project
-          <input type="text" id="batch-project" value="" placeholder="Project name (e.g. ANDROMEDA)">
+          <input type="text" id="batch-project" value="" placeholder="e.g. IRON VEIL">
         </label>
       </div>
 
@@ -530,12 +530,12 @@
 
     <div id="batch-results" class="hidden">
       <div id="batch-progress" style="display:none">
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" id="progress-fill"></div>
+        <div class="progress-track progress-bar-track">
+          <div class="progress-fill progress-bar-fill" id="progress-fill"></div>
         </div>
-        <div class="progress-label" id="progress-label">Processing shot 1 of 30…</div>
+        <div class="progress-label" id="progress-label">Estimating IVL_001… (0%)</div>
       </div>
-      <div class="card" style="padding-bottom:8px">
+      <div class="card hidden" id="batch-table-card" style="padding-bottom:8px">
         <div class="batch-table-wrap">
           <table class="batch-table" id="batch-results-table">
             <thead>
@@ -593,7 +593,8 @@
 <div id="toast"></div>
 
 <script>
-const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const API = (window.location.hostname === 'localhost' ||
+             window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
 let _est = null;
@@ -1100,7 +1101,9 @@ function showBatchLoading(on) {
 
 function clearBatchResults() {
   document.getElementById('batch-table-body').innerHTML = '';
+  document.getElementById('batch-thead-row').innerHTML = '';
   document.getElementById('batch-summary-bar').textContent = '—';
+  document.getElementById('batch-table-card').classList.add('hidden');
 }
 
 function updateProgress(current, total, label) {
@@ -1118,11 +1121,11 @@ function hideBatchProgress() {
 }
 
 function appendBatchResultRow(i, row) {
+  document.getElementById('batch-table-card').classList.remove('hidden');
   if (!document.getElementById('batch-thead-row').innerHTML) {
     buildBatchTableHeader();
   }
   const tbody = document.getElementById('batch-table-body');
-  const colSpan = 3 + BID_DEPTS.length + 3;
   const depts = row.dept_days || {};
   const desc = row.description || row.script_description || '';
   row._edited = false;
@@ -1147,21 +1150,10 @@ function appendBatchResultRow(i, row) {
 
   cells += `
     <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
-    <td>${confBadge(row.confidence)}</td>
-    <td><button type="button" class="notes-btn" data-notes-btn="${i}"
-        onclick="toggleBatchNotes(${i})" title="Supervisor notes">Notes</button></td>`;
+    <td>${confBadge(row.confidence)}</td>`;
 
   tr.innerHTML = cells;
   tbody.appendChild(tr);
-
-  const notesTr = document.createElement('tr');
-  notesTr.id = `batch-notes-${i}`;
-  notesTr.className = 'batch-notes-row hidden';
-  notesTr.innerHTML = `<td colspan="${colSpan}">
-    <textarea placeholder="Supervisor notes for this shot…"
-      oninput="if(_batchResult?.shots[${i}]){_batchResult.shots[${i}]._notes=this.value;_batchResult.shots[${i}]._edited=true;}"></textarea>
-  </td>`;
-  tbody.appendChild(notesTr);
   if (_batchResult) recalcBatchTotals();
 }
 
@@ -1177,6 +1169,137 @@ function updateBatchSummary(results) {
     `<strong>${fmt(totalDays)}d</strong> total mandays` +
     (_batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '');
   _batchResult.total_mandays = totalDays;
+}
+
+function parseCsvLine(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; continue; }
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (c === ',' && !inQuotes) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function normCsvHeader(cell) {
+  return String(cell || '').trim().toUpperCase().replace(/\n/g, ' ');
+}
+
+function findCsvCol(colMap, ...names) {
+  for (const name of names) {
+    const nu = normCsvHeader(name);
+    if (colMap[nu] !== undefined) return colMap[nu];
+    for (const [key, idx] of Object.entries(colMap)) {
+      if (key.includes(nu) || nu.includes(key)) return idx;
+    }
+  }
+  return undefined;
+}
+
+function csvCell(row, idx) {
+  if (idx === undefined || idx >= row.length) return '';
+  return String(row[idx] || '').trim();
+}
+
+function buildCsvShotDescription(script, notes, assumptions) {
+  const parts = [];
+  if (script) parts.push(script);
+  if (notes) parts.push(`VFX: ${notes}`);
+  if (assumptions) parts.push(`APPROACH: ${assumptions}`);
+  return parts.join(' | ');
+}
+
+function parseLvlupBidCsv(text) {
+  const rows = text.replace(/^\uFEFF/, '').split(/\r?\n/)
+    .filter(l => l.trim())
+    .map(parseCsvLine);
+  if (!rows.length) return [];
+
+  let headerIdx = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].some(c => normCsvHeader(c) === 'ITEM#')) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx < 0) return [];
+
+  const header = rows[headerIdx].map(normCsvHeader);
+  const colMap = {};
+  header.forEach((name, idx) => { if (name) colMap[name] = idx; });
+
+  const idxItem = findCsvCol(colMap, 'ITEM#');
+  const idxCode = findCsvCol(colMap, 'VFX SHOT CODE', 'SHOT CODE');
+  const idxScript = findCsvCol(colMap, 'SCRIPT DESCRIPTIONS', 'SCRIPT DESCRIPTION');
+  const idxNotes = findCsvCol(colMap, 'VFX NOTES');
+  const idxAssump = findCsvCol(colMap, 'VFX ASSUMPTIONS');
+  const idxNShots = findCsvCol(colMap, 'NUMBER OF SHOTS');
+
+  const shots = [];
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const item = csvCell(row, idxItem);
+    if (!item) continue;
+
+    const script = csvCell(row, idxScript);
+    const notes = csvCell(row, idxNotes);
+    const assump = csvCell(row, idxAssump);
+    const desc = buildCsvShotDescription(script, notes, assump);
+    if (!desc) continue;
+
+    let nShots = 1;
+    const rawN = csvCell(row, idxNShots);
+    if (rawN) {
+      const parsed = parseInt(rawN, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) nShots = parsed;
+    }
+
+    shots.push({
+      item_number: item,
+      shot_code: csvCell(row, idxCode) || null,
+      script_description: script,
+      vfx_notes: notes,
+      vfx_assumptions: assump,
+      number_of_shots: nShots,
+    });
+  }
+  return shots;
+}
+
+function buildBatchExportCsvBase64() {
+  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', ...BID_DEPTS, 'TOTAL MANDAYS'];
+  const esc = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
+  const lines = [header.join(',')];
+  (_batchResult?.shots || []).forEach(row => {
+    if (!row) return;
+    const depts = row.dept_days || {};
+    lines.push([
+      row.item_number || '',
+      esc(row.shot_code || ''),
+      esc(row.description || row.script_description || ''),
+      ...BID_DEPTS.map(d => depts[d] ?? 0),
+      row.total_mandays ?? 0,
+    ].join(','));
+  });
+  const csv = '\uFEFF' + lines.join('\n');
+  const bytes = new TextEncoder().encode(csv);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+function setBatchExportFromResults() {
+  if (!_batchResult?.shots?.length) return;
+  _batchResult.export_csv_base64 = buildBatchExportCsvBase64();
+  _batchResult.export_csv_filename = `${getBatchProject()}_AI_ESTIMATE.csv`;
 }
 
 function parseBatchPaste(text) {
@@ -1222,6 +1345,89 @@ function getBatchProject() {
   return (document.getElementById('batch-project')?.value || 'BID').trim() || 'BID';
 }
 
+async function runBatchStream(shots, project, preQual) {
+  const totalShots = shots.length;
+  updateProgress(0, totalShots, 'Starting…');
+  buildBatchTableHeader();
+  _batchResult = { count: totalShots, project, day_rate: BATCH_API_DAY_RATE, shots: new Array(totalShots) };
+
+  const payload = { shots, day_rate: BATCH_API_DAY_RATE, project };
+  if (preQual) payload.pre_qual = preQual;
+
+  const response = await fetch(`${API}/estimate/batch/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const results = new Array(totalShots);
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      let msg;
+      try {
+        msg = JSON.parse(line.slice(6));
+      } catch {
+        continue;
+      }
+
+      if (msg.type === 'progress') {
+        updateProgress(
+          msg.current,
+          msg.total,
+          `Estimating ${msg.shot_code}… (${msg.percent}%)`
+        );
+      }
+
+      if (msg.type === 'result' && msg.data) {
+        results[msg.index] = msg.data;
+        _batchResult.shots[msg.index] = msg.data;
+        appendBatchResultRow(msg.index, msg.data);
+      }
+
+      if (msg.type === 'error' && msg.data) {
+        results[msg.index] = msg.data;
+        _batchResult.shots[msg.index] = msg.data;
+        appendBatchResultRow(msg.index, msg.data);
+      }
+
+      if (msg.type === 'complete') {
+        _batchResult.count = msg.count ?? msg.total_shots ?? totalShots;
+        _batchResult.total_mandays = msg.total_mandays ?? 0;
+        if (msg.shots) _batchResult.shots = msg.shots;
+        if (msg.export_csv_base64) {
+          _batchResult.export_csv_base64 = msg.export_csv_base64;
+          _batchResult.export_csv_filename = msg.export_csv_filename;
+        } else {
+          setBatchExportFromResults();
+        }
+        updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
+        updateBatchSummary(results);
+        toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
+      }
+
+      if (msg.type === 'fatal') {
+        throw new Error(msg.error || 'Batch stream failed');
+      }
+    }
+  }
+}
+
 async function runBatchEstimate() {
   const fileInput = document.getElementById('batch-csv-file');
   const file = fileInput.files && fileInput.files[0];
@@ -1233,107 +1439,26 @@ async function runBatchEstimate() {
   document.getElementById('batch-results').classList.remove('hidden');
 
   try {
+    let shots = [];
+
     if (file) {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('day_rate', String(BATCH_API_DAY_RATE));
-      fd.append('project', project);
-      if (preQual) fd.append('pre_qual_json', JSON.stringify(preQual));
-      const r = await fetch(`${API}/estimate/batch/csv`, { method: 'POST', body: fd });
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${r.status}`);
+      const text = await file.text();
+      shots = parseLvlupBidCsv(text);
+      if (!shots.length) {
+        toast('CSV must contain an ITEM# header row with shot descriptions.', 'warn');
+        document.getElementById('batch-results').classList.add('hidden');
+        return;
       }
-      _batchResult = await r.json();
-      renderBatchResults(_batchResult);
-      document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
-      return;
-    }
-
-    const shots = parseBatchPaste(document.getElementById('batch-input').value);
-    if (!shots.length) {
-      toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
-      document.getElementById('batch-results').classList.add('hidden');
-      return;
-    }
-
-    const totalShots = shots.length;
-    updateProgress(0, totalShots, 'Starting…');
-    buildBatchTableHeader();
-    _batchResult = { count: totalShots, project, day_rate: BATCH_API_DAY_RATE, shots: new Array(totalShots) };
-
-    const payload = { shots, day_rate: BATCH_API_DAY_RATE, project };
-    if (preQual) payload.pre_qual = preQual;
-
-    const response = await fetch(`${API}/estimate/batch/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.detail || `HTTP ${response.status}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    const results = new Array(totalShots);
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        let msg;
-        try {
-          msg = JSON.parse(line.slice(6));
-        } catch {
-          continue;
-        }
-
-        if (msg.type === 'progress') {
-          updateProgress(
-            msg.current,
-            msg.total,
-            `Estimating ${msg.shot_code}… (${msg.percent}%)`
-          );
-        }
-
-        if (msg.type === 'result' && msg.data) {
-          results[msg.index] = msg.data;
-          _batchResult.shots[msg.index] = msg.data;
-          appendBatchResultRow(msg.index, msg.data);
-        }
-
-        if (msg.type === 'error' && msg.data) {
-          results[msg.index] = msg.data;
-          _batchResult.shots[msg.index] = msg.data;
-          appendBatchResultRow(msg.index, msg.data);
-        }
-
-        if (msg.type === 'complete') {
-          _batchResult.count = msg.count ?? msg.total_shots ?? totalShots;
-          _batchResult.total_mandays = msg.total_mandays ?? 0;
-          _batchResult.total_cost = msg.total_cost ?? 0;
-          if (msg.shots) _batchResult.shots = msg.shots;
-          updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
-          updateBatchSummary(results);
-          toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
-        }
-
-        if (msg.type === 'fatal') {
-          throw new Error(msg.error || 'Batch stream failed');
-        }
+    } else {
+      shots = parseBatchPaste(document.getElementById('batch-input').value);
+      if (!shots.length) {
+        toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
+        document.getElementById('batch-results').classList.add('hidden');
+        return;
       }
     }
 
+    await runBatchStream(shots, project, preQual);
     document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     toast(`Batch failed: ${e.message}`, 'err');
@@ -1345,7 +1470,7 @@ async function runBatchEstimate() {
 }
 
 function buildBatchTableHeader() {
-  const cols = ['#', 'SHOT CODE', 'DESCRIPTION', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'CONF', ''];
+  const cols = ['#', 'SHOT CODE', 'DESCRIPTION', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'CONF'];
   document.getElementById('batch-thead-row').innerHTML =
     cols.map(c => `<th>${c}</th>`).join('');
 }
@@ -1390,42 +1515,24 @@ function recalcBatchTotals() {
   _batchResult.total_mandays = totalDays;
 }
 
-function toggleBatchNotes(i) {
-  const row = document.getElementById(`batch-notes-${i}`);
-  const btn = document.querySelector(`[data-notes-btn="${i}"]`);
-  if (!row) return;
-  const isHidden = row.classList.toggle('hidden');
-  if (btn) btn.classList.toggle('open', !isHidden);
-}
-
-function renderBatchResults(data) {
-  buildBatchTableHeader();
-  const tbody = document.getElementById('batch-table-body');
-  tbody.innerHTML = '';
-  _batchResult = data;
-  (data.shots || []).forEach((row, i) => appendBatchResultRow(i, row));
-  updateBatchSummary(data.shots);
-}
-
 function exportBatchCsv() {
   if (!_batchResult?.shots?.length) {
     toast('Run a batch estimate first.', 'warn');
     return;
   }
-  if (_batchResult.export_csv_base64) {
-    const bytes = atob(_batchResult.export_csv_base64);
-    const arr = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const blob = new Blob([arr], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = _batchResult.export_csv_filename || `${getBatchProject()}_AI_ESTIMATE.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast('Bid CSV downloaded.');
-    return;
+  if (!_batchResult.export_csv_base64) {
+    setBatchExportFromResults();
   }
-  toast('Re-run estimate via CSV upload to get filled bid sheet export.', 'warn');
+  const bytes = atob(_batchResult.export_csv_base64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const blob = new Blob([arr], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = _batchResult.export_csv_filename || `${getBatchProject()}_AI_ESTIMATE.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Bid CSV downloaded.');
 }
 
 async function saveAllBatchCorrections() {
@@ -1446,8 +1553,7 @@ async function saveAllBatchCorrections() {
     const depts = tr ? readRowDepts(tr) : (row.dept_days || {});
     const finalTotal = Math.round(Object.values(depts).reduce((a, b) => a + b, 0) * 2) / 2;
     const code = row.shot_code || '';
-    const notesEl = document.querySelector(`#batch-notes-${i} textarea`);
-    const notes = (notesEl?.value || row._notes || '').trim()
+    const notes = (row._notes || '').trim()
       || (code ? `Bid ${code} · item ${row.item_number || ''}` : 'Batch bid correction');
 
     corrections.push({
@@ -1462,7 +1568,7 @@ async function saveAllBatchCorrections() {
 
   if (!corrections.length) {
     status.textContent = '';
-    toast('Edit at least one dept cell or add notes before saving.', 'warn');
+    toast('Edit at least one dept cell before saving.', 'warn');
     return;
   }
 
@@ -1541,13 +1647,9 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────
-// Ping on load to wake Render if it's sleeping
+// Wake Render on load, keep alive every 10 min
 fetch(`${API}/ping`).catch(() => {});
-
-// Keep alive every 10 minutes
-setInterval(() => {
-  fetch(`${API}/ping`).catch(() => {});
-}, 10 * 60 * 1000);
+setInterval(() => fetch(`${API}/ping`).catch(() => {}), 10 * 60 * 1000);
 
 (async()=>{
   loadUserId();

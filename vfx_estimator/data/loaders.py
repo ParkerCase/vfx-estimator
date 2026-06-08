@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from vfx_estimator.config import Settings, get_settings
+from vfx_estimator.integrations.xata import extract_dept_days_from_record
 
 
 @dataclass
@@ -97,21 +98,7 @@ def load_training_shots(settings: Optional[Settings] = None) -> List[TrainingSho
         md = _mandays_from_record(rec, dr)
         if not desc or md <= 0:
             continue
-        dept = {}
-        for col, key in (
-            ("comp_paint_days", "comp_paint"),
-            ("comp_roto_days", "comp_roto"),
-            ("animation_days", "animation"),
-            ("layout_days", "layout"),
-            ("cam_track_days", "cam_track"),
-            ("matchmove_days", "matchmove"),
-        ):
-            try:
-                v = float(rec.get(col) or 0)
-                if v > 0:
-                    dept[key] = v
-            except (TypeError, ValueError):
-                pass
+        dept = extract_dept_days_from_record(rec, day_rate=dr)
         out.append(
             TrainingShot(
                 description=desc,
