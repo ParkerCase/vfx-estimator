@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from vfx_estimator.estimate.service import EstimatorService
+from vfx_estimator.rates import compute_shot_cost
 from vfx_estimator.types import (
     BID_DEPT_MAP,
     BID_OUTPUT_COLUMNS,
@@ -50,6 +51,7 @@ class BidBatchShotItem(BaseModel):
 class BatchEstimateRequest(BaseModel):
     shots: List[BidBatchShotItem]
     day_rate: Optional[float] = None
+    dept_rates: Optional[Dict[str, float]] = None
     project: Optional[str] = None
     mode: Optional[str] = None
     pre_qual: Optional[BidPreQual] = None
@@ -175,6 +177,7 @@ def estimate_single_shot(
     svc: EstimatorService,
     project: str,
     day_rate: float,
+    dept_rates: Dict[str, float],
     mode: Optional[str] = None,
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
@@ -182,8 +185,14 @@ def estimate_single_shot(
     n = max(1, int(shot.number_of_shots or 1))
     pq = _merge_pre_qual(pre_qual, project=project, allotment_n=n)
     desc = build_shot_description(shot)
-    est = svc.estimate(desc, pre_qual=pq, mode=mode)
-    return _estimate_bid_row(est, shot, day_rate=day_rate, compute_ranges=compute_ranges)
+    est = svc.estimate(desc, pre_qual=pq, mode=mode, dept_rates=dept_rates)
+    return _estimate_bid_row(
+        est,
+        shot,
+        day_rate=day_rate,
+        dept_rates=dept_rates,
+        compute_ranges=compute_ranges,
+    )
 
 
 def process_batch(
@@ -192,6 +201,7 @@ def process_batch(
     svc: EstimatorService,
     project: str,
     day_rate: float,
+    dept_rates: Dict[str, float],
     mode: Optional[str] = None,
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
@@ -206,6 +216,7 @@ def process_batch(
                 svc=svc,
                 project=project,
                 day_rate=day_rate,
+                dept_rates=dept_rates,
                 mode=mode,
                 pre_qual=pre_qual,
                 compute_ranges=compute_ranges,
@@ -228,6 +239,7 @@ def iter_batch_estimate_events(
     svc: EstimatorService,
     project: str,
     day_rate: float,
+    dept_rates: Dict[str, float],
     mode: Optional[str] = None,
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
@@ -245,6 +257,7 @@ def iter_batch_estimate_events(
                 svc=svc,
                 project=project,
                 day_rate=day_rate,
+                dept_rates=dept_rates,
                 mode=mode,
                 pre_qual=pre_qual,
                 compute_ranges=compute_ranges,
@@ -293,6 +306,7 @@ def iter_batch_estimate_events(
         "total_cost": total_cost,
         "project": project,
         "day_rate": day_rate,
+        "dept_rates": dept_rates,
         "shots": valid,
     }
 
@@ -310,6 +324,7 @@ def _estimate_bid_row(
     shot: BidBatchShotItem,
     *,
     day_rate: float,
+    dept_rates: Dict[str, float],
     compute_ranges,
 ) -> Dict[str, Any]:
     n = max(1, int(shot.number_of_shots or 1))
@@ -329,7 +344,12 @@ def _estimate_bid_row(
         "number_of_shots": n,
         "dept_days": bid_dept,
         "total_mandays": per_shot_md,
-        "cost_per_shot": round(per_shot_md * day_rate, 2),
+        "cost_per_shot": compute_shot_cost(
+            internal_dept,
+            dept_rates,
+            fallback_rate=day_rate,
+            mandays_fallback=per_shot_md,
+        ),
         "confidence": conf,
         "reasoning": est.reasoning or "",
         "adjustment_ranges": _compute_adjustment_ranges_bid(bid_dept, conf, compute_ranges),
@@ -344,6 +364,7 @@ def run_bid_batch_estimate(
     *,
     project: Optional[str] = None,
     day_rate: Optional[float] = None,
+    dept_rates: Optional[Dict[str, float]] = None,
     mode: Optional[str] = None,
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
@@ -351,6 +372,7 @@ def run_bid_batch_estimate(
     validate_batch_shots(shots)
 
     rate = float(day_rate if day_rate is not None else svc.settings.day_rate)
+    rates = svc.settings.resolved_dept_rates(overrides=dept_rates)
     proj = project or (pre_qual.project if pre_qual else None) or "BID"
 
     rows = process_batch(
@@ -358,6 +380,7 @@ def run_bid_batch_estimate(
         svc=svc,
         project=proj,
         day_rate=rate,
+        dept_rates=rates,
         mode=mode,
         pre_qual=pre_qual,
         compute_ranges=compute_ranges,
@@ -370,6 +393,7 @@ def run_bid_batch_estimate(
         "count": len(rows),
         "project": proj,
         "day_rate": rate,
+        "dept_rates": rates,
         "total_mandays": total_mandays,
         "total_cost": total_cost,
         "shots": rows,

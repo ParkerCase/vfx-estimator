@@ -40,7 +40,8 @@ def test_build_project_context_block():
     assert "PROJECT CONTEXT (applies to all shots):" in block
     assert "Scale: premium_tv" in block
     assert "Complexity: high" in block
-    assert "CG ratio: 85% CG" in block
+    assert "85% CG" in block
+    assert "MANDATORY" in block
     assert "Director intent: Photoreal result" in block
     assert "VFX assumptions: Background is full CG" in block
     assert "overrides generic assumptions" in block

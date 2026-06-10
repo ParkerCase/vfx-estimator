@@ -4,5 +4,19 @@
   "blend_gemini_weight": 0.45,
   "correction_boost": 2.0,
   "retrieval_top_k": 10,
-  "use_legacy_numeric": true
+  "use_legacy_numeric": true,
+  "dept_rates": {
+    "camera_track": 700,
+    "matchmove": 700,
+    "layout": 800,
+    "animation": 900,
+    "cfx": 850,
+    "fx": 850,
+    "lighting": 800,
+    "dmp": 750,
+    "comp_paint": 750,
+    "comp_roto": 700,
+    "compositing": 750,
+    "prep": 650
+  }
 }

@@ -148,7 +148,8 @@ class TestBatchEndpoints:
         assert row["dept_days"]["COMP"] == 2.0
         assert "lighting" not in row["dept_days"]
         assert row["total_mandays"] == 6.0
-        assert row["cost_per_shot"] == 4500.0
+        # lighting 3×800 + comp_paint 1×750 + compositing 2×750
+        assert row["cost_per_shot"] == 4650.0
 
     @patch("vfx_estimator.api.app.get_service")
     def test_batch_csv_returns_base64_export(self, mock_get_service, client):

@@ -6,6 +6,11 @@ import re
 from typing import Any, Dict, List, Optional
 
 from vfx_estimator.config import Settings, get_settings
+from vfx_estimator.estimate.practical_cg import (
+    build_practical_cg_prompt_rules,
+    cg_ratio_from_pre_qual,
+    cg_rules_active,
+)
 from vfx_estimator.learning.flags import FlagsStore
 from vfx_estimator.llm.gemini_client import generate_json
 from vfx_estimator.retrieval.index import ShotRetrievalIndex
@@ -80,6 +85,10 @@ TYPICAL DAY RANGES (standard shot):
 """
 
 
+def _round_half(x: float) -> float:
+    return round(float(x) * 2) / 2
+
+
 def _dept_days(data: Dict[str, Any]) -> Dict[str, float]:
     out: Dict[str, float] = {}
     depts = data.get("departments")
@@ -108,11 +117,17 @@ def _has_cg_element(description: str, dept: Dict[str, float]) -> bool:
     )
 
 
-def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
+def _enforce_vfx_rules(
+    description: str,
+    data: Dict[str, Any],
+    *,
+    cg_ratio: Optional[int] = None,
+) -> None:
     """Apply hard floors/zeros when Gemini omits mandatory departments."""
     desc = description.lower()
     dept = _dept_days(data)
     total = max(float(data.get("total_days") or 0), sum(dept.values()))
+    cg = 100 if cg_ratio is None else max(0, min(100, int(cg_ratio)))
 
     if dept.get("compositing", 0) <= 0:
         if total <= 5:
@@ -133,15 +148,26 @@ def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
         _set_dept(data, "compositing", 2.0)
 
     dept = _dept_days(data)
-    if re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc) and dept.get("fx", 0) <= 0:
-        _set_dept(data, "fx", 3.0)
+    if (
+        cg > 20
+        and re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc)
+        and dept.get("fx", 0) <= 0
+    ):
+        fx_days = 3.0 if cg >= 100 else max(1.0, _round_half(3.0 * cg / 100.0))
+        _set_dept(data, "fx", fx_days)
 
-    if re.search(r"\b(sky replacement|set extension|matte painting)\b", desc) and dept.get("dmp", 0) <= 0:
-        _set_dept(data, "dmp", 2.0)
+    if (
+        cg > 15
+        and re.search(r"\b(sky replacement|set extension|matte painting)\b", desc)
+        and dept.get("dmp", 0) <= 0
+    ):
+        dmp_days = 2.0 if cg >= 100 else max(0.5, _round_half(2.0 * cg / 100.0))
+        _set_dept(data, "dmp", dmp_days)
 
     dept = _dept_days(data)
-    if _has_cg_element(description, dept) and dept.get("lighting", 0) <= 0:
-        _set_dept(data, "lighting", MIN_CG_LIGHTING_DAYS)
+    if cg > 0 and _has_cg_element(description, dept) and dept.get("lighting", 0) <= 0:
+        lit = MIN_CG_LIGHTING_DAYS if cg >= 100 else max(1.0, _round_half(MIN_CG_LIGHTING_DAYS * cg / 100.0))
+        _set_dept(data, "lighting", lit)
 
     dept = _dept_days(data)
     total = max(float(data.get("total_days") or 0), sum(dept.values()))
@@ -181,17 +207,17 @@ class GeminiMandaysEstimator:
         """Project-wide context block (batch / director pre-qual)."""
         if not pre_qual:
             return ""
+        cg = cg_ratio_from_pre_qual(pre_qual)
         has_context = any(
             getattr(pre_qual, f, None)
             for f in (
                 "shot_type_override",
                 "bid_scale_tier",
                 "complexity_band",
-                "practical_cg_ratio",
                 "director_brief",
                 "vfx_assumptions",
             )
-        )
+        ) or cg < 100
         if not has_context:
             return ""
         lines = ["PROJECT CONTEXT (applies to all shots):"]
@@ -201,8 +227,8 @@ class GeminiMandaysEstimator:
             lines.append(f"- Scale: {pre_qual.bid_scale_tier}")
         if pre_qual.complexity_band:
             lines.append(f"- Complexity: {pre_qual.complexity_band}")
-        if pre_qual.practical_cg_ratio is not None:
-            lines.append(f"- CG ratio: {int(pre_qual.practical_cg_ratio)}% CG")
+        if cg < 100:
+            lines.append(f"- CG ratio: {100 - cg}% Practical / {cg}% CG (MANDATORY calibration)")
         elif pre_qual.practical_vs_cg:
             lines.append(f"- CG ratio: {pre_qual.practical_vs_cg}")
         if pre_qual.director_brief:
@@ -246,11 +272,13 @@ class GeminiMandaysEstimator:
         brief = self._build_brief(pre_qual)
         flags_ctx = self.flags.prompt_context(description)
         similar_block = self._format_similar(hits[:6])
+        cg_ratio = cg_ratio_from_pre_qual(pre_qual)
+        cg_rules = build_practical_cg_prompt_rules(cg_ratio)
 
         prompt = f"""You are a senior VFX supervisor estimating MANDAYS (person-days of work, NOT dollars) for a single shot.
 
 {VFX_RULES}
-{project_ctx}{brief}{flags_ctx}
+{cg_rules}{project_ctx}{brief}{flags_ctx}
 {similar_block}
 SHOT TO ESTIMATE: "{description}"
 
@@ -275,7 +303,7 @@ Rules:
         data = generate_json(prompt, settings=self.settings)
         if data is None:
             raise RuntimeError("Gemini request timed out")
-        _enforce_vfx_rules(description, data)
+        _enforce_vfx_rules(description, data, cg_ratio=cg_ratio)
 
         dept_sum = sum(_dept_days(data).values())
         stated_total = float(data.get("total_days") or 0)

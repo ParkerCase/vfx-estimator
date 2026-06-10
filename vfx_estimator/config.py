@@ -113,6 +113,16 @@ class Settings(BaseSettings):
     def tuning_path(self) -> Path:
         return self.data_dir / "tuning.json"
 
+    def resolved_dept_rates(self, overrides: Optional[Dict[str, Any]] = None) -> Dict[str, float]:
+        from vfx_estimator.rates import build_dept_rates
+
+        tuning = self.load_tuning_overrides()
+        return build_dept_rates(
+            fallback=self.day_rate,
+            tuning=tuning.get("dept_rates"),
+            overrides=overrides,
+        )
+
     def load_tuning_overrides(self) -> Dict[str, Any]:
         path = self.tuning_path()
         if not path.exists():

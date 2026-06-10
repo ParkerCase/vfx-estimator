@@ -144,6 +144,7 @@ class ShotEstimate(BaseModel):
     mode: str = "hybrid"
     reasoning: str = ""
     dept_days: Dict[str, float] = Field(default_factory=dict)
+    dept_costs: Dict[str, float] = Field(default_factory=dict)
     similar_shots: List[SimilarShot] = Field(default_factory=list)
     screenplay_scene_matches: List[Dict[str, Any]] = Field(default_factory=list)
     numeric_mandays: Optional[float] = None

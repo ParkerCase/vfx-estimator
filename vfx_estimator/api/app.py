@@ -96,6 +96,7 @@ class EstimateRequest(BaseModel):
     description: str
     pre_qual: Optional[BidPreQual] = None
     mode: Optional[str] = None
+    dept_rates: Optional[Dict[str, float]] = None
 
 
 class CorrectionRequest(BaseModel):
@@ -194,12 +195,18 @@ def create_app() -> FastAPI:
         svc = get_service()
         _prepare_batch_service(svc)
 
-        est = svc.estimate(req.description, pre_qual=req.pre_qual, mode=req.mode)
+        est = svc.estimate(
+            req.description,
+            pre_qual=req.pre_qual,
+            mode=req.mode,
+            dept_rates=req.dept_rates,
+        )
         result = est.model_dump()
 
         dept = {k: float(v) for k, v in (est.dept_days or {}).items() if float(v or 0) > 0}
         result["adjustment_ranges"] = _compute_adjustment_ranges(dept, est.confidence)
         result["dept_confidence"] = {}
+        result["dept_rates"] = svc.settings.resolved_dept_rates(overrides=req.dept_rates)
 
         return result
 
@@ -212,6 +219,7 @@ def create_app() -> FastAPI:
             req.shots,
             project=req.project,
             day_rate=req.day_rate,
+            dept_rates=req.dept_rates,
             mode=req.mode,
             pre_qual=req.pre_qual,
             compute_ranges=_compute_adjustment_ranges,
@@ -223,6 +231,7 @@ def create_app() -> FastAPI:
         svc = get_service()
         _prepare_batch_service(svc)
         rate = float(req.day_rate if req.day_rate is not None else svc.settings.day_rate)
+        rates = svc.settings.resolved_dept_rates(overrides=req.dept_rates)
         proj = req.project or (req.pre_qual.project if req.pre_qual else None) or "BID"
 
         async def generate():
@@ -235,6 +244,7 @@ def create_app() -> FastAPI:
                         svc=svc,
                         project=proj,
                         day_rate=rate,
+                        dept_rates=rates,
                         mode=req.mode,
                         pre_qual=req.pre_qual,
                         compute_ranges=_compute_adjustment_ranges,
@@ -413,6 +423,7 @@ def create_app() -> FastAPI:
             "correction_boost": s.correction_boost,
             "retrieval_top_k": s.retrieval_top_k,
             "day_rate": s.day_rate,
+            "dept_rates": s.resolved_dept_rates(),
             "use_legacy_numeric": s.use_legacy_numeric,
             "overrides_file": str(s.tuning_path()),
             "overrides": s.load_tuning_overrides(),
