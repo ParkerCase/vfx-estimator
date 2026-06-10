@@ -11,6 +11,13 @@ from vfx_estimator.llm.gemini_client import generate_json
 from vfx_estimator.retrieval.index import ShotRetrievalIndex
 from vfx_estimator.types import BidPreQual, SimilarShot
 
+CG_DEPARTMENTS = ("layout", "animation", "cfx", "fx")
+CG_DESCRIPTION_RE = re.compile(
+    r"\b(cg|cgi|computer[- ]generated|3d|digital creature|digital double)\b",
+    re.IGNORECASE,
+)
+MIN_CG_LIGHTING_DAYS = 3.0
+
 VFX_RULES = """
 ABSOLUTE RULES — override similar shots if they conflict:
 
@@ -28,6 +35,11 @@ COMPOSITING IS MANDATORY ON EVERY SINGLE SHOT — NO EXCEPTIONS:
 - The only exception is if the shot is pure 2D cleanup
   (wire removal, paint-out only) — even then comp = 2 days minimum
 REMINDER: comp = 0 on any shot is always incorrect.
+
+CG LIGHTING IS MANDATORY — NO EXCEPTIONS:
+- Any CG element requires lighting. CG without lighting is physically impossible.
+- If layout, animation, CFX, FX, CGI, 3D, digital creature, or digital double applies,
+  department "lighting" must be included with at least 3 days.
 
 2. ANIMATION = 0 for any static object (buildings, castles, palaces, environments,
    vehicles parked, static props).
@@ -90,6 +102,12 @@ def _set_dept(data: Dict[str, Any], key: str, days: float) -> None:
     depts[key] = {"days": max(0.0, float(days))}
 
 
+def _has_cg_element(description: str, dept: Dict[str, float]) -> bool:
+    return any(dept.get(d, 0) > 0 for d in CG_DEPARTMENTS) or bool(
+        CG_DESCRIPTION_RE.search(description)
+    )
+
+
 def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
     """Apply hard floors/zeros when Gemini omits mandatory departments."""
     desc = description.lower()
@@ -107,7 +125,26 @@ def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
             comp = max(5.0, total * 0.20)
         _set_dept(data, "compositing", comp)
 
+    if re.search(r"\b(wire removal|wire remove|wires?)\b", desc):
+        depts = data.get("departments")
+        if isinstance(depts, dict):
+            for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx"):
+                depts.pop(key, None)
+        _set_dept(data, "compositing", 2.0)
+
     dept = _dept_days(data)
+    if re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc) and dept.get("fx", 0) <= 0:
+        _set_dept(data, "fx", 3.0)
+
+    if re.search(r"\b(sky replacement|set extension|matte painting)\b", desc) and dept.get("dmp", 0) <= 0:
+        _set_dept(data, "dmp", 2.0)
+
+    dept = _dept_days(data)
+    if _has_cg_element(description, dept) and dept.get("lighting", 0) <= 0:
+        _set_dept(data, "lighting", MIN_CG_LIGHTING_DAYS)
+
+    dept = _dept_days(data)
+    total = max(float(data.get("total_days") or 0), sum(dept.values()))
     is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc))
     has_3d = any(dept.get(d, 0) > 0 for d in ("layout", "animation", "lighting", "fx", "dmp"))
     if has_3d and not is_wire_cleanup:
@@ -117,19 +154,6 @@ def _enforce_vfx_rules(description: str, data: Dict[str, Any]) -> None:
         if total >= 20:
             min_comp = max(min_comp, 6.0)
         _set_dept(data, "compositing", round(min_comp * 2) / 2)
-
-    if re.search(r"\b(wire removal|wire remove|wires?)\b", desc):
-        depts = data.get("departments")
-        if isinstance(depts, dict):
-            for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx"):
-                depts.pop(key, None)
-        _set_dept(data, "compositing", 2.0)
-
-    if re.search(r"\b(fire|smoke|explosion|blood|destruction)\b", desc) and dept.get("fx", 0) <= 0:
-        _set_dept(data, "fx", 3.0)
-
-    if re.search(r"\b(sky replacement|set extension|matte painting)\b", desc) and dept.get("dmp", 0) <= 0:
-        _set_dept(data, "dmp", 2.0)
 
     dept = _dept_days(data)
     data["total_days"] = max(0.25, sum(dept.values()))

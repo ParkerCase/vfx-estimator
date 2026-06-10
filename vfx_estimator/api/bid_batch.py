@@ -554,7 +554,7 @@ def build_filled_bid_csv(
 
 def build_simple_export_csv(results: List[Dict[str, Any]], project: str) -> bytes:
     header = (
-        ["ITEM#", "VFX SHOT CODE", "DESCRIPTION"]
+        ["ITEM#", "VFX SHOT CODE", "DESCRIPTION", "VFX NOTES"]
         + list(BID_DEPT_MAP.keys())
         + ["TOTAL MANDAYS"]
     )
@@ -568,6 +568,7 @@ def build_simple_export_csv(results: List[Dict[str, Any]], project: str) -> byte
                 row.get("item_number") or "",
                 row.get("shot_code") or "",
                 row.get("description") or "",
+                row.get("vfx_notes") or "",
                 *[bid_dept.get(c, 0) for c in BID_DEPT_MAP],
                 row.get("total_mandays", 0),
             ]

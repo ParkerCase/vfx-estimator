@@ -34,9 +34,15 @@
     .hdr h1{font-size:15px;font-weight:700;letter-spacing:.2px}
     .hdr h1 span{color:var(--accent)}
     .pill{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--card);
-          border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+          border:1px solid var(--border);color:var(--muted);white-space:nowrap;
+          display:inline-flex;align-items:center;gap:6px}
     .pill.ok{border-color:var(--green);color:var(--green)}
     .pill.err{border-color:var(--red);color:var(--red)}
+    .icon{width:14px;height:14px;display:inline-block;vertical-align:-2px;fill:none;
+          stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+    .icon-sm{width:12px;height:12px}
+    .icon-lg{width:16px;height:16px}
+    .with-icon{display:inline-flex;align-items:center;gap:7px}
 
     /* ── Layout ── */
     .wrap{max-width:1600px;margin:0 auto;padding:24px 18px 80px}
@@ -132,7 +138,7 @@
     .dept-name{font-size:13px;font-weight:600}
     .dept-conf{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:2px}
     .ch{background:#1a3a2a;color:var(--green)}.cm{background:#3a2e10;color:var(--orange)}.cl{background:#3a1a1a;color:var(--red)}
-    input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:4px;
+    input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
                       background:var(--border);outline:none;cursor:pointer;border:none;padding:0}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
       border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg)}
@@ -148,8 +154,9 @@
     .sim-score{font-size:11px;font-weight:700;color:var(--muted);min-width:38px}
     .sim-desc{flex:1;font-size:13px;line-height:1.4}
     .sim-days{font-size:13px;font-weight:700;color:var(--accent);min-width:52px;text-align:right}
-    .src-c{background:#2a1f4a;color:var(--accent2);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
-    .src-t{background:var(--border);color:var(--muted);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+    .src-c,.src-t{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+    .src-c{background:#2a1f4a;color:var(--accent2)}
+    .src-t{background:var(--border);color:var(--muted)}
 
     /* ── Flag modal ── */
     #flag-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
@@ -159,7 +166,7 @@
                padding:24px;max-width:500px;width:100%;margin:20px}
     .modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;
                  align-items:center;justify-content:space-between}
-    .modal-close{cursor:pointer;color:var(--muted);font-size:18px;line-height:1}
+    .modal-close{cursor:pointer;color:var(--muted);line-height:1;display:inline-flex}
     .modal-close:hover{color:var(--text)}
     .flag-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
     .flag-type-btn{padding:9px 10px;border-radius:8px;background:var(--card2);
@@ -199,7 +206,8 @@
     /* ── Tabs ── */
     .tab-bar{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
     .tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
-             color:var(--muted);padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:0}
+             color:var(--muted);padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:0;
+             display:inline-flex;align-items:center;gap:7px}
     .tab-btn:hover{color:var(--text)}
     .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
     .tab-panel{display:none}
@@ -216,6 +224,8 @@
     .batch-table input[type=number]{width:72px;padding:6px 8px}
     .batch-table input.bid-dept-inp{width:40px;padding:3px 4px;font-size:11px;text-align:center}
     .batch-table .col-desc{max-width:160px;font-size:11px}
+    .batch-table .col-notes{min-width:180px}
+    .batch-table textarea.batch-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:vertical}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
     .conf-badge.hi{background:#1a3a2a;color:var(--green)}
     .conf-badge.mid{background:#3a2e10;color:var(--orange)}
@@ -251,6 +261,19 @@
   </style>
 </head>
 <body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+  <symbol id="i-plus-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9 9 15M9 9l6 6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+</svg>
 
 <!-- ── Header ── -->
 <div class="hdr">
@@ -272,8 +295,8 @@
 <div class="wrap">
 
   <div class="tab-bar">
-    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')">⚡ Single Shot</button>
-    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')">📋 Batch / Bid File</button>
+    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')"><svg class="icon"><use href="#i-bolt"></use></svg>Single Shot</button>
+    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')"><svg class="icon"><use href="#i-table"></use></svg>Batch / Bid File</button>
   </div>
 
   <div id="tab-single" class="tab-panel active">
@@ -296,7 +319,7 @@
 
     <!-- Pre-qual toggle -->
     <div class="prequal-toggle" id="pq-toggle" onclick="togglePrequal()">
-      <span class="arrow">▶</span>
+      <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
       <span>Director Context &amp; Shot Pre-Qualification</span>
       <span style="margin-left:auto;font-size:11px;font-weight:400" id="pq-summary">not set</span>
     </div>
@@ -418,9 +441,9 @@
       <textarea id="approval-notes" style="width:100%;min-height:56px;padding:10px;resize:vertical;margin-bottom:12px"
         placeholder="Optional notes — e.g. Increased lighting; director confirmed hero establishing treatment"></textarea>
       <div class="btn-row">
-        <button class="btn-green" onclick="approve()">✓ Approve As-Is</button>
-        <button class="btn-purple" onclick="approveAdjusted()">⊕ Approve with Adjustments</button>
-        <button class="btn-red" onclick="openFlagModal()">⚑ Flag Issue</button>
+        <button class="btn-green with-icon" onclick="approve()"><svg class="icon"><use href="#i-check"></use></svg>Approve As-Is</button>
+        <button class="btn-purple with-icon" onclick="approveAdjusted()"><svg class="icon"><use href="#i-plus-circle"></use></svg>Approve with Adjustments</button>
+        <button class="btn-red with-icon" onclick="openFlagModal()"><svg class="icon"><use href="#i-flag"></use></svg>Flag Issue</button>
         <span id="save-status" style="font-size:12px;color:var(--muted);margin-left:4px"></span>
       </div>
     </div>
@@ -460,7 +483,7 @@
       </div>
 
       <div class="prequal-toggle" id="batch-pq-toggle" onclick="toggleBatchPrequal()">
-        <span class="arrow">▶</span>
+        <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
         <span>Project Context (optional — improves accuracy)</span>
       </div>
 
@@ -547,8 +570,8 @@
         <div class="batch-bar">
           <span id="batch-summary-bar" style="font-size:13px;color:var(--muted)">—</span>
           <div class="btn-row" style="margin:0">
-            <button class="btn-green" onclick="saveAllBatchCorrections()">✓ Save All Corrections</button>
-            <button class="btn-ghost" onclick="exportBatchCsv()">↓ Export CSV</button>
+            <button class="btn-green with-icon" onclick="saveAllBatchCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save All Corrections</button>
+            <button class="btn-ghost with-icon" onclick="exportBatchCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
             <span id="batch-save-status" style="font-size:12px;color:var(--muted)"></span>
           </div>
         </div>
@@ -577,8 +600,8 @@
 <div id="flag-modal" onclick="closeFlagModalOutside(event)">
   <div class="modal-box">
     <div class="modal-title">
-      <span>⚑ Flag Estimation Issue</span>
-      <span class="modal-close" onclick="closeFlagModal()">✕</span>
+      <span class="with-icon"><svg class="icon"><use href="#i-flag"></use></svg>Flag Estimation Issue</span>
+      <span class="modal-close" onclick="closeFlagModal()" aria-label="Close"><svg class="icon icon-lg"><use href="#i-x"></use></svg></span>
     </div>
     <div class="sec-label" style="margin-bottom:8px">What was wrong?</div>
     <div class="flag-type-grid" id="flag-type-grid"></div>
@@ -660,6 +683,10 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function iconSvg(name, cls='icon') {
+  return `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+}
+
 // ── Server ─────────────────────────────────────────────────────────────────
 
 async function checkServer() {
@@ -669,16 +696,17 @@ async function checkServer() {
   try {
     const r = await fetch(`${API}/health`);
     const d = await r.json();
-    pill.textContent = d.gemini_configured ? '✓ API online · Gemini ready' : '✓ API online · no Gemini key';
+    pill.innerHTML = `${iconSvg('check', 'icon icon-sm')} ${d.gemini_configured ? 'API online · Gemini ready' : 'API online · no Gemini key'}`;
     pill.className = 'pill ok';
     cpill.textContent = `${d.corrections} corrections  ·  ${d.flags||0} flags`;
     if (d.training_shots > 0) {
-      tpill.textContent = `${d.training_shots.toLocaleString()} training shots`;
+      const source = d.training_count_source === 'xata' ? 'live Xata' : 'local';
+      tpill.textContent = `${d.training_shots.toLocaleString()} training shots · ${source}`;
       tpill.className = 'pill ok';
       tpill.classList.remove('hidden');
     }
   } catch {
-    pill.textContent = '✗ API offline — start with: python -m scripts.run_api';
+    pill.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} API offline — start with: python -m scripts.run_api`;
     pill.className = 'pill err';
   }
 }
@@ -909,7 +937,9 @@ function renderSimilar(shots) {
   el.innerHTML = '';
   shots.slice(0,5).forEach(s => {
     const srcCls = s.source==='correction' ? 'src-c' : 'src-t';
-    const srcLbl = s.source==='correction' ? '★ Correction' : 'Training';
+    const srcLbl = s.source==='correction'
+      ? `${iconSvg('star', 'icon icon-sm')} Correction`
+      : 'Training';
     el.innerHTML += `<div class="sim-item">
       <span class="sim-score">${(s.similarity*100).toFixed(0)}%</span>
       <span class="sim-desc">${escHtml(s.description)}</span>
@@ -955,12 +985,12 @@ async function _save(finalDepts, finalTotal) {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
-    status.textContent = `✓ Saved (${d.count} total)`;
+    status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved (${d.count} total)`;
     toast(d.message || 'Correction saved.');
     loadStats();
     checkServer();
   } catch(e) {
-    status.textContent = '✗ Failed';
+    status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
     toast('Save failed: ' + e.message, 'err');
   }
 }
@@ -1128,7 +1158,9 @@ function appendBatchResultRow(i, row) {
   const tbody = document.getElementById('batch-table-body');
   const depts = row.dept_days || {};
   const desc = row.description || row.script_description || '';
+  const notes = row._notes ?? row.vfx_notes ?? '';
   row._edited = false;
+  row._notes = notes;
   row._ai_dept_days = { ...depts };
   row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
 
@@ -1138,8 +1170,11 @@ function appendBatchResultRow(i, row) {
 
   let cells = `
     <td>${escHtml(row.item_number || String(i + 1))}</td>
-    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${row.error ? ' <span style="color:var(--red)">⚠</span>' : ''}</td>
-    <td class="col-desc">${escHtml(desc)}</td>`;
+    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${row.error ? ` <span style="color:var(--red)">${iconSvg('alert', 'icon icon-sm')}</span>` : ''}</td>
+    <td class="col-desc">${escHtml(desc)}</td>
+    <td class="col-notes"><textarea class="batch-notes-inp" data-idx="${i}"
+      placeholder="Notes for this shot"
+      oninput="updateBatchRowNotes(this, ${i})">${escHtml(notes)}</textarea></td>`;
 
   BID_DEPTS.forEach(dept => {
     const v = depts[dept] ?? 0;
@@ -1275,7 +1310,7 @@ function parseLvlupBidCsv(text) {
 }
 
 function buildBatchExportCsvBase64() {
-  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', ...BID_DEPTS, 'TOTAL MANDAYS'];
+  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'VFX NOTES', ...BID_DEPTS, 'TOTAL MANDAYS'];
   const esc = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
   const lines = [header.join(',')];
   (_batchResult?.shots || []).forEach(row => {
@@ -1285,6 +1320,7 @@ function buildBatchExportCsvBase64() {
       row.item_number || '',
       esc(row.shot_code || ''),
       esc(row.description || row.script_description || ''),
+      esc(row._notes ?? row.vfx_notes ?? ''),
       ...BID_DEPTS.map(d => depts[d] ?? 0),
       row.total_mandays ?? 0,
     ].join(','));
@@ -1418,6 +1454,7 @@ async function runBatchStream(shots, project, preQual) {
         }
         updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
         updateBatchSummary(results);
+        checkServer();
         toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)} total mandays`);
       }
 
@@ -1470,7 +1507,7 @@ async function runBatchEstimate() {
 }
 
 function buildBatchTableHeader() {
-  const cols = ['#', 'SHOT CODE', 'DESCRIPTION', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'CONF'];
+  const cols = ['#', 'SHOT CODE', 'DESCRIPTION', 'NOTES', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'CONF'];
   document.getElementById('batch-thead-row').innerHTML =
     cols.map(c => `<th>${c}</th>`).join('');
 }
@@ -1488,6 +1525,15 @@ function markBatchRowEdited(idx) {
   if (_batchResult?.shots[idx]) _batchResult.shots[idx]._edited = true;
 }
 
+function updateBatchRowNotes(input, idx) {
+  if (_batchResult?.shots[idx]) {
+    _batchResult.shots[idx]._notes = input.value;
+    _batchResult.shots[idx].vfx_notes = input.value;
+    markBatchRowEdited(idx);
+    _batchResult.export_csv_base64 = null;
+  }
+}
+
 function updateBatchRowTotals(tr, idx) {
   const depts = readRowDepts(tr);
   let days = Object.values(depts).reduce((a, b) => a + b, 0);
@@ -1497,6 +1543,7 @@ function updateBatchRowTotals(tr, idx) {
     _batchResult.shots[idx].dept_days = depts;
     _batchResult.shots[idx].total_mandays = days;
     markBatchRowEdited(idx);
+    _batchResult.export_csv_base64 = null;
   }
   recalcBatchTotals();
 }
@@ -1520,9 +1567,7 @@ function exportBatchCsv() {
     toast('Run a batch estimate first.', 'warn');
     return;
   }
-  if (!_batchResult.export_csv_base64) {
-    setBatchExportFromResults();
-  }
+  setBatchExportFromResults();
   const bytes = atob(_batchResult.export_csv_base64);
   const arr = new Uint8Array(bytes.length);
   for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
@@ -1568,7 +1613,7 @@ async function saveAllBatchCorrections() {
 
   if (!corrections.length) {
     status.textContent = '';
-    toast('Edit at least one dept cell before saving.', 'warn');
+    toast('Edit at least one dept or notes cell before saving.', 'warn');
     return;
   }
 
@@ -1580,12 +1625,12 @@ async function saveAllBatchCorrections() {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
-    status.textContent = `✓ Saved ${d.saved} corrections`;
+    status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved ${d.saved} corrections`;
     toast(`Saved ${d.saved} corrections — retrieval index updated.`);
     loadStats();
     checkServer();
   } catch (e) {
-    status.textContent = '✗ Failed';
+    status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
     toast('Bulk save failed: ' + e.message, 'err');
   }
 }

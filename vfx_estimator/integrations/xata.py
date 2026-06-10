@@ -360,6 +360,47 @@ class XataShotSearch:
             return "rest"
         return "off"
 
+    def count(self) -> int:
+        """Return the live row count for the historical shot table."""
+        if not self.enabled:
+            return 0
+        if self.postgres_url:
+            try:
+                from psycopg2 import sql
+
+                with get_postgres_connection(self.settings) as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            sql.SQL("SELECT COUNT(*) FROM {}").format(sql.Identifier(self.table))
+                        )
+                        row = cur.fetchone()
+                        return int(row[0]) if row else 0
+            except Exception as e:
+                logger.warning("Xata shot count failed: %s", e)
+                return 0
+        if self.api_key and self.rest_base.startswith("https://"):
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+            url = f"{self.rest_base}/tables/{self.table}/query"
+            try:
+                with httpx.Client(timeout=15.0) as client:
+                    resp = client.post(url, headers=headers, json={"page": {"size": 1}})
+                    if resp.status_code >= 400:
+                        return 0
+                    data = resp.json()
+            except Exception as e:
+                logger.warning("Xata REST shot count failed: %s", e)
+                return 0
+
+            page = ((data.get("meta") or {}).get("page") or {})
+            try:
+                return int(page.get("total") or page.get("totalCount") or 0)
+            except (TypeError, ValueError):
+                return 0
+        return 0
+
     def _search_postgres(self, description: str, *, top_k: int) -> List[Dict[str, Any]]:
         try:
             from psycopg2 import sql

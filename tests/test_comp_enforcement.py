@@ -22,6 +22,18 @@ class TestEnforceDepartmentMinimums:
         dept = enforce_department_minimums(dept_in, total, description=description)
         assert dept.get("compositing", 0) >= min_comp
 
+    @pytest.mark.parametrize(
+        "description,dept_in,total",
+        [
+            ("CG creature hero shot", {"animation": 6.0}, 10.0),
+            ("Small CG prop integration", {"comp_paint": 2.0}, 4.0),
+            ("Smoke simulation", {"fx": 4.0}, 6.0),
+        ],
+    )
+    def test_cg_elements_always_get_lighting(self, description, dept_in, total):
+        dept = enforce_department_minimums(dept_in, total, description=description)
+        assert dept.get("lighting", 0) >= 3.0
+
 
 class TestEstimateCompMinimums:
     def _make_service(self) -> EstimatorService:

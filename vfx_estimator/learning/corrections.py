@@ -62,6 +62,14 @@ class CorrectionsStore:
                 out.append(UserCorrection.model_validate(json.loads(line)))
         return out
 
+    def count(self) -> int:
+        if self._xata_store:
+            return self._xata_store.count()
+        if not self._path.exists():
+            return 0
+        with open(self._path, encoding="utf-8") as f:
+            return sum(1 for line in f if line.strip())
+
     def append(self, correction: UserCorrection) -> None:
         if self._xata_store:
             self._xata_store.append(correction)

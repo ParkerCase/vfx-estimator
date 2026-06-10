@@ -21,6 +21,20 @@ def _round_half(x: float) -> float:
     return round(float(x) * 2) / 2
 
 
+CG_DEPARTMENTS = ("layout", "animation", "cfx", "fx")
+CG_DESCRIPTION_RE = re.compile(
+    r"\b(cg|cgi|computer[- ]generated|3d|digital creature|digital double)\b",
+    re.IGNORECASE,
+)
+MIN_CG_LIGHTING_DAYS = 3.0
+
+
+def _has_cg_element(dept: Dict[str, float], description: str) -> bool:
+    return any(dept.get(d, 0) > 0 for d in CG_DEPARTMENTS) or bool(
+        CG_DESCRIPTION_RE.search(description)
+    )
+
+
 def enforce_department_minimums(
     dept_days: Dict[str, float],
     total_days: float,
@@ -35,6 +49,10 @@ def enforce_department_minimums(
     total = max(float(total_days or 0), sum(dept.values()))
     desc_lower = description.lower()
     is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc_lower))
+
+    if _has_cg_element(dept, description) and dept.get("lighting", 0) <= 0:
+        dept["lighting"] = MIN_CG_LIGHTING_DAYS
+        total = max(total, sum(dept.values()))
 
     if dept.get("compositing", 0) == 0:
         if is_wire_cleanup:

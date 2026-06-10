@@ -126,6 +126,25 @@ def _prepare_batch_service(svc: EstimatorService) -> None:
         svc.gemini.flags = get_flags()
 
 
+def _live_training_count(svc: EstimatorService) -> Dict[str, Any]:
+    xata = XataShotSearch(svc.settings)
+    correction_count = svc.corrections.count()
+    xata_count = xata.count()
+    if xata_count > 0:
+        return {
+            "training_shots": xata_count + correction_count,
+            "base_training_shots": xata_count,
+            "corrections": correction_count,
+            "training_count_source": "xata",
+        }
+    return {
+        "training_shots": len(svc.training) + correction_count,
+        "base_training_shots": len(svc.training),
+        "corrections": correction_count,
+        "training_count_source": "local",
+    }
+
+
 # ── App factory ────────────────────────────────────────────────────────────
 
 
@@ -151,12 +170,11 @@ def create_app() -> FastAPI:
     def health() -> Dict[str, Any]:
         s = get_settings()
         svc = get_service()
-        corrections = svc.corrections.load()
         flags = get_flags().load()
+        counts = _live_training_count(svc)
         return {
             "ok": True,
-            "training_shots": len(svc.training),
-            "corrections": len(corrections),
+            **counts,
             "flags": len(flags),
             "mode_default": s.estimate_mode,
             "gemini_configured": bool(s.resolved_gemini_key()),
@@ -292,7 +310,7 @@ def create_app() -> FastAPI:
         data = req.model_dump()
         data["final_departments"] = bid_departments_to_internal(data.get("final_departments") or {})
         svc.record_correction(UserCorrection.model_validate(data))
-        total = len(svc.corrections.load())
+        total = svc.corrections.count()
         return {
             "ok": True,
             "count": total,
@@ -312,7 +330,7 @@ def create_app() -> FastAPI:
             data["final_departments"] = bid_departments_to_internal(data.get("final_departments") or {})
             svc.record_correction(UserCorrection.model_validate(data))
             saved += 1
-        total = len(svc.corrections.load())
+        total = svc.corrections.count()
         return {"ok": True, "saved": saved, "count": total}
 
     @app.get("/corrections")

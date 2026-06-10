@@ -50,3 +50,16 @@ def test_fire_triggers_fx():
     data = {"departments": {"compositing": {"days": 3.0}}, "total_days": 3.0}
     _enforce_vfx_rules("Dragon breathing fire", data)
     assert data["departments"]["fx"]["days"] == 3.0
+    assert data["departments"]["lighting"]["days"] == 3.0
+
+
+def test_cg_department_triggers_lighting():
+    data = {"departments": {"animation": {"days": 4.0}}, "total_days": 4.0}
+    _enforce_vfx_rules("Creature animation pass", data)
+    assert data["departments"]["lighting"]["days"] == 3.0
+
+
+def test_cg_description_triggers_lighting():
+    data = {"departments": {"compositing": {"days": 2.0}}, "total_days": 2.0}
+    _enforce_vfx_rules("Small CG prop integration", data)
+    assert data["departments"]["lighting"]["days"] == 3.0
