@@ -33,6 +33,8 @@
     .hdr-right{display:flex;align-items:center;gap:12px}
     .hdr-user{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
     .hdr-user input{width:88px;padding:5px 8px;font-size:12px;border-radius:8px}
+    .hdr-currency{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
+    .hdr-currency select{padding:5px 8px;font-size:12px;border-radius:8px;min-width:72px}
     .hdr h1{font-size:15px;font-weight:800;letter-spacing:.2px;color:var(--text-strong)}
     .hdr h1 span{color:var(--accent)}
     .pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card2);
@@ -63,9 +65,6 @@
     textarea::placeholder,input::placeholder{color:var(--muted-soft)}
     select option{background:var(--card)}
 
-    #shot-desc{width:100%;padding:12px 14px;resize:vertical;min-height:76px}
-    .row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
-
     /* ── Pre-qual panel ── */
     .prequal-toggle{
       display:flex;align-items:center;gap:8px;cursor:pointer;
@@ -78,9 +77,9 @@
     .prequal-toggle:hover{color:var(--text);border-color:var(--accent)}
     .prequal-toggle .arrow{transition:transform .2s;font-size:10px}
     .prequal-toggle.open .arrow{transform:rotate(90deg)}
-    #prequal-panel,#batch-prequal-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
+    #batch-prequal-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
                    background:var(--card2);padding:18px;margin-bottom:14px}
-    #prequal-panel.open,#batch-prequal-panel.open{display:block}
+    #batch-prequal-panel.open{display:block}
 
     .pq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media(max-width:600px){.pq-grid{grid-template-columns:1fr}}
@@ -126,62 +125,6 @@
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
           padding:18px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
 
-    /* ── Summary ── */
-    .summary-strip{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end}
-    .stat .val{font-size:32px;font-weight:900;color:var(--accent);line-height:1;text-shadow:0 0 20px rgba(106,166,255,.18)}
-    .stat .val.green{color:var(--green)}
-    .stat .val.sm{font-size:20px}
-    .stat .lbl{font-size:10px;color:var(--text);font-weight:800;text-transform:uppercase;letter-spacing:.55px;margin-top:3px}
-    .mode-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:var(--border);
-                color:var(--text);font-weight:700;margin-left:auto;align-self:flex-start}
-    .reasoning{font-size:13px;color:var(--muted);line-height:1.7;border-left:3px solid var(--accent);
-               padding-left:14px;font-style:italic;margin-top:14px}
-
-    /* ── Dept sliders ── */
-    .dept-row{display:grid;grid-template-columns:150px 1fr 60px 36px;gap:10px;align-items:center;margin-bottom:10px}
-    .dept-num-inp{width:60px;padding:4px 6px;font-size:12px;text-align:center;
-                   background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)}
-    .dept-name{font-size:13px;font-weight:800;color:var(--text-strong)}
-    .dept-conf{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:2px}
-    .ch{background:#1a3a2a;color:var(--green)}.cm{background:#3a2e10;color:var(--orange)}.cl{background:#3a1a1a;color:var(--red)}
-    input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
-                      background:var(--border);outline:none;cursor:pointer;border:none;padding:0}
-    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
-      border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg)}
-    .dept-val{font-size:15px;font-weight:900;text-align:right;color:var(--text-strong)}
-    .range-hint{font-size:10px;color:var(--muted);grid-column:2;margin-top:-6px}
-    .total-row{display:flex;align-items:center;justify-content:space-between;
-               padding-top:12px;border-top:1px solid var(--border);margin-top:6px;flex-wrap:wrap;gap:8px}
-    .total-row .big{font-size:22px;font-weight:900;color:var(--accent)}
-
-    /* ── Similar shots ── */
-    .sim-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;
-              padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
-    .sim-score{font-size:11px;font-weight:800;color:var(--text);min-width:38px}
-    .sim-desc{flex:1;font-size:13px;line-height:1.4;color:var(--text)}
-    .sim-days{font-size:13px;font-weight:900;color:var(--accent);min-width:52px;text-align:right}
-    .src-c,.src-t{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
-    .src-c{background:#2a1f4a;color:var(--accent2)}
-    .src-t{background:var(--border);color:var(--text)}
-
-    /* ── Flag modal ── */
-    #flag-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
-                z-index:100;align-items:center;justify-content:center}
-    #flag-modal.open{display:flex}
-    .modal-box{background:var(--card);border:1px solid var(--border);border-radius:14px;
-               padding:24px;max-width:500px;width:100%;margin:20px}
-    .modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;
-                 align-items:center;justify-content:space-between}
-    .modal-close{cursor:pointer;color:var(--text);line-height:1;display:inline-flex}
-    .modal-close:hover{color:var(--text)}
-    .flag-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-    .flag-type-btn{padding:9px 10px;border-radius:8px;background:var(--card2);
-                   border:1px solid var(--border);color:var(--text);font-size:12px;
-                   font-weight:600;cursor:pointer;text-align:left;line-height:1.3}
-    .flag-type-btn:hover{border-color:var(--orange);color:var(--orange)}
-    .flag-type-btn.selected{background:#2a1e0a;border-color:var(--orange);color:var(--orange)}
-    #flag-notes{width:100%;min-height:72px;padding:10px;resize:vertical;margin-bottom:14px}
-
     /* ── Stats ── */
     .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:14px}
     .stat-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
@@ -208,16 +151,6 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .hidden{display:none!important}
     hr{border:none;border-top:1px solid var(--border);margin:14px 0}
-
-    /* ── Tabs ── */
-    .tab-bar{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
-    .tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
-             color:var(--muted);padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:0;
-             display:inline-flex;align-items:center;gap:7px}
-    .tab-btn:hover{color:var(--text)}
-    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-    .tab-panel{display:none}
-    .tab-panel.active{display:block}
 
     /* ── Batch table ── */
     .batch-table-wrap{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--r)}
@@ -273,6 +206,31 @@
     .batch-dept-summary .num{font-weight:800;text-align:right;white-space:nowrap}
     .batch-dept-summary .cost{color:var(--green);font-weight:800}
     .batch-dept-summary tfoot td{font-weight:800;background:var(--card2)}
+    .tax-credit-wrap{margin-top:4px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    table.tax-credit-table{width:100%;border-collapse:collapse;font-size:13px}
+    .tax-credit-table td{padding:10px 14px;border-top:1px solid var(--border);color:var(--text)}
+    .tax-credit-table tr:first-child td{border-top:none}
+    .tax-credit-table .label{font-weight:700}
+    .tax-credit-table .amount{text-align:right;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .tax-credit-table .deduction{color:var(--orange)}
+    .tax-credit-table .addition{color:var(--muted)}
+    .tax-credit-table tr.net td{background:var(--card2);font-size:14px}
+    .tax-credit-table tr.net .amount{color:var(--green);font-size:17px}
+    .tax-credit-pct-inp{width:56px;padding:4px 6px;font-size:12px;font-weight:800;text-align:center;
+      margin:0 2px;display:inline-block;vertical-align:baseline}
+    .tax-credit-hint{font-size:11px;color:var(--muted);padding:8px 14px 10px;border-top:1px solid var(--border);
+      background:var(--surface);line-height:1.5}
+    .fx-multi-summary{margin-top:16px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    .fx-equiv-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 14px;padding:10px 14px;
+      border-top:1px solid var(--border);background:var(--surface)}
+    .fx-equiv-row:first-child{border-top:none}
+    .fx-equiv-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;
+      color:var(--text);min-width:120px;padding-top:2px}
+    .fx-equiv-chips{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+    .fx-equiv-chip{font-size:12px;font-weight:700;color:var(--text);background:var(--card2);
+      border:1px solid var(--border);border-radius:8px;padding:5px 10px;white-space:nowrap}
+    .fx-equiv-chip .fx-code{color:var(--muted);font-size:10px;font-weight:800;margin-right:6px}
+    .fx-status-note{font-size:11px;color:var(--muted);margin-top:8px}
     .file-drop{border:1px dashed var(--border);border-radius:var(--r);padding:14px;background:var(--card2);
                font-size:12px;color:var(--text)}
     .file-drop input[type=file]{font-size:12px;color:var(--text);margin-top:8px}
@@ -287,7 +245,6 @@
 </head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
-  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
   <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
   <symbol id="i-plus-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
@@ -316,6 +273,17 @@
     <span id="training-pill" class="pill hidden"></span>
   </div>
   <div class="hdr-right">
+    <label class="hdr-currency" title="Display currency — estimates always calculated in USD">
+      Currency
+      <select id="display-currency" onchange="onDisplayCurrencyChange(this.value)">
+        <option value="USD" selected>USD</option>
+        <option value="CAD">CAD</option>
+        <option value="GBP">GBP</option>
+        <option value="EUR">EUR</option>
+        <option value="AUD">AUD</option>
+      </select>
+    </label>
+    <span id="fx-pill" class="pill hidden" title="Exchange rate source"></span>
     <label class="hdr-user" title="Saved with corrections">
       Your name
       <input type="text" id="user-id" value="" maxlength="64" autocomplete="nickname" placeholder="Your name"
@@ -329,184 +297,19 @@
 
   <div class="prequal-toggle" id="rates-toggle" onclick="toggleRatesPanel()">
     <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
-    <span>Department Day Rates ($/day)</span>
+    <span>Department Day Rates (<span id="rates-currency-label">USD</span>/day)</span>
     <span style="margin-left:auto;font-size:11px;font-weight:400" id="rates-summary">loading…</span>
   </div>
   <div id="rates-panel" class="card" style="display:none;margin-top:-6px;padding-top:14px">
     <div class="sec-label" style="margin-bottom:10px">Labor rates by department</div>
     <div class="rates-grid" id="rates-grid"></div>
     <p style="font-size:11px;color:var(--muted);margin-top:10px">
-      Shot cost = sum of each department's mandays × its day rate. Rates are saved in this browser and sent with every estimate.
+      Enter rates in your selected display currency. Stored as USD internally for estimates.
+      Shot cost = sum of each department's mandays × its day rate.
     </p>
   </div>
 
-  <div class="tab-bar">
-    <button type="button" class="tab-btn active" data-tab="single" onclick="switchTab('single')"><svg class="icon"><use href="#i-bolt"></use></svg>Single Shot</button>
-    <button type="button" class="tab-btn" data-tab="batch" onclick="switchTab('batch')"><svg class="icon"><use href="#i-table"></use></svg>Batch / Bid File</button>
-  </div>
-
-  <div id="tab-single" class="tab-panel active">
-
-  <!-- ── Shot Input ── -->
-  <div style="margin-bottom:18px">
-    <div class="sec-label">Shot Description</div>
-    <div class="row">
-      <textarea id="shot-desc"
-        placeholder="e.g. CG castle establishing shot — wide hero vista, hero lighting, static stone environment, moving camera on crane"></textarea>
-      <select id="est-mode" style="padding:10px 12px;min-width:130px;align-self:flex-start">
-        <option value="hybrid" selected>Hybrid (recommended)</option>
-        <option value="gemini_rag">Gemini RAG</option>
-        <option value="numeric_only">Numeric Only</option>
-      </select>
-      <button class="btn-blue" id="est-btn" onclick="getEstimate()" style="align-self:flex-start;white-space:nowrap">
-        Estimate ⌘↵
-      </button>
-    </div>
-
-    <!-- Pre-qual toggle -->
-    <div class="prequal-toggle" id="pq-toggle" onclick="togglePrequal()">
-      <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
-      <span>Director Context &amp; Shot Pre-Qualification</span>
-      <span style="margin-left:auto;font-size:11px;font-weight:400" id="pq-summary">not set</span>
-    </div>
-
-    <!-- Pre-qual panel -->
-    <div id="prequal-panel">
-      <div class="pq-grid">
-
-        <div class="pq-field">
-          <label>Shot Type Override</label>
-          <select id="pq-shot-type">
-            <option value="">Auto-detect from description</option>
-            <option value="establishing">Establishing — wide hero vista</option>
-            <option value="hero">Hero / Close-Up — all depts +30-50%</option>
-            <option value="background">Background — lower detail -20-30%</option>
-            <option value="standard">Standard — baseline</option>
-          </select>
-        </div>
-
-        <div class="pq-field">
-          <label>Complexity Band</label>
-          <select id="pq-complexity">
-            <option value="">Not specified</option>
-            <option value="hero">Hero — maximum scrutiny</option>
-            <option value="standard">Standard</option>
-            <option value="background">Background</option>
-          </select>
-        </div>
-
-        <div class="pq-field">
-          <label>Bid Scale Tier</label>
-          <select id="pq-scale">
-            <option value="">Not specified</option>
-            <option value="low">Low — efficient, minimal revision</option>
-            <option value="mid">Mid — standard production</option>
-            <option value="high">High — complex, multi-pass</option>
-            <option value="hero">Hero — premium, highest scrutiny</option>
-          </select>
-        </div>
-
-        <div class="pq-field">
-          <label>Number of Allotments (shots in sequence)</label>
-          <input type="number" id="pq-allotments" value="1" min="1" max="200"
-                 placeholder="1" style="padding:8px 10px">
-        </div>
-
-        <div class="pq-field pq-full">
-          <label>Practical vs CG Ratio</label>
-          <div class="pq-ratio-row">
-            <span style="font-size:11px;color:var(--orange);min-width:68px">Practical</span>
-            <input type="range" id="pq-cg-ratio" min="0" max="100" value="100" step="5"
-                   oninput="updateCGRatio()">
-            <span style="font-size:11px;color:var(--accent);min-width:36px">CG</span>
-            <span class="pq-ratio-label" id="pq-ratio-label">100% CG</span>
-          </div>
-        </div>
-
-        <div class="pq-field pq-full">
-          <label>Director Brief / Production Intent</label>
-          <textarea id="pq-director-brief"
-            placeholder="e.g. Director wants photoreal result indistinguishable from plate. Inspired by Blade Runner 2049 environment work. Needs to work in IMAX. Client has seen 3 rounds of references…"></textarea>
-        </div>
-
-        <div class="pq-field pq-full">
-          <label>Key VFX Assumptions (what's plate, what's CG, what's practical)</label>
-          <textarea id="pq-assumptions"
-            placeholder="e.g. Background castle is full CG build. Hero actor is practical, greenscreen. Foreground architecture is a 1:50 scale model comp'd in. Sky replacement required. 3 establishing lockoffs + 1 crane move…"></textarea>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Results ── -->
-  <div id="results" class="hidden">
-
-    <!-- Summary -->
-    <div class="card">
-      <div class="sec-label">AI Estimate</div>
-      <div class="summary-strip">
-        <div class="stat">
-          <div class="val" id="r-days">—</div>
-          <div class="lbl">Days / Shot</div>
-        </div>
-        <div class="stat">
-          <div class="val sm" id="r-conf">—</div>
-          <div class="lbl">Confidence</div>
-        </div>
-        <div class="stat">
-          <div class="val green" id="r-cost">—</div>
-          <div class="lbl">Cost / Shot</div>
-        </div>
-        <div class="stat hidden" id="r-total-stat">
-          <div class="val sm" id="r-total">—</div>
-          <div class="lbl">Total (all allotments)</div>
-        </div>
-        <span class="mode-badge" id="r-mode">—</span>
-      </div>
-      <div id="r-reasoning" class="reasoning hidden"></div>
-    </div>
-
-    <!-- Department Sliders -->
-    <div class="card">
-      <div class="sec-label" style="margin-bottom:14px">Department Breakdown — Drag to Correct</div>
-      <div id="dept-sliders"></div>
-      <div class="total-row">
-        <div>
-          <span style="font-size:13px;color:var(--text);font-weight:700">Adjusted total: </span>
-          <span class="big" id="adj-days">—</span>
-          <span style="font-size:13px;color:var(--muted);margin-left:14px">Cost: </span>
-          <span class="big" id="adj-cost" style="color:var(--green)">—</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Similar shots -->
-    <div class="card">
-      <div class="sec-label" style="margin-bottom:12px">Similar Shots Used as Anchors</div>
-      <div id="similar-list"></div>
-    </div>
-
-    <!-- Approval + flagging -->
-    <div class="card">
-      <div class="sec-label" style="margin-bottom:10px">Supervisor Approval</div>
-      <textarea id="approval-notes" style="width:100%;min-height:56px;padding:10px;resize:vertical;margin-bottom:12px"
-        placeholder="Optional notes — e.g. Increased lighting; director confirmed hero establishing treatment"></textarea>
-      <div class="btn-row">
-        <button class="btn-green with-icon" onclick="approve()"><svg class="icon"><use href="#i-check"></use></svg>Approve As-Is</button>
-        <button class="btn-purple with-icon" onclick="approveAdjusted()"><svg class="icon"><use href="#i-plus-circle"></use></svg>Approve with Adjustments</button>
-        <button class="btn-red with-icon" onclick="openFlagModal()"><svg class="icon"><use href="#i-flag"></use></svg>Flag Issue</button>
-        <span id="save-status" style="font-size:12px;color:var(--text);font-weight:700;margin-left:4px"></span>
-      </div>
-    </div>
-
-  </div><!-- /results -->
-
-  </div><!-- /tab-single -->
-
-  <div id="tab-batch" class="tab-panel">
-
-    <div class="card" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
       <div class="sec-label">LVL UP Bid File</div>
       <div class="batch-drop-zone" id="batch-drop-zone"
            onclick="document.getElementById('batch-csv-file').click()">
@@ -647,10 +450,53 @@
             <tfoot id="batch-dept-summary-foot"></tfoot>
           </table>
         </div>
+
+        <div class="sec-label" style="margin:16px 0 10px">Tax Credit &amp; Net Bid</div>
+        <div class="tax-credit-wrap" id="tax-credit-wrap">
+          <table class="tax-credit-table">
+            <tbody>
+              <tr>
+                <td class="label">Gross Total</td>
+                <td class="amount" id="tax-total-cost">—</td>
+              </tr>
+              <tr>
+                <td class="label">
+                  Tax Credit
+                  (<input type="number" class="tax-credit-pct-inp" id="tax-credit-pct"
+                    min="0" max="100" step="0.5" value="0" placeholder="0"
+                    oninput="onTaxCreditPctChange(this.value)"
+                    aria-label="Tax credit percentage">%)
+                </td>
+                <td class="amount deduction" id="tax-credit-amount">—</td>
+              </tr>
+              <tr>
+                <td class="label">
+                  Admin &amp; Interest Fees
+                  (<input type="number" class="tax-credit-pct-inp" id="tax-admin-fee-pct"
+                    min="0" max="100" step="0.5" value="0" placeholder="0"
+                    oninput="onAdminFeePctChange(this.value)"
+                    aria-label="Admin and interest fee percentage">% of gross)
+                </td>
+                <td class="amount addition" id="tax-admin-fee-amount">—</td>
+              </tr>
+              <tr class="net">
+                <td class="label">Net Total VFX Bid</td>
+                <td class="amount" id="tax-net-total">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="tax-credit-hint">
+            Matches standard bid math: <strong>Net = Gross − Tax Credit + Admin Fees</strong>.
+            Enter your own rates — e.g. Ontario credit 24–28%, Montreal 21%, admin &amp; interest often ~8% of gross.
+            Saved in this browser; updates live when you edit rows or department rates.
+          </div>
+        </div>
+
+        <div class="sec-label" style="margin:16px 0 10px">Currency Equivalents</div>
+        <div class="fx-multi-summary" id="fx-multi-summary"></div>
+        <div class="fx-status-note" id="fx-status-note"></div>
       </div>
     </div>
-
-  </div><!-- /tab-batch -->
 
   <!-- ── Stats ── -->
   <div class="card" style="margin-top:4px">
@@ -668,23 +514,6 @@
 
 </div><!-- /wrap -->
 
-<!-- ── Flag Modal ── -->
-<div id="flag-modal" onclick="closeFlagModalOutside(event)">
-  <div class="modal-box">
-    <div class="modal-title">
-      <span class="with-icon"><svg class="icon"><use href="#i-flag"></use></svg>Flag Estimation Issue</span>
-      <span class="modal-close" onclick="closeFlagModal()" aria-label="Close"><svg class="icon icon-lg"><use href="#i-x"></use></svg></span>
-    </div>
-    <div class="sec-label" style="margin-bottom:8px">What was wrong?</div>
-    <div class="flag-type-grid" id="flag-type-grid"></div>
-    <textarea id="flag-notes" placeholder="Describe the issue: e.g. AI classified this as 'standard' but it's clearly establishing — castle vista should be 18-22 days minimum. Similar shots retrieved were all cleanup shots, wrong price bracket."></textarea>
-    <div class="btn-row">
-      <button class="btn-red" onclick="submitFlag()">Submit Flag</button>
-      <button class="btn-ghost" onclick="closeFlagModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
@@ -692,10 +521,14 @@ const API = (window.location.hostname === 'localhost' ||
              window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
-let _est = null;
-let _selectedFlagType = null;
 const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
 const DEPT_RATES_STORAGE_KEY = 'vfx_estimator_dept_rates';
+const TAX_CREDIT_STORAGE_KEY = 'vfx_estimator_tax_credit_pct';
+const ADMIN_FEE_STORAGE_KEY = 'vfx_estimator_admin_fee_pct';
+const DISPLAY_CURRENCY_STORAGE_KEY = 'vfx_estimator_display_currency';
+const BASE_CURRENCY = 'USD';
+const DISPLAY_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD'];
+const CURRENCY_SYMBOLS = { USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$' };
 const RATE_DEPARTMENTS = [
   'animation', 'fx', 'lighting', 'compositing', 'comp_paint', 'comp_roto',
   'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep',
@@ -707,6 +540,11 @@ const BID_TO_INTERNAL = {
 };
 let _deptRates = {};
 let _fallbackDayRate = 700;
+let _taxCreditPct = 0;
+let _adminFeePct = 0;
+let _displayCurrency = 'USD';
+let _fxRates = { USD: 1 };
+let _fxMeta = { date: null, source: null, fallback: false };
 
 function getUserId() {
   const v = (document.getElementById('user-id')?.value || '').trim();
@@ -763,10 +601,125 @@ function fmt(n, d=1) {
 
 function deptLabel(k) { return DEPT_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-function money(n) {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return '—';
-  return '$' + v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+function fxRate(currency) {
+  const c = (currency || _displayCurrency || BASE_CURRENCY).toUpperCase();
+  if (c === BASE_CURRENCY) return 1;
+  const r = parseFloat(_fxRates[c]);
+  return Number.isFinite(r) && r > 0 ? r : 1;
+}
+
+function usdToDisplay(usd, currency) {
+  const v = Number(usd);
+  if (!Number.isFinite(v)) return NaN;
+  return v * fxRate(currency);
+}
+
+function displayToUsd(displayAmount, currency) {
+  const v = Number(displayAmount);
+  if (!Number.isFinite(v)) return NaN;
+  const r = fxRate(currency);
+  return r > 0 ? v / r : v;
+}
+
+function currencySymbol(currency) {
+  const c = (currency || _displayCurrency || BASE_CURRENCY).toUpperCase();
+  return CURRENCY_SYMBOLS[c] || (c + ' ');
+}
+
+function money(usdAmount, currency) {
+  const c = (currency || _displayCurrency || BASE_CURRENCY).toUpperCase();
+  const converted = usdToDisplay(Number(usdAmount), c);
+  if (!Number.isFinite(converted)) return '—';
+  return currencySymbol(c) + converted.toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+function rateInputStep() {
+  return _displayCurrency === 'USD' ? 50 : 1;
+}
+
+function rateDisplayValue(usdRate) {
+  const v = usdToDisplay(Number(usdRate));
+  if (!Number.isFinite(v)) return 0;
+  return _displayCurrency === 'USD' ? Math.round(v) : Math.round(v * 100) / 100;
+}
+
+function loadDisplayCurrency() {
+  try {
+    const saved = (localStorage.getItem(DISPLAY_CURRENCY_STORAGE_KEY) || '').toUpperCase();
+    if (DISPLAY_CURRENCIES.includes(saved)) {
+      _displayCurrency = saved;
+      const sel = document.getElementById('display-currency');
+      if (sel) sel.value = saved;
+    }
+  } catch {}
+  updateRatesCurrencyLabels();
+}
+
+function onDisplayCurrencyChange(code) {
+  const c = String(code || BASE_CURRENCY).toUpperCase();
+  if (!DISPLAY_CURRENCIES.includes(c)) return;
+  _displayCurrency = c;
+  try { localStorage.setItem(DISPLAY_CURRENCY_STORAGE_KEY, c); } catch {}
+  updateRatesCurrencyLabels();
+  refreshAllMoneyDisplays();
+}
+
+function updateRatesCurrencyLabels() {
+  const lbl = document.getElementById('rates-currency-label');
+  if (lbl) lbl.textContent = _displayCurrency;
+}
+
+function updateFxStatusNote() {
+  const pill = document.getElementById('fx-pill');
+  const note = document.getElementById('fx-status-note');
+  if (pill) {
+    if (_fxMeta.date || _fxMeta.source) {
+      pill.classList.remove('hidden');
+      const src = _fxMeta.fallback ? 'approx' : (_fxMeta.source || 'FX');
+      pill.textContent = _fxMeta.date ? `FX ${_fxMeta.date}` : src;
+      pill.classList.toggle('err', !!_fxMeta.fallback);
+      pill.classList.toggle('ok', !_fxMeta.fallback);
+    } else {
+      pill.classList.add('hidden');
+    }
+  }
+  if (note) {
+    const base = `All estimates run in ${BASE_CURRENCY}. Display uses Frankfurter rates`;
+    note.textContent = _fxMeta.date
+      ? `${base} (${_fxMeta.date}${_fxMeta.fallback ? ', offline fallback' : ''}).`
+      : `${base}.`;
+  }
+}
+
+async function loadFxRates() {
+  try {
+    const d = await fetch(`${API}/fx/rates`).then(r => r.json());
+    _fxRates = { USD: 1, ...(d.rates || {}) };
+    _fxMeta = { date: d.date || null, source: d.source || null, fallback: !!d.fallback };
+  } catch {
+    _fxRates = { USD: 1, CAD: 1.36, GBP: 0.79, EUR: 0.92, AUD: 1.52 };
+    _fxMeta = { date: null, source: 'fallback', fallback: true };
+  }
+  updateFxStatusNote();
+  refreshAllMoneyDisplays();
+}
+
+function refreshAllMoneyDisplays() {
+  updateRatesSummary();
+  renderDeptRatesPanel();
+  if (_batchResult) refreshBatchBidSummary();
+}
+
+function renderFxMultiSummary(grossUsd, netUsd) {
+  const el = document.getElementById('fx-multi-summary');
+  if (!el) return;
+  const row = (label, usd) => {
+    const chips = DISPLAY_CURRENCIES.map(c =>
+      `<span class="fx-equiv-chip"><span class="fx-code">${c}</span>${money(usd, c)}</span>`
+    ).join('');
+    return `<div class="fx-equiv-row"><span class="fx-equiv-label">${label}</span><div class="fx-equiv-chips">${chips}</div></div>`;
+  };
+  el.innerHTML = row('Gross Total', grossUsd) + row('Net Total VFX Bid', netUsd);
 }
 
 function toggleRatesPanel() {
@@ -788,11 +741,13 @@ function updateRatesSummary() {
 function renderDeptRatesPanel() {
   const grid = document.getElementById('rates-grid');
   if (!grid) return;
+  const step = rateInputStep();
   grid.innerHTML = RATE_DEPARTMENTS.map(dept => {
-    const v = _deptRates[dept] ?? _fallbackDayRate;
+    const usd = _deptRates[dept] ?? _fallbackDayRate;
+    const display = rateDisplayValue(usd);
     return `<div class="rate-field">
       <label for="rate-${dept}">${deptLabel(dept)}</label>
-      <input type="number" id="rate-${dept}" min="0" step="50" value="${v}"
+      <input type="number" id="rate-${dept}" min="0" step="${step}" value="${display}"
         oninput="onDeptRateChange('${dept}', this.value)">
     </div>`;
   }).join('');
@@ -800,12 +755,13 @@ function renderDeptRatesPanel() {
 }
 
 function onDeptRateChange(dept, raw) {
-  const v = parseFloat(raw);
-  if (!Number.isFinite(v) || v < 0) return;
-  _deptRates[dept] = v;
+  const displayVal = parseFloat(raw);
+  if (!Number.isFinite(displayVal) || displayVal < 0) return;
+  const usd = displayToUsd(displayVal);
+  if (!Number.isFinite(usd) || usd < 0) return;
+  _deptRates[dept] = Math.round(usd * 100) / 100;
   try { localStorage.setItem(DEPT_RATES_STORAGE_KEY, JSON.stringify(_deptRates)); } catch {}
   updateRatesSummary();
-  if (_est) updateAdjTotal();
   if (_batchResult) recalcBatchTotals();
 }
 
@@ -890,58 +846,7 @@ async function checkServer() {
   }
 }
 
-// ── Pre-qual ───────────────────────────────────────────────────────────────
-
-function togglePrequal() {
-  const toggle = document.getElementById('pq-toggle');
-  const panel  = document.getElementById('prequal-panel');
-  toggle.classList.toggle('open');
-  panel.classList.toggle('open');
-}
-
-function updateCGRatio() {
-  const v = parseInt(document.getElementById('pq-cg-ratio').value);
-  const practical = 100 - v;
-  document.getElementById('pq-ratio-label').textContent =
-    v === 100 ? '100% CG' :
-    v === 0   ? '100% Practical' :
-    `${v}% CG / ${practical}% Practical`;
-  updatePrequalSummary();
-}
-
-function updatePrequalSummary() {
-  const shotType   = document.getElementById('pq-shot-type').value;
-  const complexity = document.getElementById('pq-complexity').value;
-  const allotments = document.getElementById('pq-allotments').value;
-  const cg         = document.getElementById('pq-cg-ratio').value;
-  const parts = [];
-  if (shotType)   parts.push(shotType);
-  if (complexity) parts.push(complexity + ' band');
-  if (allotments > 1) parts.push(allotments + ' shots');
-  if (cg === 0)   parts.push('100% practical');
-  else if (cg < 100) parts.push(cg + '% CG');
-  document.getElementById('pq-summary').textContent = parts.length ? parts.join(' · ') : 'not set';
-}
-
-function buildPreQual() {
-  const shotType   = document.getElementById('pq-shot-type').value;
-  const complexity = document.getElementById('pq-complexity').value;
-  const scale      = document.getElementById('pq-scale').value;
-  const allotments = parseInt(document.getElementById('pq-allotments').value) || 1;
-  const cg         = parseInt(document.getElementById('pq-cg-ratio').value);
-  const brief      = document.getElementById('pq-director-brief').value.trim();
-  const assumptions= document.getElementById('pq-assumptions').value.trim();
-
-  const pq = { allotment_n: allotments };
-  if (shotType)   pq.shot_type_override = shotType;
-  if (complexity) pq.complexity_band = complexity;
-  if (scale)      pq.bid_scale_tier  = scale;
-  pq.practical_cg_ratio = cg;
-  if (brief)      pq.director_brief = brief;
-  if (assumptions) pq.vfx_assumptions = assumptions;
-
-  return Object.keys(pq).length > 1 ? pq : null;
-}
+// ── Batch pre-qual ─────────────────────────────────────────────────────────
 
 function toggleBatchPrequal() {
   const toggle = document.getElementById('batch-pq-toggle');
@@ -979,291 +884,6 @@ function buildBatchPreQual() {
   if (project && project !== 'BID') pq.project = project;
 
   return Object.keys(pq).length ? pq : null;
-}
-
-// ── Estimate ───────────────────────────────────────────────────────────────
-
-async function getEstimate() {
-  const desc = document.getElementById('shot-desc').value.trim();
-  if (!desc) { toast('Enter a shot description first.', 'warn'); return; }
-
-  const btn = document.getElementById('est-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span>Estimating…';
-  document.getElementById('results').classList.add('hidden');
-
-  try {
-    const mode   = document.getElementById('est-mode').value;
-    const preQual = buildPreQual();
-    const body   = { description: desc, mode, dept_rates: getDeptRates() };
-    if (preQual) body.pre_qual = preQual;
-
-    const r = await fetch(`${API}/estimate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) {
-      const err = await r.json().catch(()=>({}));
-      throw new Error(err.detail || `HTTP ${r.status}`);
-    }
-    _est = await r.json();
-    renderResults(_est);
-    document.getElementById('results').classList.remove('hidden');
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } catch(e) {
-    toast(`Estimate failed: ${e.message}`, 'err');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Estimate ⌘↵';
-  }
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
-
-function renderResults(est) {
-  const days  = est.per_shot_mandays ?? 0;
-  const conf  = est.confidence ?? 0.5;
-  const allot = parseInt(document.getElementById('pq-allotments').value) || 1;
-
-  document.getElementById('r-days').textContent = fmt(days) + 'd';
-  document.getElementById('r-conf').textContent = Math.round(conf * 100) + '%';
-  document.getElementById('r-cost').textContent = money(est.cost ?? computeClientShotCost(est.dept_days, getDeptRates()));
-  document.getElementById('r-mode').textContent = est.mode || '—';
-  if (est.dept_rates) Object.assign(_deptRates, est.dept_rates);
-
-  if (allot > 1) {
-    const totalDays = est.total_mandays ?? days * allot;
-    document.getElementById('r-total').textContent = fmt(totalDays) + 'd';
-    document.getElementById('r-total-stat').classList.remove('hidden');
-  } else {
-    document.getElementById('r-total-stat').classList.add('hidden');
-  }
-
-  const reasoning = est.reasoning || '';
-  const rEl = document.getElementById('r-reasoning');
-  if (reasoning) { rEl.textContent = reasoning; rEl.classList.remove('hidden'); }
-  else             { rEl.classList.add('hidden'); }
-
-  renderDepts(est.dept_days || {}, est.adjustment_ranges || {}, conf);
-  renderSimilar(est.similar_shots || []);
-  updateAdjTotal();
-}
-
-function renderDepts(deptDays, ranges, conf) {
-  const container = document.getElementById('dept-sliders');
-  container.innerHTML = '';
-  const depts = Object.entries(deptDays).filter(([,v])=>v>0);
-  if (!depts.length) {
-    container.innerHTML = '<div style="color:var(--text);font-size:13px;font-weight:700">No department breakdown available — estimate returned a total only.</div>';
-    return;
-  }
-  depts.forEach(([dept, predicted]) => {
-    const r = ranges[dept] || { min:0, max:Math.ceil(predicted*2), step:0.5, predicted, confidence:conf };
-    const dc = r.confidence ?? conf;
-    const ccls = dc>=0.8?'ch':dc>=0.6?'cm':'cl';
-
-    const wrap = document.createElement('div');
-    wrap.innerHTML = `
-      <div class="dept-row">
-        <div>
-          <div class="dept-name">${deptLabel(dept)}</div>
-          <span class="dept-conf ${ccls}">${Math.round(dc*100)}% conf</span>
-        </div>
-        <input type="range" id="sl-${dept}" min="${r.min}" max="${r.max}" step="${r.step}"
-               value="${predicted}" data-dept="${dept}" oninput="onSlider(this)">
-        <input type="number" class="dept-num-inp" id="di-${dept}" min="0" step="${r.step}"
-               value="${predicted}" data-dept="${dept}" oninput="onDeptInput(this)">
-        <div class="dept-val" id="dv-${dept}">${fmt(predicted)}d</div>
-      </div>
-      <div class="range-hint">0d – ${r.max}d &nbsp;·&nbsp; predicted ${fmt(predicted)}d</div>`;
-    container.appendChild(wrap);
-  });
-}
-
-function syncDeptValue(dept, rawValue) {
-  const v = Math.max(0, parseFloat(rawValue) || 0);
-  const rounded = Math.round(v * 2) / 2;
-  const slider = document.getElementById(`sl-${dept}`);
-  const inp = document.getElementById(`di-${dept}`);
-  const dv = document.getElementById(`dv-${dept}`);
-  if (slider) {
-    const max = parseFloat(slider.max);
-    if (rounded > max) {
-      slider.max = Math.round(rounded * 1.2 * 2) / 2;
-    }
-    slider.value = rounded;
-  }
-  if (inp) inp.value = rounded;
-  if (dv) dv.textContent = fmt(rounded) + 'd';
-  updateAdjTotal();
-}
-
-function onSlider(el) {
-  syncDeptValue(el.dataset.dept, el.value);
-}
-
-function onDeptInput(el) {
-  syncDeptValue(el.dataset.dept, el.value);
-}
-
-function updateAdjTotal() {
-  let tot = 0;
-  const depts = {};
-  document.querySelectorAll('#dept-sliders input[type=range]').forEach(s => {
-    const v = parseFloat(s.value) || 0;
-    if (v > 0) depts[s.dataset.dept] = v;
-    tot += v;
-  });
-  tot = Math.round(tot*2)/2;
-  document.getElementById('adj-days').textContent = tot.toFixed(1) + 'd';
-  const allot = parseInt(document.getElementById('pq-allotments')?.value) || 1;
-  const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: tot, allot });
-  document.getElementById('adj-cost').textContent = money(cost);
-}
-
-function renderSimilar(shots) {
-  const el = document.getElementById('similar-list');
-  el.innerHTML = '';
-  shots.slice(0,5).forEach(s => {
-    const srcCls = s.source==='correction' ? 'src-c' : 'src-t';
-    const srcLbl = s.source==='correction'
-      ? `${iconSvg('star', 'icon icon-sm')} Correction`
-      : 'Training';
-    el.innerHTML += `<div class="sim-item">
-      <span class="sim-score">${(s.similarity*100).toFixed(0)}%</span>
-      <span class="sim-desc">${escHtml(s.description)}</span>
-      <span class="sim-days">${fmt(s.mandays)}d</span>
-      <span class="${srcCls}">${srcLbl}</span>
-    </div>`;
-  });
-  if (!shots.length) el.innerHTML = '<div style="color:var(--text);font-size:13px;font-weight:700">No similar shots found in training data.</div>';
-}
-
-// ── Approval ───────────────────────────────────────────────────────────────
-
-function getAdjDepts() {
-  const d = {};
-  document.querySelectorAll('#dept-sliders input[type=range]').forEach(s => {
-    const v = parseFloat(s.value);
-    if (v > 0) d[s.dataset.dept] = v;
-  });
-  return d;
-}
-
-function getAdjTotal() {
-  return Object.values(getAdjDepts()).reduce((a,b)=>a+b,0);
-}
-
-async function _save(finalDepts, finalTotal) {
-  const status = document.getElementById('save-status');
-  status.textContent = 'Saving…';
-  const desc  = document.getElementById('shot-desc').value.trim();
-  const notes = document.getElementById('approval-notes').value.trim();
-  try {
-    const r = await fetch(`${API}/corrections`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        description: desc,
-        final_total_days: Math.round(finalTotal*2)/2,
-        final_departments: finalDepts,
-        ai_total_days: _est?.per_shot_mandays ?? null,
-        notes,
-        user_id: getUserId(),
-      }),
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved (${d.count} total)`;
-    toast(d.message || 'Correction saved.');
-    loadStats();
-    checkServer();
-  } catch(e) {
-    status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
-    toast('Save failed: ' + e.message, 'err');
-  }
-}
-
-function approve() {
-  if (!_est) { toast('Estimate first.', 'warn'); return; }
-  _save(_est.dept_days || {}, _est.per_shot_mandays || 0);
-}
-
-function approveAdjusted() {
-  if (!_est) { toast('Estimate first.', 'warn'); return; }
-  _save(getAdjDepts(), getAdjTotal());
-}
-
-// ── Flagging ───────────────────────────────────────────────────────────────
-
-function openFlagModal() {
-  if (!_est) { toast('Estimate first before flagging.', 'warn'); return; }
-  _selectedFlagType = null;
-  const grid = document.getElementById('flag-type-grid');
-  grid.innerHTML = '';
-  Object.entries(FLAG_LABELS).forEach(([k, label]) => {
-    const btn = document.createElement('button');
-    btn.className = 'flag-type-btn';
-    btn.textContent = label;
-    btn.dataset.type = k;
-    btn.onclick = () => {
-      document.querySelectorAll('.flag-type-btn').forEach(b=>b.classList.remove('selected'));
-      btn.classList.add('selected');
-      _selectedFlagType = k;
-    };
-    grid.appendChild(btn);
-  });
-  document.getElementById('flag-notes').value = '';
-  document.getElementById('flag-modal').classList.add('open');
-}
-
-function closeFlagModal() {
-  document.getElementById('flag-modal').classList.remove('open');
-}
-
-function closeFlagModalOutside(e) {
-  if (e.target.id === 'flag-modal') closeFlagModal();
-}
-
-async function submitFlag() {
-  if (!_selectedFlagType) { toast('Select an issue type.', 'warn'); return; }
-  const notes = document.getElementById('flag-notes').value.trim();
-  const desc  = document.getElementById('shot-desc').value.trim();
-  try {
-    const r = await fetch(`${API}/flags`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        description: desc,
-        flag_type: _selectedFlagType,
-        notes,
-        ai_total_days: _est?.per_shot_mandays ?? null,
-        ai_shot_type: _est?.reasoning?.match(/shot.type[^a-z]*([a-z]+)/i)?.[1] ?? null,
-        ai_departments: _est?.dept_days ?? {},
-        user_id: 'supervisor',
-      }),
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    closeFlagModal();
-    toast(d.message || 'Flag saved — will inform future estimates.', 'warn');
-    loadStats();
-    checkServer();
-  } catch(e) {
-    toast('Flag failed: ' + e.message, 'err');
-  }
-}
-
-// ── Tabs ───────────────────────────────────────────────────────────────────
-
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === name);
-  });
-  document.querySelectorAll('.tab-panel').forEach(p => {
-    p.classList.toggle('active', p.id === `tab-${name}`);
-  });
 }
 
 // ── Batch / bid file mode ──────────────────────────────────────────────────
@@ -1465,6 +1085,83 @@ function computeBatchBidStats(rows) {
   };
 }
 
+function loadTaxCreditPct() {
+  try {
+    const saved = parseFloat(localStorage.getItem(TAX_CREDIT_STORAGE_KEY));
+    if (Number.isFinite(saved) && saved >= 0) {
+      _taxCreditPct = Math.min(100, saved);
+      const inp = document.getElementById('tax-credit-pct');
+      if (inp) inp.value = _taxCreditPct;
+    }
+  } catch {}
+}
+
+function loadAdminFeePct() {
+  try {
+    const saved = parseFloat(localStorage.getItem(ADMIN_FEE_STORAGE_KEY));
+    if (Number.isFinite(saved) && saved >= 0) {
+      _adminFeePct = Math.min(100, saved);
+      const inp = document.getElementById('tax-admin-fee-pct');
+      if (inp) inp.value = _adminFeePct;
+    }
+  } catch {}
+}
+
+function parsePctInput(raw) {
+  if (raw === '' || raw == null) return 0;
+  const v = parseFloat(raw);
+  if (!Number.isFinite(v) || v < 0) return null;
+  return Math.min(100, v);
+}
+
+function computeBidNetSummary(gross) {
+  const g = Number.isFinite(Number(gross)) ? Number(gross) : 0;
+  const creditAmt = Math.round(g * _taxCreditPct / 100);
+  const adminAmt = Math.round(g * _adminFeePct / 100);
+  const net = Math.round(g - creditAmt + adminAmt);
+  return { gross: g, creditAmt, adminAmt, net };
+}
+
+function onTaxCreditPctChange(raw) {
+  const v = parsePctInput(raw);
+  if (v === null) return;
+  _taxCreditPct = v;
+  try { localStorage.setItem(TAX_CREDIT_STORAGE_KEY, String(_taxCreditPct)); } catch {}
+  if (_batchResult) refreshBatchBidSummary();
+  else updateTaxCreditDisplay(0);
+}
+
+function onAdminFeePctChange(raw) {
+  const v = parsePctInput(raw);
+  if (v === null) return;
+  _adminFeePct = v;
+  try { localStorage.setItem(ADMIN_FEE_STORAGE_KEY, String(_adminFeePct)); } catch {}
+  if (_batchResult) refreshBatchBidSummary();
+  else updateTaxCreditDisplay(0);
+}
+
+function updateTaxCreditDisplay(totalCost) {
+  const { gross, creditAmt, adminAmt, net } = computeBidNetSummary(totalCost);
+
+  const totalEl = document.getElementById('tax-total-cost');
+  const creditEl = document.getElementById('tax-credit-amount');
+  const adminEl = document.getElementById('tax-admin-fee-amount');
+  const netEl = document.getElementById('tax-net-total');
+  if (!totalEl || !creditEl || !adminEl || !netEl) return;
+
+  totalEl.textContent = money(gross);
+  creditEl.textContent = _taxCreditPct > 0 ? '−' + money(creditAmt) : money(0);
+  adminEl.textContent = _adminFeePct > 0 ? '+' + money(adminAmt) : money(0);
+  netEl.textContent = money(net);
+}
+
+function bidNetSummaryLabel() {
+  const parts = [];
+  if (_taxCreditPct > 0) parts.push(`${_taxCreditPct}% credit`);
+  if (_adminFeePct > 0) parts.push(`${_adminFeePct}% admin`);
+  return parts.length ? parts.join(', ') : '';
+}
+
 function renderBatchBidSummary(stats) {
   const panel = document.getElementById('batch-bid-summary');
   const statsEl = document.getElementById('batch-bid-summary-stats');
@@ -1472,36 +1169,48 @@ function renderBatchBidSummary(stats) {
   const foot = document.getElementById('batch-dept-summary-foot');
   if (!panel || !stats || stats.shotCount <= 0) {
     panel?.classList.add('hidden');
+    document.getElementById('fx-multi-summary')?.replaceChildren();
     return;
   }
 
   panel.classList.remove('hidden');
-  statsEl.innerHTML = [
+  const statBlocks = [
     { n: fmt(stats.totalDays) + 'd', l: 'Total Mandays' },
     { n: money(stats.totalCost), l: 'Total Cost' },
     { n: money(stats.avgCost), l: 'Avg Cost / Shot' },
     { n: String(stats.shotCount), l: 'Shots' },
-  ].map(s => `<div class="stat-block"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join('');
+  ];
+  const netSummary = computeBidNetSummary(stats.totalCost);
+  if (_taxCreditPct > 0 || _adminFeePct > 0) {
+    statBlocks.push({ n: money(netSummary.net), l: `Net bid (${bidNetSummaryLabel()})` });
+  }
+  statsEl.innerHTML = statBlocks
+    .map(s => `<div class="stat-block"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`)
+    .join('');
 
   if (!stats.deptRows.length) {
     body.innerHTML = `<tr><td colspan="4" style="color:var(--muted);font-style:italic">No department breakdown available.</td></tr>`;
     foot.innerHTML = '';
-    return;
+  } else {
+    body.innerHTML = stats.deptRows.map(r => `<tr>
+      <td>${escHtml(r.label)}</td>
+      <td class="num">${fmt(r.days)}</td>
+      <td class="num">${money(r.rate)}</td>
+      <td class="num cost">${money(r.cost)}</td>
+    </tr>`).join('');
+
+    foot.innerHTML = `<tr>
+      <td>All departments</td>
+      <td class="num">${fmt(stats.deptDaysTotal)}</td>
+      <td class="num">—</td>
+      <td class="num cost">${money(stats.deptCostTotal)}</td>
+    </tr>`;
   }
 
-  body.innerHTML = stats.deptRows.map(r => `<tr>
-    <td>${escHtml(r.label)}</td>
-    <td class="num">${fmt(r.days)}</td>
-    <td class="num">${money(r.rate)}</td>
-    <td class="num cost">${money(r.cost)}</td>
-  </tr>`).join('');
-
-  foot.innerHTML = `<tr>
-    <td>All departments</td>
-    <td class="num">${fmt(stats.deptDaysTotal)}</td>
-    <td class="num">—</td>
-    <td class="num cost">${money(stats.deptCostTotal)}</td>
-  </tr>`;
+  updateTaxCreditDisplay(stats.totalCost);
+  const netSummary = computeBidNetSummary(stats.totalCost);
+  renderFxMultiSummary(stats.totalCost, netSummary.net);
+  updateFxStatusNote();
 }
 
 function refreshBatchBidSummary() {
@@ -1513,12 +1222,19 @@ function refreshBatchBidSummary() {
   _batchResult.avg_cost_per_shot = stats.avgCost;
   _batchResult.dept_totals = stats.deptRows;
 
-  document.getElementById('batch-summary-bar').innerHTML =
+  let bar =
     `<strong>${stats.shotCount}</strong> shots &nbsp;|&nbsp; ` +
     `<strong>${fmt(stats.totalDays)}d</strong> total mandays &nbsp;|&nbsp; ` +
     `<strong>${money(stats.totalCost)}</strong> total cost &nbsp;|&nbsp; ` +
-    `<strong>${money(stats.avgCost)}</strong> avg / shot` +
-    (_batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '');
+    `<strong>${money(stats.avgCost)}</strong> avg / shot`;
+  const netSummary = computeBidNetSummary(stats.totalCost);
+  if (_taxCreditPct > 0 || _adminFeePct > 0) {
+    bar += ` &nbsp;|&nbsp; <strong>${money(netSummary.net)}</strong> net bid`;
+    const lbl = bidNetSummaryLabel();
+    if (lbl) bar += ` (${lbl})`;
+  }
+  bar += _batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '';
+  document.getElementById('batch-summary-bar').innerHTML = bar;
 
   renderBatchBidSummary(stats);
 }
@@ -2093,18 +1809,6 @@ async function loadStats() {
   } catch {}
 }
 
-// ── Keyboard ────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if ((e.metaKey||e.ctrlKey) && e.key==='Enter') getEstimate();
-  if (e.key==='Escape') closeFlagModal();
-});
-
-// Add change listeners for pre-qual summary
-['pq-shot-type','pq-complexity','pq-scale','pq-allotments'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('change', updatePrequalSummary);
-});
-
 // ── Init ────────────────────────────────────────────────────────────────────
 // Wake Render on load, keep alive every 10 min
 fetch(`${API}/ping`).catch(() => {});
@@ -2112,8 +1816,12 @@ setInterval(() => fetch(`${API}/ping`).catch(() => {}), 10 * 60 * 1000);
 
 (async()=>{
   loadUserId();
+  loadDisplayCurrency();
+  loadTaxCreditPct();
+  loadAdminFeePct();
   setupBatchDropZone();
   await loadDeptRates();
+  await loadFxRates();
   await checkServer();
   await loadStats();
 })();

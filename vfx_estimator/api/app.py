@@ -25,6 +25,7 @@ from vfx_estimator.api.bid_batch import (
 )
 from vfx_estimator.config import get_settings
 from vfx_estimator.estimate.service import EstimatorService
+from vfx_estimator.fx import get_usd_fx_rates
 from vfx_estimator.integrations.xata import XataShotSearch
 from vfx_estimator.learning.flags import FlagsStore
 from vfx_estimator.types import (
@@ -187,6 +188,11 @@ def create_app() -> FastAPI:
     @app.get("/ping")
     def ping() -> Dict[str, bool]:
         return {"ok": True}
+
+    @app.get("/fx/rates")
+    def fx_rates() -> Dict[str, Any]:
+        """USD-base FX for display (Frankfurter, cached 1h)."""
+        return get_usd_fx_rates()
 
     @app.post("/estimate")
     def estimate(req: EstimateRequest) -> Dict[str, Any]:
