@@ -36,6 +36,20 @@ CG_DESCRIPTION_RE = re.compile(
 )
 MIN_CG_LIGHTING_DAYS = 3.0
 
+AI_KEYWORDS = [
+    "generative ai",
+    "ai generated",
+    "ai cleanup",
+    "ai upscale",
+    "ai enhancement",
+    "stable diffusion",
+    "midjourney",
+    "ai background",
+    "ai asset",
+    "ai animation",
+    "machine learning cleanup",
+]
+
 
 def _has_cg_element(dept: Dict[str, float], description: str) -> bool:
     return any(dept.get(d, 0) > 0 for d in CG_DEPARTMENTS) or bool(
@@ -94,6 +108,11 @@ def enforce_department_minimums(
         if total >= 20:
             min_comp = max(min_comp, 6.0)
         dept["compositing"] = _round_half(min_comp)
+
+    desc_norm = desc_lower.replace("-", " ")
+    if any(kw in desc_norm for kw in AI_KEYWORDS):
+        if dept.get("ai", 0) == 0:
+            dept["ai"] = 2.0
 
     return dept
 

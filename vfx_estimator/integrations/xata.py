@@ -35,6 +35,7 @@ _DEPT_COL_MAP: Dict[str, tuple[str, ...]] = {
     "dmp": ("dmp_days", "dmp_mandays"),
     "cfx": ("cfx_days", "cfx_mandays"),
     "prep": ("prep_days", "prep_mandays"),
+    "ai": ("ai_days", "ai_mandays"),
 }
 
 

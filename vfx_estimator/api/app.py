@@ -67,6 +67,7 @@ DEPT_MAX_DAYS: Dict[str, float] = {
     "matchmove": 8,
     "cfx": 10,
     "prep": 5,
+    "ai": 10,
 }
 
 

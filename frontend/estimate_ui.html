@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VFX Estimator — Supervisor UI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg:      #0c0e14;
@@ -181,12 +182,39 @@
     .batch-drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px;text-align:center;
                      background:var(--card2);cursor:pointer;transition:border-color .2s}
     .batch-drop-zone:hover,.batch-drop-zone.drag{border-color:var(--accent)}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+      z-index:120;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:24px;max-width:720px;width:100%;max-height:90vh;overflow:auto;
+      box-shadow:0 16px 48px rgba(0,0,0,.45)}
+    .modal-title{font-size:16px;font-weight:800;margin-bottom:8px;color:var(--text-strong)}
+    .col-map-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+    .col-map-field{display:flex;flex-direction:column;gap:4px}
+    .col-map-field label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text)}
+    .col-map-field select{padding:8px 10px;font-size:12px}
+    .col-map-preview{margin-top:14px;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+    .col-map-preview table{width:100%;border-collapse:collapse;font-size:11px}
+    .col-map-preview th,.col-map-preview td{padding:6px 8px;border:1px solid var(--border);text-align:left;
+      vertical-align:top;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .col-map-preview th{background:var(--surface);font-weight:800}
     .batch-settings{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
     .batch-settings label{font-size:11px;color:var(--text);font-weight:800;display:flex;flex-direction:column;gap:4px}
     .batch-settings input{padding:8px 10px;min-width:120px}
     .batch-bar{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
                padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
-               flex-wrap:wrap;gap:10px;margin-top:14px;border-radius:var(--r)}
+               flex-wrap:wrap;gap:10px;margin-top:0;border-radius:0 0 var(--r) var(--r)}
+    .batch-mix-panel{border-top:1px solid var(--border);padding:14px 18px;background:var(--card2)}
+    .batch-mix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 16px}
+    .batch-mix-row{display:grid;grid-template-columns:52px 1fr 72px;gap:8px;align-items:center}
+    .batch-mix-row label{font-size:10px;font-weight:800;color:var(--text);letter-spacing:.4px}
+    .batch-mix-row input[type=range]{width:100%;height:4px;border-radius:4px;background:var(--border);
+      border:none;padding:0;margin:0}
+    .batch-mix-row input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+      background:var(--accent);cursor:pointer;border:2px solid var(--bg)}
+    .batch-mix-pct{font-size:11px;font-weight:800;color:var(--accent);text-align:right;white-space:nowrap}
+    .batch-mix-pct.neutral{color:var(--muted)}
     .notes-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);
                padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer}
     .notes-btn:hover,.notes-btn.open{border-color:var(--accent);color:var(--accent)}
@@ -205,6 +233,9 @@
     .batch-dept-summary td{color:var(--text)}
     .batch-dept-summary .num{font-weight:800;text-align:right;white-space:nowrap}
     .batch-dept-summary .cost{color:var(--green);font-weight:800}
+    .batch-dept-summary .scene-pct-cell{min-width:100px}
+    .scene-pct-bar{height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden}
+    .scene-pct-bar > div{height:100%;background:var(--accent);border-radius:3px;min-width:2px}
     .batch-dept-summary tfoot td{font-weight:800;background:var(--card2)}
     .tax-credit-wrap{margin-top:4px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
     table.tax-credit-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -310,16 +341,16 @@
   </div>
 
   <div class="card" style="margin-bottom:14px">
-      <div class="sec-label">LVL UP Bid File</div>
+      <div class="sec-label">Bid File Upload</div>
       <div class="batch-drop-zone" id="batch-drop-zone"
            onclick="document.getElementById('batch-csv-file').click()">
         <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">
-          Drop LVL UP bid CSV here or click to upload
+          Drop bid CSV or Excel here, or click to upload
         </div>
         <div style="font-size:12px;color:var(--muted)">
-          Expects ITEM# header row · fills CAMERA → COMP · TOTAL MANDAYS
+          CSV, .xlsx, .xls — auto-maps column names (LVL UP, custom studio formats)
         </div>
-        <input type="file" id="batch-csv-file" accept=".csv" style="display:none"
+        <input type="file" id="batch-csv-file" accept=".csv,.xlsx,.xls" style="display:none"
                onchange="onBatchFileSelected(this)">
         <div id="batch-file-name" style="margin-top:8px;font-size:12px;color:var(--accent)"></div>
       </div>
@@ -422,6 +453,16 @@
             <tbody id="batch-table-body"></tbody>
           </table>
         </div>
+        <div class="batch-mix-panel hidden" id="batch-mix-panel">
+          <div class="sec-label" style="margin-bottom:10px">Department Mix — global faders</div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:12px">
+            Scale every shot's department days from the AI baseline — no re-estimate. 100% = original bid.
+          </p>
+          <div class="batch-mix-grid" id="batch-mix-grid"></div>
+          <div class="btn-row" style="margin-top:12px;margin-bottom:0">
+            <button type="button" class="btn-ghost" onclick="resetGlobalDeptMixers()">Reset all to 100%</button>
+          </div>
+        </div>
         <div class="batch-bar">
           <span id="batch-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
           <div class="btn-row" style="margin:0">
@@ -448,6 +489,23 @@
             </thead>
             <tbody id="batch-dept-summary-body"></tbody>
             <tfoot id="batch-dept-summary-foot"></tfoot>
+          </table>
+        </div>
+
+        <div class="sec-label" style="margin:16px 0 10px">Scene Breakdown</div>
+        <div class="batch-dept-summary-wrap">
+          <table class="batch-dept-summary" id="batch-scene-summary-table">
+            <thead>
+              <tr>
+                <th>Scene</th>
+                <th style="text-align:right">Shots</th>
+                <th style="text-align:right">Total Days</th>
+                <th style="text-align:right">Total Cost</th>
+                <th style="text-align:right">% of Bid</th>
+              </tr>
+            </thead>
+            <tbody id="batch-scene-summary-body"></tbody>
+            <tfoot id="batch-scene-summary-foot"></tfoot>
           </table>
         </div>
 
@@ -514,6 +572,25 @@
 
 </div><!-- /wrap -->
 
+<div id="col-map-modal" class="modal-overlay" onclick="closeColMapOutside(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-title">Map Your Columns</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:12px">
+      Confirm which columns contain shot data. Description is required.
+    </p>
+    <div class="col-map-field" style="margin-bottom:12px">
+      <label for="col-map-header-row">Header row</label>
+      <select id="col-map-header-row" onchange="onColMapHeaderChange()"></select>
+    </div>
+    <div class="col-map-fields" id="col-map-fields"></div>
+    <div class="col-map-preview" id="col-map-preview"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" class="btn-blue" onclick="confirmColumnMap()">Use These Columns</button>
+      <button type="button" class="btn-ghost" onclick="closeColMap()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -531,12 +608,13 @@ const DISPLAY_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD'];
 const CURRENCY_SYMBOLS = { USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$' };
 const RATE_DEPARTMENTS = [
   'animation', 'fx', 'lighting', 'compositing', 'comp_paint', 'comp_roto',
-  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep',
+  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'ai',
 ];
 const BID_TO_INTERNAL = {
   CAMERA: 'camera_track', MATCHMOVE: 'matchmove', LAYOUT: 'layout',
   ANIM: 'animation', CFX: 'cfx', FX: 'fx', LGT: 'lighting',
   DMP: 'dmp', 'COMP PAINT': 'comp_paint', 'COMP ROTO': 'comp_roto', COMP: 'compositing',
+  AI: 'ai',
 };
 let _deptRates = {};
 let _fallbackDayRate = 700;
@@ -582,7 +660,7 @@ const DEPT_LABELS = {
   camera_track:'Camera Track', matchmove:'Matchmove', layout:'Layout',
   animation:'Animation', cfx:'CFX', fx:'FX', lighting:'Lighting',
   dmp:'DMP', comp_paint:'Comp / Paint', comp_roto:'Comp / Roto',
-  compositing:'Compositing', prep:'Prep',
+  compositing:'Compositing', prep:'Prep', ai:'AI / Generative',
 };
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -890,24 +968,35 @@ function buildBatchPreQual() {
 
 let _batchResult = null;
 let _batchDragRow = null;
+let _globalDeptMult = {};
+let _mixDeptDomMap = {};
 
 const BID_DEPTS = [
   'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM', 'CFX', 'FX',
-  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP',
+  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP', 'AI',
 ];
 const BID_DEPT_SHORT = {
   CAMERA: 'CAM', MATCHMOVE: 'MM', LAYOUT: 'LAY', ANIM: 'ANIM', CFX: 'CFX', FX: 'FX',
   LGT: 'LGT', DMP: 'DMP', 'COMP PAINT': 'CP', 'COMP ROTO': 'CR', COMP: 'COMP',
+  AI: 'AI',
 };
 
 function onBatchFileSelected(input) {
-  const name = input.files?.[0]?.name;
-  document.getElementById('batch-file-name').textContent = name ? `Selected: ${name}` : '';
+  const file = input.files?.[0];
+  document.getElementById('batch-file-name').textContent = file ? `Selected: ${file.name}` : '';
+}
+
+function assignFileToInput(input, file) {
+  if (!input || !file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
 }
 
 function setupBatchDropZone() {
   const zone = document.getElementById('batch-drop-zone');
-  if (!zone) return;
+  const input = document.getElementById('batch-csv-file');
+  if (!zone || !input) return;
   ['dragenter', 'dragover'].forEach(ev => {
     zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); });
   });
@@ -916,8 +1005,8 @@ function setupBatchDropZone() {
       e.preventDefault();
       zone.classList.remove('drag');
       if (ev === 'drop' && e.dataTransfer.files?.[0]) {
-        document.getElementById('batch-csv-file').files = e.dataTransfer.files;
-        onBatchFileSelected(document.getElementById('batch-csv-file'));
+        assignFileToInput(input, e.dataTransfer.files[0]);
+        onBatchFileSelected(input);
       }
     });
   });
@@ -945,10 +1034,15 @@ function clearBatchResults() {
   document.getElementById('batch-thead-row').innerHTML = '';
   document.getElementById('batch-summary-bar').textContent = '—';
   document.getElementById('batch-table-card').classList.add('hidden');
+  document.getElementById('batch-mix-panel')?.classList.add('hidden');
+  document.getElementById('batch-mix-grid').innerHTML = '';
+  resetGlobalDeptMixers(true);
   document.getElementById('batch-bid-summary').classList.add('hidden');
   document.getElementById('batch-bid-summary-stats').innerHTML = '';
   document.getElementById('batch-dept-summary-body').innerHTML = '';
   document.getElementById('batch-dept-summary-foot').innerHTML = '';
+  document.getElementById('batch-scene-summary-body').innerHTML = '';
+  document.getElementById('batch-scene-summary-foot').innerHTML = '';
 }
 
 function updateProgress(current, total, label) {
@@ -1011,7 +1105,129 @@ function appendBatchResultRow(i, row) {
 
   tr.innerHTML = cells;
   tbody.appendChild(tr);
+  applyDeptMixToRow(row, tr, { skipRefresh: true });
   if (_batchResult) recalcBatchTotals();
+}
+
+function mixDeptDomId(dept) {
+  return dept.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+}
+
+function deptMixMult(dept) {
+  const m = parseFloat(_globalDeptMult[dept]);
+  return Number.isFinite(m) && m > 0 ? m : 1;
+}
+
+function initGlobalDeptMixers() {
+  BID_DEPTS.forEach(d => {
+    if (_globalDeptMult[d] == null) _globalDeptMult[d] = 1;
+  });
+}
+
+function resetGlobalDeptMixers(silent) {
+  _globalDeptMult = {};
+  initGlobalDeptMixers();
+  if (!silent) {
+    renderBatchMixPanel();
+    applyGlobalDeptMixers();
+    toast('Department mix reset to 100%.');
+  }
+}
+
+function mixPctLabel(pct) {
+  const p = Math.round(pct);
+  if (p === 100) return '100%';
+  const delta = p - 100;
+  return delta > 0 ? `${p}% (+${delta})` : `${p}% (${delta})`;
+}
+
+function activeBatchDepts() {
+  const totals = {};
+  (_batchResult?.shots || []).forEach(row => {
+    if (!row) return;
+    const base = row._ai_dept_days || row.dept_days || {};
+    Object.entries(base).forEach(([dept, raw]) => {
+      const v = parseFloat(raw) || 0;
+      if (v > 0) totals[dept] = (totals[dept] || 0) + v;
+    });
+  });
+  return BID_DEPTS.filter(d => (totals[d] || 0) > 0);
+}
+
+function renderBatchMixPanel() {
+  const panel = document.getElementById('batch-mix-panel');
+  const grid = document.getElementById('batch-mix-grid');
+  if (!panel || !grid) return;
+  initGlobalDeptMixers();
+  const depts = activeBatchDepts();
+  if (!depts.length || !_batchResult?.shots?.length) {
+    panel.classList.add('hidden');
+    grid.innerHTML = '';
+    panel.dataset.deptKey = '';
+    return;
+  }
+  const deptKey = depts.join('|');
+  if (panel.dataset.deptKey === deptKey && grid.innerHTML) return;
+  panel.dataset.deptKey = deptKey;
+  panel.classList.remove('hidden');
+  _mixDeptDomMap = {};
+  grid.innerHTML = depts.map(dept => {
+    const id = mixDeptDomId(dept);
+    _mixDeptDomMap[id] = dept;
+    const pct = Math.round(deptMixMult(dept) * 100);
+    const short = BID_DEPT_SHORT[dept] || dept;
+    return `<div class="batch-mix-row">
+      <label for="mix-${id}">${escHtml(short)}</label>
+      <input type="range" id="mix-${id}" min="50" max="150" step="5" value="${pct}"
+        oninput="onGlobalDeptMixChangeById('${id}', this.value)">
+      <span class="batch-mix-pct ${pct === 100 ? 'neutral' : ''}" id="mix-label-${id}">${mixPctLabel(pct)}</span>
+    </div>`;
+  }).join('');
+}
+
+function onGlobalDeptMixChangeById(domId, rawPct) {
+  const dept = _mixDeptDomMap[domId];
+  if (!dept) return;
+  onGlobalDeptMixChange(dept, rawPct, domId);
+}
+
+function onGlobalDeptMixChange(dept, rawPct, domId) {
+  const pct = Math.max(50, Math.min(150, parseInt(rawPct, 10) || 100));
+  _globalDeptMult[dept] = pct / 100;
+  const id = domId || mixDeptDomId(dept);
+  const lbl = document.getElementById(`mix-label-${id}`);
+  if (lbl) {
+    lbl.textContent = mixPctLabel(pct);
+    lbl.classList.toggle('neutral', pct === 100);
+  }
+  applyGlobalDeptMixers();
+}
+
+function applyDeptMixToRow(row, tr, opts) {
+  if (!row || !tr) return;
+  initGlobalDeptMixers();
+  tr.querySelectorAll('.bid-dept-inp').forEach(inp => {
+    const dept = inp.dataset.dept;
+    const base = parseFloat(row._ai_dept_days?.[dept]) || 0;
+    if (base <= 0) {
+      inp.value = '0';
+      return;
+    }
+    const v = Math.round(base * deptMixMult(dept) * 2) / 2;
+    inp.value = v;
+  });
+  updateBatchRowTotals(tr, opts?.skipRefresh);
+}
+
+function applyGlobalDeptMixers() {
+  if (!_batchResult?.shots?.length) return;
+  document.querySelectorAll('#batch-table-body tr.batch-data-row').forEach(tr => {
+    const idx = batchRowIndex(tr);
+    const row = Number.isFinite(idx) ? _batchResult.shots[idx] : null;
+    if (row) applyDeptMixToRow(row, tr, { skipRefresh: true });
+  });
+  refreshBatchBidSummary();
+  _batchResult.export_csv_base64 = null;
 }
 
 function bidDeptLabel(bidKey) {
@@ -1022,17 +1238,69 @@ function bidDeptLabel(bidKey) {
 function collectBatchRowsFromTable() {
   const rows = [];
   document.querySelectorAll('#batch-table-body tr.batch-data-row').forEach(tr => {
+    const idx = parseInt(tr.dataset.idx, 10);
+    const shot = Number.isFinite(idx) ? _batchResult?.shots?.[idx] : null;
     const depts = readRowDepts(tr);
     const days = parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0;
-    const costTxt = tr.querySelector('.batch-row-cost')?.textContent || '';
-    const cost = parseFloat(costTxt.replace(/[^0-9.-]/g, ''));
+    const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
     rows.push({
+      shot_code: shot?.shot_code || '',
+      item_number: shot?.item_number || '',
       dept_days: depts,
       total_mandays: days,
-      cost_per_shot: Number.isFinite(cost) ? cost : 0,
+      cost_per_shot: cost,
     });
   });
   return rows;
+}
+
+function parseSceneKey(shotCode, itemNumber) {
+  const code = String(shotCode || '').trim();
+  if (code) {
+    const lvl = code.match(/^[A-Za-z]+_(\d+)_\d+$/);
+    if (lvl) {
+      const n = parseInt(lvl[1], 10);
+      return { key: String(n), label: `Scene ${n}` };
+    }
+    const tagged = code.match(/(?:^|[_-])sc(?:ene)?[_-]?0*(\d+)/i);
+    if (tagged) {
+      const n = parseInt(tagged[1], 10);
+      return { key: String(n), label: `Scene ${n}` };
+    }
+  }
+  const item = String(itemNumber || '').trim();
+  if (item) {
+    const dotted = item.match(/^(\d+)\.\d+$/);
+    if (dotted) {
+      const n = parseInt(dotted[1], 10);
+      return { key: String(n), label: `Scene ${n}` };
+    }
+  }
+  return { key: '_other', label: 'Unassigned' };
+}
+
+function computeSceneGroups(rows, totalCost) {
+  const groups = {};
+  (rows || []).forEach(row => {
+    if (!row) return;
+    const { key, label } = parseSceneKey(row.shot_code, row.item_number);
+    if (!groups[key]) groups[key] = { key, label, shotCount: 0, totalDays: 0, totalCost: 0 };
+    groups[key].shotCount += 1;
+    groups[key].totalDays += parseFloat(row.total_mandays) || 0;
+    groups[key].totalCost += parseFloat(row.cost_per_shot) || 0;
+  });
+  return Object.values(groups)
+    .map(g => {
+      const days = Math.round(g.totalDays * 2) / 2;
+      const cost = Math.round(g.totalCost * 100) / 100;
+      const pct = totalCost > 0 ? Math.round((cost / totalCost) * 1000) / 10 : 0;
+      return { ...g, totalDays: days, totalCost: cost, pct };
+    })
+    .sort((a, b) => {
+      if (a.key === '_other') return 1;
+      if (b.key === '_other') return -1;
+      return b.totalCost - a.totalCost;
+    });
 }
 
 function computeBatchBidStats(rows) {
@@ -1170,6 +1438,8 @@ function renderBatchBidSummary(stats) {
   if (!panel || !stats || stats.shotCount <= 0) {
     panel?.classList.add('hidden');
     document.getElementById('fx-multi-summary')?.replaceChildren();
+    document.getElementById('batch-scene-summary-body')?.replaceChildren();
+    document.getElementById('batch-scene-summary-foot')?.replaceChildren();
     return;
   }
 
@@ -1207,9 +1477,36 @@ function renderBatchBidSummary(stats) {
     </tr>`;
   }
 
+  const sceneBody = document.getElementById('batch-scene-summary-body');
+  const sceneFoot = document.getElementById('batch-scene-summary-foot');
+  const sceneGroups = computeSceneGroups(collectBatchRowsFromTable(), stats.totalCost);
+  if (!sceneGroups.length) {
+    sceneBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);font-style:italic">No scene data available.</td></tr>`;
+    sceneFoot.innerHTML = '';
+  } else {
+    sceneBody.innerHTML = sceneGroups.map(r => `<tr>
+      <td>${escHtml(r.label)}</td>
+      <td class="num">${r.shotCount}</td>
+      <td class="num">${fmt(r.totalDays)}</td>
+      <td class="num cost">${money(r.totalCost)}</td>
+      <td class="num scene-pct-cell">${r.pct}%
+        <div class="scene-pct-bar"><div style="width:${Math.min(100, r.pct)}%"></div></div>
+      </td>
+    </tr>`).join('');
+    const sceneShots = sceneGroups.reduce((s, r) => s + r.shotCount, 0);
+    sceneFoot.innerHTML = `<tr>
+      <td>All scenes</td>
+      <td class="num">${sceneShots}</td>
+      <td class="num">${fmt(stats.totalDays)}</td>
+      <td class="num cost">${money(stats.totalCost)}</td>
+      <td class="num">100%</td>
+    </tr>`;
+  }
+
   updateTaxCreditDisplay(stats.totalCost);
   renderFxMultiSummary(stats.totalCost, netSummary.net);
   updateFxStatusNote();
+  renderBatchMixPanel();
 }
 
 function refreshBatchBidSummary() {
@@ -1266,88 +1563,387 @@ function parseCsvLine(line) {
   return out;
 }
 
-function normCsvHeader(cell) {
-  return String(cell || '').trim().toUpperCase().replace(/\n/g, ' ');
+function csvCell(row, idx) {
+  if (idx === undefined || idx < 0 || idx >= row.length) return '';
+  return String(row[idx] ?? '').trim();
 }
 
-function findCsvCol(colMap, ...names) {
-  for (const name of names) {
-    const nu = normCsvHeader(name);
-    if (colMap[nu] !== undefined) return colMap[nu];
-    for (const [key, idx] of Object.entries(colMap)) {
-      if (key.includes(nu) || nu.includes(key)) return idx;
+// ── Flexible Column Mapper ───────────────────────────────────
+
+const COLUMN_ALIASES = {
+  item_number: [
+    'item#', 'item', 'item no', 'item number', '#', 'no', 'number',
+    'row', 'line', 'seq', 'sequence', 'shot #', 'shot no', 'shot number',
+  ],
+  shot_code: [
+    'vfx shot code', 'shot code', 'shot_code', 'shotcode', 'vfx code',
+    'code', 'shot id', 'shot_id', 'shotid', 'vfx id', 'clip', 'clip code',
+    'shot name', 'shot number', 'shot #', 'shot no',
+  ],
+  description: [
+    'script descriptions', 'script description', 'description',
+    'shot description', 'vfx description', 'scene description',
+    'action', 'scene action', 'shot action', 'notes',
+    'shot notes', 'detail', 'details', 'summary', 'brief',
+    'scene summary', 'visual description', 'desc', 'shot desc',
+  ],
+  vfx_notes: [
+    'vfx notes', 'vfx note', 'effects notes', 'effects',
+    'vfx requirements', 'technical notes', 'tech notes', 'vfx brief',
+    'vendor notes', 'bid notes',
+  ],
+  vfx_assumptions: [
+    'vfx assumptions', 'assumptions', 'approach', 'vfx approach',
+    'methodology', 'method', 'production notes', 'production approach',
+    'delivery notes', 'notes to vendor', 'technical approach',
+  ],
+  number_of_shots: [
+    'number of shots', 'num shots', 'shot count', 'shots', 'count',
+    'qty', 'quantity', 'allotment', 'allotments', 'no of shots',
+    '# shots', 'shot qty', 'total shots',
+  ],
+  scene: [
+    'scene', 'scene number', 'scene no', 'scene #', 'int/ext',
+    'scene heading', 'script heading', 'location', 'scene name',
+  ],
+  page: [
+    'page', 'page number', 'page no', 'page #', 'script page', 'pages',
+  ],
+};
+
+const COL_MAP_FIELD_LABELS = {
+  description: 'Description (required)',
+  shot_code: 'Shot code',
+  item_number: 'Item / row #',
+  vfx_notes: 'VFX notes',
+  vfx_assumptions: 'VFX assumptions / approach',
+  number_of_shots: 'Number of shots',
+};
+
+let _colMapRows = null;
+let _colMapResolve = null;
+let _colMapReject = null;
+
+function normalizeHeader(h) {
+  return String(h || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function headerMatchesAlias(header, alias) {
+  const h = normalizeHeader(header);
+  const a = normalizeHeader(alias);
+  if (!h || !a) return false;
+  if (h === a) return true;
+  if (a === 'notes' && h !== 'notes') return false;
+  if (a.length >= 5 && h.includes(a)) return true;
+  if (a.length >= 5 && a.includes(h) && h.length >= Math.min(a.length * 0.6, a.length - 2)) return true;
+  return false;
+}
+
+function findBestColumnMatch(headers, aliases, used = new Set()) {
+  for (const alias of aliases) {
+    const idx = headers.findIndex((h, i) => !used.has(i) && headerMatchesAlias(h, alias));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function buildColumnMap(headers) {
+  const map = {};
+  const used = new Set();
+  const fieldOrder = [
+    'item_number', 'shot_code', 'description', 'vfx_notes', 'vfx_assumptions',
+    'number_of_shots', 'scene', 'page',
+  ];
+  for (const field of fieldOrder) {
+    const idx = findBestColumnMatch(headers, COLUMN_ALIASES[field], used);
+    if (idx !== -1) {
+      map[field] = idx;
+      used.add(idx);
     }
   }
-  return undefined;
+  return map;
 }
 
-function csvCell(row, idx) {
-  if (idx === undefined || idx >= row.length) return '';
-  return String(row[idx] || '').trim();
+function findHeaderRowIndex(rows) {
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const headers = rows[i] || [];
+    const colMap = buildColumnMap(headers);
+    if (columnMapIsUsable(colMap)) return i;
+  }
+  return -1;
 }
 
-function buildCsvShotDescription(script, notes, assumptions) {
-  const parts = [];
-  if (script) parts.push(script);
-  if (notes) parts.push(`VFX: ${notes}`);
-  if (assumptions) parts.push(`APPROACH: ${assumptions}`);
-  return parts.join(' | ');
+function guessHeaderRow(rows) {
+  const found = findHeaderRowIndex(rows);
+  if (found >= 0) return found;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    if ((rows[i] || []).some(c => String(c || '').trim())) return i;
+  }
+  return 0;
 }
 
-function parseLvlupBidCsv(text) {
-  const rows = text.replace(/^\uFEFF/, '').split(/\r?\n/)
-    .filter(l => l.trim())
-    .map(parseCsvLine);
+function columnMapIsUsable(colMap) {
+  return colMap.description !== undefined
+    || colMap.vfx_notes !== undefined
+    || colMap.vfx_assumptions !== undefined;
+}
+
+function isDeptColumnName(name) {
+  const norm = normalizeHeader(name);
+  const deptBits = [
+    'camera', 'matchmove', 'layout', 'anim', 'cfx', 'fx', 'lgt', 'lighting',
+    'dmp', 'comp', 'roto', 'paint', 'prep', 'ai', 'mandays', 'cost', 'total',
+  ];
+  return deptBits.some(d => norm === d || norm.startsWith(d + ' ') || norm.includes(' ' + d));
+}
+
+function isLikelyDataItem(item, hasItemCol) {
+  if (!hasItemCol) return true;
+  if (!item) return false;
+  return item.replace(/[^0-9]/g, '').length > 0;
+}
+
+async function parseFileToShots(file) {
+  const rows = await readFileToRows(file);
   if (!rows.length) return [];
 
-  let headerIdx = -1;
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i].some(c => normCsvHeader(c) === 'ITEM#')) {
-      headerIdx = i;
-      break;
-    }
+  let headerIdx = findHeaderRowIndex(rows);
+  let colMap = headerIdx >= 0 ? buildColumnMap(rows[headerIdx]) : {};
+
+  if (headerIdx < 0 || !columnMapIsUsable(colMap)) {
+    return await promptColumnMapping(rows, headerIdx >= 0 ? headerIdx : guessHeaderRow(rows));
   }
-  if (headerIdx < 0) return [];
 
-  const header = rows[headerIdx].map(normCsvHeader);
+  return mapRowsToShots(rows, headerIdx, colMap);
+}
+
+async function readFileToRows(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'xlsx' || ext === 'xls') return parseExcelToRows(file);
+  return parseCSVToRows(file);
+}
+
+async function parseExcelToRows(file) {
+  return new Promise((resolve, reject) => {
+    if (typeof XLSX === 'undefined') {
+      reject(new Error('Excel library not loaded'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: '',
+          raw: false,
+        });
+        resolve(rows);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read Excel file'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function parseCSVToRows(file) {
+  const text = await file.text();
+  return text.replace(/^\uFEFF/, '').split(/\r?\n/)
+    .filter(l => l.trim())
+    .map(parseCsvLine);
+}
+
+function promptColumnMapping(rows, headerIdx) {
+  return new Promise((resolve, reject) => {
+    _colMapRows = rows;
+    _colMapResolve = resolve;
+    _colMapReject = reject;
+    showColumnMappingUI(rows, headerIdx);
+  });
+}
+
+function showColumnMappingUI(rows, headerIdx) {
+  const modal = document.getElementById('col-map-modal');
+  if (!modal) return;
+
+  const headerSelect = document.getElementById('col-map-header-row');
+  headerSelect.innerHTML = '';
+  const limit = Math.min(rows.length, 20);
+  for (let i = 0; i < limit; i++) {
+    const preview = (rows[i] || []).slice(0, 4).map(c => String(c || '').trim()).filter(Boolean).join(' · ');
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `Row ${i + 1}${preview ? `: ${preview.slice(0, 80)}` : ''}`;
+    if (i === headerIdx) opt.selected = true;
+    headerSelect.appendChild(opt);
+  }
+
+  populateColMapFields(rows, headerIdx);
+  modal.classList.add('open');
+}
+
+function populateColMapFields(rows, headerIdx) {
+  const headers = rows[headerIdx] || [];
+  const colMap = buildColumnMap(headers);
+  const fieldsEl = document.getElementById('col-map-fields');
+  fieldsEl.innerHTML = '';
+
+  const options = ['— skip —', ...headers.map((h, i) => {
+    const label = String(h || '').trim() || `Column ${i + 1}`;
+    return `${label} (col ${i + 1})`;
+  })];
+
+  for (const [field, label] of Object.entries(COL_MAP_FIELD_LABELS)) {
+    const wrap = document.createElement('div');
+    wrap.className = 'col-map-field';
+    const sel = document.createElement('select');
+    sel.dataset.field = field;
+    sel.innerHTML = options.map((o, oi) => {
+      const val = oi === 0 ? '' : String(oi - 1);
+      return `<option value="${val}">${o.replace(/</g, '&lt;')}</option>`;
+    }).join('');
+    if (colMap[field] !== undefined) sel.value = String(colMap[field]);
+    wrap.innerHTML = `<label>${label}</label>`;
+    wrap.appendChild(sel);
+    fieldsEl.appendChild(wrap);
+  }
+
+  renderColMapPreview(rows, headerIdx);
+}
+
+function onColMapHeaderChange() {
+  const headerIdx = parseInt(document.getElementById('col-map-header-row').value, 10) || 0;
+  populateColMapFields(_colMapRows || [], headerIdx);
+}
+
+function renderColMapPreview(rows, headerIdx) {
+  const previewEl = document.getElementById('col-map-preview');
+  const headers = rows[headerIdx] || [];
+  const dataRows = rows.slice(headerIdx + 1, headerIdx + 4);
+  const ths = headers.map((h, i) =>
+    `<th title="${String(h || '').replace(/"/g, '&quot;')}">${String(h || `Col ${i + 1}`).replace(/</g, '&lt;')}</th>`
+  ).join('');
+  const trs = dataRows.map(row =>
+    `<tr>${headers.map((_, i) =>
+      `<td title="${String(row[i] || '').replace(/"/g, '&quot;')}">${String(row[i] || '').replace(/</g, '&lt;')}</td>`
+    ).join('')}</tr>`
+  ).join('');
+  previewEl.innerHTML = `<table><thead><tr>${ths}</tr></thead><tbody>${trs || '<tr><td colspan="99" style="color:var(--muted)">No data rows below header</td></tr>'}</tbody></table>`;
+}
+
+function readColMapFromUI() {
+  const headerIdx = parseInt(document.getElementById('col-map-header-row').value, 10) || 0;
   const colMap = {};
-  header.forEach((name, idx) => { if (name) colMap[name] = idx; });
+  document.querySelectorAll('#col-map-fields select[data-field]').forEach(sel => {
+    const val = sel.value;
+    if (val !== '') colMap[sel.dataset.field] = parseInt(val, 10);
+  });
+  return { headerIdx, colMap };
+}
 
-  const idxItem = findCsvCol(colMap, 'ITEM#');
-  const idxCode = findCsvCol(colMap, 'VFX SHOT CODE', 'SHOT CODE');
-  const idxScript = findCsvCol(colMap, 'SCRIPT DESCRIPTIONS', 'SCRIPT DESCRIPTION');
-  const idxNotes = findCsvCol(colMap, 'VFX NOTES');
-  const idxAssump = findCsvCol(colMap, 'VFX ASSUMPTIONS');
-  const idxNShots = findCsvCol(colMap, 'NUMBER OF SHOTS');
+function confirmColumnMap() {
+  if (!_colMapRows) return;
+  const { headerIdx, colMap } = readColMapFromUI();
+  if (colMap.description === undefined && colMap.vfx_notes === undefined && colMap.vfx_assumptions === undefined) {
+    toast('Select at least a Description column (or VFX notes / approach).', 'warn');
+    return;
+  }
+  const shots = mapRowsToShots(_colMapRows, headerIdx, colMap);
+  closeColMapModal(false);
+  if (_colMapResolve) {
+    _colMapResolve(shots);
+    _colMapResolve = null;
+    _colMapReject = null;
+  }
+}
 
+function closeColMap() {
+  closeColMapModal(true);
+}
+
+function closeColMapOutside(e) {
+  if (e.target.id === 'col-map-modal') closeColMap();
+}
+
+function closeColMapModal(cancelled) {
+  document.getElementById('col-map-modal')?.classList.remove('open');
+  _colMapRows = null;
+  if (cancelled && _colMapReject) {
+    _colMapReject(Object.assign(new Error('cancelled'), { cancelled: true }));
+    _colMapReject = null;
+    _colMapResolve = null;
+  }
+}
+
+function mapRowsToShots(rows, headerIdx, colMap) {
+  const headers = rows[headerIdx] || [];
+  const allColIndices = headers.reduce((acc, h, i) => {
+    if (String(h || '').trim()) acc[String(h).trim()] = i;
+    return acc;
+  }, {});
+
+  const hasItemCol = colMap.item_number !== undefined;
   const shots = [];
-  for (let i = headerIdx + 1; i < rows.length; i++) {
-    const row = rows[i];
-    const item = csvCell(row, idxItem);
-    if (!item) continue;
 
-    const script = csvCell(row, idxScript);
-    const notes = csvCell(row, idxNotes);
-    const assump = csvCell(row, idxAssump);
-    const desc = buildCsvShotDescription(script, notes, assump);
-    if (!desc) continue;
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i] || [];
+    if (row.every(c => !String(c ?? '').trim())) continue;
+
+    const item = hasItemCol
+      ? csvCell(row, colMap.item_number)
+      : String(shots.length + 1);
+
+    if (!isLikelyDataItem(item, hasItemCol)) {
+      if (shots.length > 0) continue;
+      if (!hasItemCol) { /* keep going */ } else continue;
+    }
+
+    const scriptDesc = csvCell(row, colMap.description);
+    const vfxNotes = csvCell(row, colMap.vfx_notes);
+    const assumptions = csvCell(row, colMap.vfx_assumptions);
+
+    const extraContext = Object.entries(allColIndices)
+      .filter(([name, idx]) => {
+        if (isDeptColumnName(name)) return false;
+        if (Object.values(colMap).includes(idx)) return false;
+        return csvCell(row, idx);
+      })
+      .map(([name, idx]) => `${name}: ${csvCell(row, idx)}`)
+      .join(' | ');
+
+    const parts = [
+      scriptDesc,
+      vfxNotes ? `VFX: ${vfxNotes}` : '',
+      assumptions ? `APPROACH: ${assumptions}` : '',
+      extraContext ? `CONTEXT: ${extraContext}` : '',
+    ].filter(Boolean);
+
+    const combined = parts.join(' | ');
+    if (!combined.trim() || combined.length < 5) continue;
 
     let nShots = 1;
-    const rawN = csvCell(row, idxNShots);
-    if (rawN) {
-      const parsed = parseInt(rawN, 10);
+    if (colMap.number_of_shots !== undefined) {
+      const parsed = parseInt(csvCell(row, colMap.number_of_shots), 10);
       if (!Number.isNaN(parsed) && parsed > 0) nShots = parsed;
     }
 
     shots.push({
-      item_number: item,
-      shot_code: csvCell(row, idxCode) || null,
-      script_description: script,
-      vfx_notes: notes,
-      vfx_assumptions: assump,
+      item_number: item || String(shots.length + 1),
+      shot_code: colMap.shot_code !== undefined ? (csvCell(row, colMap.shot_code) || null) : null,
+      script_description: scriptDesc,
+      vfx_notes: vfxNotes,
+      vfx_assumptions: assumptions,
       number_of_shots: nShots,
+      description: combined,
+      _raw_description: scriptDesc,
     });
   }
+
   return shots;
 }
 
@@ -1523,17 +2119,22 @@ async function runBatchEstimate() {
     let shots = [];
 
     if (file) {
-      const text = await file.text();
-      shots = parseLvlupBidCsv(text);
+      try {
+        shots = await parseFileToShots(file);
+      } catch (e) {
+        if (e.cancelled) return;
+        throw e;
+      }
       if (!shots.length) {
-        toast('CSV must contain an ITEM# header row with shot descriptions.', 'warn');
+        toast('No shots found. Check your file has description columns.', 'warn');
         document.getElementById('batch-results').classList.add('hidden');
         return;
       }
+      toast(`Parsed ${shots.length} shots from ${file.name}`, 'ok');
     } else {
       shots = parseBatchPaste(document.getElementById('batch-input').value);
       if (!shots.length) {
-        toast('Upload a LVL UP CSV or paste shot lines.', 'warn');
+        toast('Upload a bid CSV/Excel file or paste shot lines.', 'warn');
         document.getElementById('batch-results').classList.add('hidden');
         return;
       }
@@ -1667,7 +2268,7 @@ function updateBatchRowNotes(input) {
   _batchResult.export_csv_base64 = null;
 }
 
-function updateBatchRowTotals(tr) {
+function updateBatchRowTotals(tr, skipRefresh) {
   const idx = batchRowIndex(tr);
   if (!Number.isFinite(idx)) return;
   const depts = readRowDepts(tr);
@@ -1684,7 +2285,7 @@ function updateBatchRowTotals(tr) {
     markBatchRowEdited(idx);
     _batchResult.export_csv_base64 = null;
   }
-  refreshBatchBidSummary();
+  if (!skipRefresh) refreshBatchBidSummary();
 }
 
 function recalcBatchTotals() {

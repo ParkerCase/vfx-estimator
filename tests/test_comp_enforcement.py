@@ -34,6 +34,22 @@ class TestEnforceDepartmentMinimums:
         dept = enforce_department_minimums(dept_in, total, description=description)
         assert dept.get("lighting", 0) >= 3.0
 
+    def test_ai_days_when_explicitly_mentioned(self):
+        dept = enforce_department_minimums(
+            {},
+            5.0,
+            description="AI-generated background elements with practical foreground actors",
+        )
+        assert dept.get("ai", 0) >= 2.0
+
+    def test_ai_stays_zero_without_keywords(self):
+        dept = enforce_department_minimums(
+            {"comp_roto": 1.0, "comp_paint": 1.0},
+            4.0,
+            description="Wire removal from stunt performer",
+        )
+        assert dept.get("ai", 0) == 0
+
 
 class TestEstimateCompMinimums:
     def _make_service(self) -> EstimatorService:

@@ -18,6 +18,7 @@ BID_DEPT_MAP: Dict[str, str] = {
     "COMP PAINT": "comp_paint",
     "COMP ROTO": "comp_roto",
     "COMP": "compositing",
+    "AI": "ai",
 }
 
 INTERNAL_TO_BID: Dict[str, str] = {v: k for k, v in BID_DEPT_MAP.items()}
@@ -67,6 +68,7 @@ class DeptDays(BaseModel):
     obj_track: float = 0.0
     cfx: float = 0.0
     prep: float = 0.0
+    ai: float = 0.0
 
     def total(self) -> float:
         return sum(self.model_dump().values())

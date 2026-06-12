@@ -64,6 +64,13 @@ CG LIGHTING IS MANDATORY — NO EXCEPTIONS:
 6. WIRE REMOVAL / CLEANUP shots: ONLY comp_roto + comp_paint + compositing.
    layout = 0, animation = 0, lighting = 0, fx = 0. No exceptions.
 
+AI (Generative AI work):
+- Used ONLY when: description explicitly mentions AI-generated elements,
+  AI cleanup, AI upscaling, or generative AI tools
+- DEFAULT IS 0 — do not allocate AI days unless explicitly stated
+- When needed: 1-5 days depending on scope
+- Key: "ai" (maps to "AI" column in bid)
+
 7. ESTABLISHING shots get hero treatment:
    lighting >= 6 days, compositing >= 5 days minimum.
 
@@ -81,7 +88,7 @@ SHOT TYPE:
 TYPICAL DAY RANGES (standard shot):
   camera_track 1-3d  |  matchmove 1-3d  |  layout 1-4d   |  animation 3-12d
   cfx 1-4d           |  fx 3-10d        |  lighting 3-9d  |  dmp 2-5d
-  comp_paint 2-6d    |  comp_roto 1-4d  |  compositing 3-8d
+  comp_paint 2-6d    |  comp_roto 1-4d  |  compositing 3-8d  |  ai 0d (default) or 1-5d
 """
 
 
@@ -288,7 +295,7 @@ Return a JSON object. You MUST include ALL FIVE of these fields — missing any 
   "departments" — object where each key is a department name and its value is {{"days": <number>}}.
                   Include ALL departments with non-zero work for this shot.
                   Valid dept names: camera_track, matchmove, layout, animation, cfx, fx,
-                  lighting, dmp, comp_paint, comp_roto, compositing, prep
+                  lighting, dmp, comp_paint, comp_roto, compositing, prep, ai
   "total_days"  — float; MUST equal the exact arithmetic sum of all included department days
   "confidence"  — float between 0.0 and 1.0
   "reasoning"   — one sentence: shot type classification and key similar-shot anchor used
