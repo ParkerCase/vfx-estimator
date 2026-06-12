@@ -1208,7 +1208,6 @@ function renderBatchBidSummary(stats) {
   }
 
   updateTaxCreditDisplay(stats.totalCost);
-  const netSummary = computeBidNetSummary(stats.totalCost);
   renderFxMultiSummary(stats.totalCost, netSummary.net);
   updateFxStatusNote();
 }
