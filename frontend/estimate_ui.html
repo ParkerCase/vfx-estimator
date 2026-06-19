@@ -145,6 +145,30 @@
     #toast.ok{border-color:var(--green);color:var(--green)}
     #toast.warn{border-color:var(--orange);color:var(--orange)}
     #toast.err{border-color:var(--red);color:var(--red)}
+    #toast.info{border-color:var(--accent);color:var(--accent)}
+
+    /* ── Bid history drawer ── */
+    .history-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;opacity:0;
+      pointer-events:none;transition:opacity .25s}
+    .history-backdrop.open{opacity:1;pointer-events:auto}
+    .history-drawer{position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;background:var(--card);
+      border-left:1px solid var(--border);z-index:160;transform:translateX(100%);transition:transform .28s ease;
+      display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.45)}
+    .history-drawer.open{transform:translateX(0)}
+    .history-drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
+      border-bottom:1px solid var(--border)}
+    .history-drawer-hdr h2{font-size:16px;font-weight:800;margin:0}
+    .history-drawer-body{flex:1;overflow-y:auto;padding:12px 14px}
+    .history-bid-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:12px 14px;margin-bottom:10px}
+    .history-bid-card .hb-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px}
+    .history-bid-card .hb-meta{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+    .history-bid-card .hb-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .history-empty{font-size:13px;color:var(--muted);padding:24px 8px;text-align:center}
+    .btn-history{font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid var(--border);
+      background:var(--card2);color:var(--text);cursor:pointer}
+    .btn-history:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-history.danger:hover{border-color:var(--red);color:var(--red)}
 
     .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);
           border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;
@@ -175,6 +199,32 @@
     .batch-table .col-desc{max-width:160px;font-size:11px}
     .batch-table .col-notes{min-width:180px}
     .batch-table textarea.batch-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:vertical}
+    .batch-table .col-hidden{display:none!important}
+    .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
+    .expand-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;
+      font-size:12px;font-weight:700;color:var(--text);cursor:pointer;white-space:nowrap}
+    .expand-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .col-toggle-bar{margin-bottom:12px}
+    .col-toggle-trigger{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      padding:7px 14px;font-size:12px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:8px}
+    .col-toggle-trigger:hover{border-color:var(--accent)}
+    .col-toggle-panel{margin-top:8px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+    .col-toggle-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+    .col-check-item{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);
+      border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
+    .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.08)}
+    .col-check-item input{display:none}
+    .col-toggle-actions{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
+    .table-modal{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column}
+    .table-modal-hdr{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+      justify-content:space-between;gap:12px;flex-shrink:0}
+    .table-modal-body{flex:1;overflow:auto;padding:0}
+    .batch-table-modal{min-width:max-content;width:100%}
+    .batch-table-modal .batch-col-sticky{position:sticky;background:var(--surface)}
+    .batch-table-modal thead .batch-col-sticky{z-index:4}
+    .batch-table-modal tbody .batch-col-sticky{z-index:2;background:var(--card)}
+    .batch-table-modal tbody tr.batch-data-row:nth-child(4n+1) td.batch-col-sticky{background:rgba(255,255,255,0.02)}
+    .batch-table-modal .col-desc{min-width:220px;max-width:360px}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
     .conf-badge.hi{background:#1a3a2a;color:var(--green)}
     .conf-badge.mid{background:#3a2e10;color:var(--orange)}
@@ -321,6 +371,8 @@
              oninput="saveUserId()" onchange="saveUserId()">
     </label>
     <span id="corr-pill" class="pill">0 corrections</span>
+    <button type="button" class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="openHistoryDrawer()"
+      title="Saved batch estimates">History</button>
   </div>
 </div>
 
@@ -445,6 +497,25 @@
         <div class="progress-label" id="progress-label">Estimating IVL_001… (0%)</div>
       </div>
       <div class="card hidden" id="batch-table-card" style="padding-bottom:8px">
+        <div class="table-card-header">
+          <span class="sec-label" style="margin:0">Results</span>
+          <button type="button" class="expand-btn hidden" id="expand-table-btn" onclick="openTableModal()">⤢ Expand</button>
+        </div>
+        <div class="col-toggle-bar">
+          <button type="button" class="col-toggle-trigger" onclick="toggleColPanel()">
+            <svg class="icon icon-sm" aria-hidden="true"><use href="#i-table"></use></svg>
+            Columns
+            <span id="col-toggle-count">(0 shown)</span>
+          </button>
+          <div id="col-toggle-panel" class="col-toggle-panel hidden">
+            <div class="col-toggle-grid" id="col-checkboxes"></div>
+            <div class="col-toggle-actions">
+              <button type="button" class="btn-ghost" onclick="setAllCols(true)">Show All</button>
+              <button type="button" class="btn-ghost" onclick="setAllCols(false)">Hide All</button>
+              <button type="button" class="btn-ghost" onclick="resetColDefaults()">Reset to Default</button>
+            </div>
+          </div>
+        </div>
         <div class="batch-table-wrap">
           <table class="batch-table" id="batch-results-table">
             <thead>
@@ -591,6 +662,40 @@
   </div>
 </div>
 
+<div id="history-backdrop" class="history-backdrop" onclick="closeHistoryDrawer()"></div>
+<aside id="history-drawer" class="history-drawer" aria-label="Bid history">
+  <div class="history-drawer-hdr">
+    <h2>Bid History</h2>
+    <button type="button" class="btn-ghost" onclick="closeHistoryDrawer()">Close</button>
+  </div>
+  <div class="history-drawer-body" id="history-list">
+    <div class="history-empty">Loading…</div>
+  </div>
+</aside>
+
+<div id="table-modal" class="table-modal hidden">
+  <div class="table-modal-hdr">
+    <span id="modal-project-title" style="font-weight:700;font-size:15px">Bid Breakdown</span>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span id="modal-summary" style="color:var(--muted);font-size:13px"></span>
+      <button type="button" onclick="closeTableModal()" class="btn-ghost">✕ Close</button>
+    </div>
+  </div>
+  <div class="table-modal-body">
+    <table class="batch-table batch-table-modal" id="modal-table">
+      <thead><tr id="modal-thead-row"></tr></thead>
+      <tbody id="modal-table-body"></tbody>
+    </table>
+  </div>
+  <div class="batch-bar" id="modal-batch-bar">
+    <span id="modal-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
+    <div class="btn-row" style="margin:0">
+      <button type="button" class="btn-green with-icon" onclick="saveAllBatchCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save All Corrections</button>
+      <button type="button" class="btn-ghost with-icon" onclick="exportBatchCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -608,13 +713,13 @@ const DISPLAY_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD'];
 const CURRENCY_SYMBOLS = { USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$' };
 const RATE_DEPARTMENTS = [
   'animation', 'fx', 'lighting', 'compositing', 'comp_paint', 'comp_roto',
-  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'ai',
+  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'crowds', 'enviro', 'ai',
 ];
 const BID_TO_INTERNAL = {
   CAMERA: 'camera_track', MATCHMOVE: 'matchmove', LAYOUT: 'layout',
   ANIM: 'animation', CFX: 'cfx', FX: 'fx', LGT: 'lighting',
   DMP: 'dmp', 'COMP PAINT': 'comp_paint', 'COMP ROTO': 'comp_roto', COMP: 'compositing',
-  AI: 'ai',
+  CROWDS: 'crowds', ENVIRO: 'enviro', AI: 'ai',
 };
 let _deptRates = {};
 let _fallbackDayRate = 700;
@@ -660,7 +765,7 @@ const DEPT_LABELS = {
   camera_track:'Camera Track', matchmove:'Matchmove', layout:'Layout',
   animation:'Animation', cfx:'CFX', fx:'FX', lighting:'Lighting',
   dmp:'DMP', comp_paint:'Comp / Paint', comp_roto:'Comp / Roto',
-  compositing:'Compositing', prep:'Prep', ai:'AI / Generative',
+  compositing:'Compositing', prep:'Prep', crowds:'Crowds', enviro:'Environment', ai:'AI / Generative',
 };
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -896,6 +1001,10 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function escAttr(s) {
+  return String(s || '').replace(/"/g, '&quot;');
+}
+
 function iconSvg(name, cls='icon') {
   return `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 }
@@ -964,6 +1073,10 @@ function buildBatchPreQual() {
   return Object.keys(pq).length ? pq : null;
 }
 
+function getPreQualData() {
+  return buildBatchPreQual();
+}
+
 // ── Batch / bid file mode ──────────────────────────────────────────────────
 
 let _batchResult = null;
@@ -973,13 +1086,32 @@ let _mixDeptDomMap = {};
 
 const BID_DEPTS = [
   'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM', 'CFX', 'FX',
-  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP', 'AI',
+  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP', 'CROWDS', 'ENVIRO', 'AI',
 ];
 const BID_DEPT_SHORT = {
   CAMERA: 'CAM', MATCHMOVE: 'MM', LAYOUT: 'LAY', ANIM: 'ANIM', CFX: 'CFX', FX: 'FX',
   LGT: 'LGT', DMP: 'DMP', 'COMP PAINT': 'CP', 'COMP ROTO': 'CR', COMP: 'COMP',
-  AI: 'AI',
+  CROWDS: 'CROWDS', ENVIRO: 'ENV', AI: 'AI',
 };
+
+const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
+const COL_DEFAULTS = {
+  CAMERA: true,
+  MATCHMOVE: false,
+  LAYOUT: true,
+  ANIM: true,
+  CFX: false,
+  FX: true,
+  LGT: true,
+  DMP: false,
+  'COMP PAINT': false,
+  'COMP ROTO': false,
+  COMP: true,
+  CROWDS: false,
+  ENVIRO: false,
+  AI: false,
+};
+let _visibleCols = loadVisibleCols();
 
 function onBatchFileSelected(input) {
   const file = input.files?.[0];
@@ -1034,6 +1166,8 @@ function clearBatchResults() {
   document.getElementById('batch-thead-row').innerHTML = '';
   document.getElementById('batch-summary-bar').textContent = '—';
   document.getElementById('batch-table-card').classList.add('hidden');
+  document.getElementById('expand-table-btn')?.classList.add('hidden');
+  closeTableModal();
   document.getElementById('batch-mix-panel')?.classList.add('hidden');
   document.getElementById('batch-mix-grid').innerHTML = '';
   resetGlobalDeptMixers(true);
@@ -1090,8 +1224,8 @@ function appendBatchResultRow(i, row) {
 
   BID_DEPTS.forEach(dept => {
     const v = depts[dept] ?? 0;
-    cells += `<td><input type="number" class="bid-dept-inp" min="0" step="0.5"
-      data-dept="${dept}" data-idx="${i}" value="${v}"
+    cells += `<td data-dept="${escAttr(dept)}"><input type="number" class="bid-dept-inp" min="0" step="0.5"
+      data-dept="${escAttr(dept)}" data-idx="${i}" value="${v}"
       oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))"></td>`;
   });
 
@@ -1106,6 +1240,8 @@ function appendBatchResultRow(i, row) {
   tr.innerHTML = cells;
   tbody.appendChild(tr);
   applyDeptMixToRow(row, tr, { skipRefresh: true });
+  document.getElementById('expand-table-btn')?.classList.remove('hidden');
+  applyColVisibility();
   if (_batchResult) recalcBatchTotals();
 }
 
@@ -1533,6 +1669,7 @@ function refreshBatchBidSummary() {
   document.getElementById('batch-summary-bar').innerHTML = bar;
 
   renderBatchBidSummary(stats);
+  if (isTableModalOpen()) refreshModalSummary();
 }
 
 function updateBatchSummary(results) {
@@ -1563,6 +1700,66 @@ function parseCsvLine(line) {
   return out;
 }
 
+function parseFullCsv(text) {
+  text = text.replace(/^\uFEFF/, '');
+
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  let i = 0;
+
+  while (i < text.length) {
+    const c = text[i];
+    const next = text[i + 1];
+
+    if (c === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        i += 2;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      i++;
+      continue;
+    }
+
+    if (c === ',' && !inQuotes) {
+      row.push(cell.trim());
+      cell = '';
+      i++;
+      continue;
+    }
+
+    if ((c === '\n' || (c === '\r' && next === '\n')) && !inQuotes) {
+      row.push(cell.trim());
+      cell = '';
+      if (c === '\r') i++;
+      if (row.some(c => c.length > 0)) rows.push(row);
+      row = [];
+      i++;
+      continue;
+    }
+
+    if ((c === '\n' || c === '\r') && inQuotes) {
+      cell += ' ';
+      if (c === '\r' && next === '\n') i++;
+      i++;
+      continue;
+    }
+
+    cell += c;
+    i++;
+  }
+
+  if (cell.length || row.length) {
+    row.push(cell.trim());
+    if (row.some(c => c.length > 0)) rows.push(row);
+  }
+
+  return rows;
+}
+
 function csvCell(row, idx) {
   if (idx === undefined || idx < 0 || idx >= row.length) return '';
   return String(row[idx] ?? '').trim();
@@ -1573,41 +1770,121 @@ function csvCell(row, idx) {
 const COLUMN_ALIASES = {
   item_number: [
     'item#', 'item', 'item no', 'item number', '#', 'no', 'number',
-    'row', 'line', 'seq', 'sequence', 'shot #', 'shot no', 'shot number',
+    'row', 'line', 'seq',
   ],
   shot_code: [
-    'vfx shot code', 'shot code', 'shot_code', 'shotcode', 'vfx code',
-    'code', 'shot id', 'shot_id', 'shotid', 'vfx id', 'clip', 'clip code',
-    'shot name', 'shot number', 'shot #', 'shot no',
+    'vfx shot code', 'shot code', 'shot_code', 'vfx shot',
+    'shot number', 'shot #', 'shot no', 'previs shot code',
+    'client shot number', 'shot id', 'vfx id', 'clip', 'clip code',
+    'shot name',
   ],
-  description: [
-    'script descriptions', 'script description', 'description',
-    'shot description', 'vfx description', 'scene description',
-    'action', 'scene action', 'shot action', 'notes',
-    'shot notes', 'detail', 'details', 'summary', 'brief',
-    'scene summary', 'visual description', 'desc', 'shot desc',
+  episode: [
+    'eps', 'ep', 'episode', 'episode code', 'epi',
   ],
-  vfx_notes: [
-    'vfx notes', 'vfx note', 'effects notes', 'effects',
-    'vfx requirements', 'technical notes', 'tech notes', 'vfx brief',
-    'vendor notes', 'bid notes',
-  ],
-  vfx_assumptions: [
-    'vfx assumptions', 'assumptions', 'approach', 'vfx approach',
-    'methodology', 'method', 'production notes', 'production approach',
-    'delivery notes', 'notes to vendor', 'technical approach',
-  ],
-  number_of_shots: [
-    'number of shots', 'num shots', 'shot count', 'shots', 'count',
-    'qty', 'quantity', 'allotment', 'allotments', 'no of shots',
-    '# shots', 'shot qty', 'total shots',
+  sequence: [
+    'sequence', 'seq', 'act',
   ],
   scene: [
-    'scene', 'scene number', 'scene no', 'scene #', 'int/ext',
-    'scene heading', 'script heading', 'location', 'scene name',
+    'scene', 'scene number', 'scene no', 'scene description',
+    'scene heading', 'script heading',
   ],
   page: [
-    'page', 'page number', 'page no', 'page #', 'script page', 'pages',
+    'page number', 'page #', 'pg #', 'page', 'pg', 'script page',
+    'pages',
+  ],
+  int_ext: [
+    'int/ext', 'ext/int', 'int ext', 'interior exterior',
+  ],
+  location: [
+    'location', 'loc', 'script location', 'script heading location',
+  ],
+  time_of_day: [
+    'time of day', 'tod', 'time', 'day/night',
+  ],
+  shot_status: [
+    'shot status', 'status',
+  ],
+  type_of_shot: [
+    'type of shot', 'type of shot (2d/3d)', 'shot type',
+    'primary vfx shot type', 'vfx type', 'work type', 'complexity',
+    'cg vs hybrid vs practical',
+  ],
+  length: ['length', 'duration', 'frames'],
+  description: [
+    'shot description', 'script description', 'script descriptions',
+    'description', 'shot/scene desc', 'scene description', 'script detail',
+    'type of shot description', 'shot desc', 'desc',
+    'scope',
+  ],
+  vfx_notes: [
+    'vfx notes', 'vfx description', 'vfx work', 'vfx requirements',
+    'primary vfx work', 'secondary vfx work', 'tertiary vfx work',
+    'effects notes', 'vfx brief', 'vfx work required',
+  ],
+  vfx_assumptions: [
+    'vfx assumptions', 'assumptions', 'marz notes / assumptions',
+    'notes / assumptions', 'production assumptions', 'methodology',
+    'marz notes', 'approach', 'technical approach', 'vendor notes',
+    'marz internal notes', 'notes to client', 'notes to marz',
+  ],
+  client_notes: [
+    'client notes', 'notes from client', 'notes', 'production notes',
+    'beauty work description', 'client feedback',
+    'notes to marz', 'bid notes',
+  ],
+  misc: [
+    'misc 1', 'misc 2', 'misc 3', 'misc 4', 'misc 5',
+  ],
+  number_of_shots: [
+    'number of shots', 'shot count', 'shots', '# of shots',
+    'num shots', 'shot qty', 'qty', 'quantity', 'allotment',
+    'vendor shots', 'count',
+  ],
+};
+
+const DEPT_ALIASES = {
+  CAMERA: [
+    'camera', 'cam trk', 'tracking', 'cam track', 'camera track',
+    'camera tracking',
+  ],
+  MATCHMOVE: [
+    'matchmove', 'match move', 'obj/body trk', 'object track',
+    'body track', 'obj track', 'matchmove/obj track',
+  ],
+  LAYOUT: [
+    'layout', 'layout/assets', 'env layout', 'environment layout',
+  ],
+  ANIM: [
+    'anim', 'animation',
+  ],
+  CFX: [
+    'cfx', 'groom sim', 'muscle sim', 'cloth sim', 'cloth/hair',
+    'simulation', 'character fx', 'char fx',
+  ],
+  FX: [
+    'fx', 'effects', 'vfx effects', 'practical fx',
+  ],
+  LGT: [
+    'lgt', 'lighting',
+  ],
+  DMP: [
+    'dmp', 'matte painting', 'digital matte', 'digital matte painting',
+  ],
+  'COMP PAINT': [
+    'comp paint', 'comp prep', 'paint', 'paint/prep',
+    'compositing paint',
+  ],
+  'COMP ROTO': [
+    'comp roto', 'roto', 'rotoscoping', 'comp roto/paint',
+  ],
+  COMP: [
+    'comp', 'compositing', 'composite', '2d compositing',
+  ],
+  CROWDS: [
+    'crowds', 'crowd', 'crowd sim', 'crowd animation',
+  ],
+  ENVIRO: [
+    'enviro', 'environment', 'cg environment', 'bg environment',
   ],
 };
 
@@ -1615,9 +1892,12 @@ const COL_MAP_FIELD_LABELS = {
   description: 'Description (required)',
   shot_code: 'Shot code',
   item_number: 'Item / row #',
-  vfx_notes: 'VFX notes',
+  vfx_notes: 'VFX notes / work',
   vfx_assumptions: 'VFX assumptions / approach',
+  client_notes: 'Client / production notes',
   number_of_shots: 'Number of shots',
+  scene: 'Scene',
+  type_of_shot: 'Shot type',
 };
 
 let _colMapRows = null;
@@ -1647,15 +1927,24 @@ function findBestColumnMatch(headers, aliases, used = new Set()) {
   return -1;
 }
 
+function findColByAliases(headers, aliases, used = new Set()) {
+  const idx = findBestColumnMatch(headers, aliases, used);
+  return idx >= 0 ? idx : undefined;
+}
+
 function buildColumnMap(headers) {
   const map = {};
   const used = new Set();
   const fieldOrder = [
-    'item_number', 'shot_code', 'description', 'vfx_notes', 'vfx_assumptions',
-    'number_of_shots', 'scene', 'page',
+    'item_number', 'shot_code', 'episode', 'sequence', 'scene', 'page',
+    'int_ext', 'location', 'time_of_day', 'shot_status', 'type_of_shot', 'length',
+    'description', 'vfx_notes', 'vfx_assumptions', 'client_notes',
+    'number_of_shots',
   ];
   for (const field of fieldOrder) {
-    const idx = findBestColumnMatch(headers, COLUMN_ALIASES[field], used);
+    const aliases = COLUMN_ALIASES[field];
+    if (!aliases) continue;
+    const idx = findBestColumnMatch(headers, aliases, used);
     if (idx !== -1) {
       map[field] = idx;
       used.add(idx);
@@ -1665,10 +1954,19 @@ function buildColumnMap(headers) {
 }
 
 function findHeaderRowIndex(rows) {
-  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
     const headers = rows[i] || [];
     const colMap = buildColumnMap(headers);
     if (columnMapIsUsable(colMap)) return i;
+  }
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+    const normalized = (rows[i] || []).map(c => String(c || '').trim().toUpperCase());
+    const vfxHeaders = [
+      'SHOT', 'SCENE', 'DESCRIPTION', 'COMP', 'CAMERA', 'TRACKING',
+      'ANIM', 'ANIMATION', 'LAYOUT', 'LIGHTING', 'LGT', 'VFX',
+    ];
+    const matches = vfxHeaders.filter(h => normalized.some(c => c.includes(h))).length;
+    if (matches >= 3) return i;
   }
   return -1;
 }
@@ -1685,16 +1983,35 @@ function guessHeaderRow(rows) {
 function columnMapIsUsable(colMap) {
   return colMap.description !== undefined
     || colMap.vfx_notes !== undefined
-    || colMap.vfx_assumptions !== undefined;
+    || colMap.vfx_assumptions !== undefined
+    || colMap.client_notes !== undefined;
+}
+
+function findDeptColumnIndex(headers, bidDept) {
+  const aliases = DEPT_ALIASES[bidDept];
+  if (!aliases) return undefined;
+  return findColByAliases(headers, aliases);
 }
 
 function isDeptColumnName(name) {
   const norm = normalizeHeader(name);
-  const deptBits = [
-    'camera', 'matchmove', 'layout', 'anim', 'cfx', 'fx', 'lgt', 'lighting',
-    'dmp', 'comp', 'roto', 'paint', 'prep', 'ai', 'mandays', 'cost', 'total',
+  const skipBits = [
+    'mandays', 'manday', 'cost', 'total', 'bc mandays', 'os mandays',
+    '3d days', '2d days', '3d day', '2d day',
   ];
-  return deptBits.some(d => norm === d || norm.startsWith(d + ' ') || norm.includes(' ' + d));
+  if (skipBits.some(b => norm.includes(b))) return true;
+  for (const aliases of Object.values(DEPT_ALIASES)) {
+    for (const alias of aliases) {
+      const a = normalizeHeader(alias);
+      if (!a) continue;
+      if (norm === a) return true;
+      if (a.length >= 3 && (norm.includes(a) || (norm.length >= 3 && a.includes(norm)))) return true;
+    }
+  }
+  for (const dept of BID_DEPTS) {
+    if (norm === normalizeHeader(dept)) return true;
+  }
+  return false;
 }
 
 function isLikelyDataItem(item, hasItemCol) {
@@ -1753,9 +2070,7 @@ async function parseExcelToRows(file) {
 
 async function parseCSVToRows(file) {
   const text = await file.text();
-  return text.replace(/^\uFEFF/, '').split(/\r?\n/)
-    .filter(l => l.trim())
-    .map(parseCsvLine);
+  return parseFullCsv(text);
 }
 
 function promptColumnMapping(rows, headerIdx) {
@@ -1880,51 +2195,97 @@ function closeColMapModal(cancelled) {
   }
 }
 
+function collectVfxWork(row, headers, colMap) {
+  const used = new Set();
+  const idxPrim = findColByAliases(headers, ['primary vfx work'], used);
+  const idxSec = findColByAliases(headers, ['secondary vfx work'], used);
+  const idxTert = findColByAliases(headers, ['tertiary vfx work'], used);
+  if (idxPrim !== undefined || idxSec !== undefined || idxTert !== undefined) {
+    return [idxPrim, idxSec, idxTert]
+      .filter(idx => idx !== undefined)
+      .map(idx => csvCell(row, idx))
+      .filter(Boolean)
+      .join(' + ');
+  }
+  return csvCell(row, colMap.vfx_notes);
+}
+
+function collectMiscValues(row, headers) {
+  const vals = [];
+  for (const m of COLUMN_ALIASES.misc) {
+    const idx = findColByAliases(headers, [m]);
+    if (idx !== undefined) {
+      const v = csvCell(row, idx);
+      if (v) vals.push(v);
+    }
+  }
+  return vals;
+}
+
 function mapRowsToShots(rows, headerIdx, colMap) {
   const headers = rows[headerIdx] || [];
-  const allColIndices = headers.reduce((acc, h, i) => {
-    if (String(h || '').trim()) acc[String(h).trim()] = i;
-    return acc;
-  }, {});
-
   const hasItemCol = colMap.item_number !== undefined;
   const shots = [];
+
+  const idx3D = findColByAliases(headers, ['3d days', '3d day +/-']);
+  const idx2D = findColByAliases(headers, ['2d days', '2d day +/-']);
+  const hasDeptBreakdown = BID_DEPTS.some(dept => findDeptColumnIndex(headers, dept) !== undefined);
 
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const row = rows[i] || [];
     if (row.every(c => !String(c ?? '').trim())) continue;
 
-    const item = hasItemCol
-      ? csvCell(row, colMap.item_number)
-      : String(shots.length + 1);
+    const itemRaw = hasItemCol ? csvCell(row, colMap.item_number) : '';
+    const shotCode = colMap.shot_code !== undefined ? csvCell(row, colMap.shot_code) : '';
 
-    if (!isLikelyDataItem(item, hasItemCol)) {
-      if (shots.length > 0) continue;
-      if (!hasItemCol) { /* keep going */ } else continue;
+    if (hasItemCol) {
+      if (!itemRaw && !shotCode) continue;
+      if (itemRaw && !isLikelyDataItem(itemRaw, true) && !shotCode) {
+        if (shots.length > 0) continue;
+      }
+    } else if (!shotCode && !csvCell(row, colMap.description)) {
+      continue;
     }
 
-    const scriptDesc = csvCell(row, colMap.description);
-    const vfxNotes = csvCell(row, colMap.vfx_notes);
-    const assumptions = csvCell(row, colMap.vfx_assumptions);
+    const item = itemRaw || String(shots.length + 1);
 
-    const extraContext = Object.entries(allColIndices)
-      .filter(([name, idx]) => {
-        if (isDeptColumnName(name)) return false;
-        if (Object.values(colMap).includes(idx)) return false;
-        return csvCell(row, idx);
-      })
-      .map(([name, idx]) => `${name}: ${csvCell(row, idx)}`)
-      .join(' | ');
+    const desc = csvCell(row, colMap.description);
+    const vfxWork = collectVfxWork(row, headers, colMap);
+    const assump = csvCell(row, colMap.vfx_assumptions);
+    const clientNotes = csvCell(row, colMap.client_notes);
+    const scene = csvCell(row, colMap.scene);
+    const intExt = csvCell(row, colMap.int_ext);
+    const loc = csvCell(row, colMap.location);
+    const tod = csvCell(row, colMap.time_of_day);
+    const shotType = csvCell(row, colMap.type_of_shot);
+    const miscVals = collectMiscValues(row, headers);
 
-    const parts = [
-      scriptDesc,
-      vfxNotes ? `VFX: ${vfxNotes}` : '',
-      assumptions ? `APPROACH: ${assumptions}` : '',
-      extraContext ? `CONTEXT: ${extraContext}` : '',
-    ].filter(Boolean);
+    const context = [
+      intExt,
+      loc,
+      scene ? `Scene ${scene}` : '',
+      tod,
+      shotType,
+    ].filter(Boolean).join(' | ');
+
+    const parts = [];
+    if (context) parts.push(`[${context}]`);
+
+    const effectiveDesc = desc || shotCode;
+    if (effectiveDesc) parts.push(effectiveDesc);
+    if (vfxWork) parts.push(`VFX: ${vfxWork}`);
+    if (assump) parts.push(`APPROACH: ${assump}`);
+    if (clientNotes) parts.push(`NOTES: ${clientNotes}`);
+    if (miscVals.length) parts.push(miscVals.join(' | '));
+
+    if (!hasDeptBreakdown && idx3D !== undefined) {
+      const d3 = csvCell(row, idx3D);
+      const d2 = idx2D !== undefined ? csvCell(row, idx2D) : '';
+      if (d3 || d2) parts.push(`REF: 3D=${d3 || '0'} 2D=${d2 || '0'} days`);
+    }
 
     const combined = parts.join(' | ');
-    if (!combined.trim() || combined.length < 5) continue;
+    if (!combined.trim() || (combined.length < 5 && !shotCode)) continue;
 
     let nShots = 1;
     if (colMap.number_of_shots !== undefined) {
@@ -1932,16 +2293,20 @@ function mapRowsToShots(rows, headerIdx, colMap) {
       if (!Number.isNaN(parsed) && parsed > 0) nShots = parsed;
     }
 
-    shots.push({
+    const shot = {
       item_number: item || String(shots.length + 1),
-      shot_code: colMap.shot_code !== undefined ? (csvCell(row, colMap.shot_code) || null) : null,
-      script_description: scriptDesc,
-      vfx_notes: vfxNotes,
-      vfx_assumptions: assumptions,
+      shot_code: shotCode || null,
+      episode: csvCell(row, colMap.episode) || null,
+      sequence: csvCell(row, colMap.sequence) || null,
+      script_description: desc || shotCode,
+      vfx_notes: vfxWork,
+      vfx_assumptions: assump,
       number_of_shots: nShots,
       description: combined,
-      _raw_description: scriptDesc,
-    });
+      _raw_description: desc,
+    };
+    if (!hasDeptBreakdown && idx3D !== undefined) shot._has_3d_2d_split = true;
+    shots.push(shot);
   }
 
   return shots;
@@ -2095,6 +2460,11 @@ async function runBatchStream(shots, project, preQual) {
         updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
         updateBatchSummary(results);
         checkServer();
+        autoShowPopulatedCols(_batchResult.shots.filter(Boolean));
+        applyColVisibility();
+        if (project && (_batchResult?.shots || []).filter(Boolean).length > 0) {
+          autoSaveBid(project, _batchResult.shots.filter(Boolean));
+        }
         toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)}d · ${money(_batchResult.total_cost)} total`);
       }
 
@@ -2152,10 +2522,199 @@ async function runBatchEstimate() {
 }
 
 function buildBatchTableHeader() {
-  const cols = ['', '#', 'SHOT CODE', 'DESCRIPTION', 'NOTES', ...BID_DEPTS.map(d => BID_DEPT_SHORT[d]), 'DAYS', 'COST', 'CONF'];
-  document.getElementById('batch-thead-row').innerHTML =
-    cols.map(c => `<th>${c}</th>`).join('');
+  let html = '<th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th>NOTES</th>';
+  html += BID_DEPTS.map(d =>
+    `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
+  ).join('');
+  html += '<th>DAYS</th><th>COST</th><th>CONF</th>';
+  document.getElementById('batch-thead-row').innerHTML = html;
   setupBatchTableDragDrop();
+  applyColVisibility();
+}
+
+// ── Department column visibility ───────────────────────────────────────────
+
+function loadVisibleCols() {
+  try {
+    const saved = localStorage.getItem(VISIBLE_COLS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const merged = { ...COL_DEFAULTS };
+      BID_DEPTS.forEach(d => {
+        if (typeof parsed[d] === 'boolean') merged[d] = parsed[d];
+      });
+      return merged;
+    }
+  } catch {}
+  return { ...COL_DEFAULTS };
+}
+
+function saveVisibleCols() {
+  try {
+    localStorage.setItem(VISIBLE_COLS_STORAGE_KEY, JSON.stringify(_visibleCols));
+  } catch {}
+}
+
+function toggleColPanel() {
+  document.getElementById('col-toggle-panel')?.classList.toggle('hidden');
+}
+
+function buildColCheckboxes() {
+  const container = document.getElementById('col-checkboxes');
+  if (!container) return;
+  container.innerHTML = BID_DEPTS.map(dept => `
+    <label class="col-check-item ${_visibleCols[dept] ? 'active' : ''}">
+      <input type="checkbox" data-dept="${escAttr(dept)}" ${_visibleCols[dept] ? 'checked' : ''}>
+      <span>${BID_DEPT_SHORT[dept] || dept}</span>
+    </label>
+  `).join('');
+  container.querySelectorAll('input[data-dept]').forEach(inp => {
+    inp.addEventListener('change', () => toggleCol(inp.dataset.dept, inp.checked));
+  });
+  updateColCount();
+}
+
+function toggleCol(dept, visible) {
+  _visibleCols[dept] = visible;
+  saveVisibleCols();
+  applyColVisibility();
+  buildColCheckboxes();
+}
+
+function setAllCols(visible) {
+  BID_DEPTS.forEach(d => { _visibleCols[d] = visible; });
+  saveVisibleCols();
+  buildColCheckboxes();
+  applyColVisibility();
+}
+
+function resetColDefaults() {
+  _visibleCols = { ...COL_DEFAULTS };
+  saveVisibleCols();
+  buildColCheckboxes();
+  applyColVisibility();
+}
+
+function applyColVisibility(tableEl) {
+  const table = tableEl || document.getElementById('batch-results-table');
+  if (!table) return;
+  BID_DEPTS.forEach(dept => {
+    const show = _visibleCols[dept] !== false;
+    table.querySelectorAll('[data-dept]').forEach(cell => {
+      if (cell.getAttribute('data-dept') === dept) {
+        cell.classList.toggle('col-hidden', !show);
+      }
+    });
+  });
+  updateColCount();
+}
+
+function updateColCount() {
+  const shown = BID_DEPTS.filter(d => _visibleCols[d] !== false).length;
+  const el = document.getElementById('col-toggle-count');
+  if (el) el.textContent = `(${shown} shown)`;
+}
+
+function autoShowPopulatedCols(results) {
+  if (!results?.length) return;
+  BID_DEPTS.forEach(dept => {
+    const hasData = results.some(r => {
+      const val = r?.dept_days?.[dept];
+      return val && parseFloat(val) > 0;
+    });
+    if (hasData && !_visibleCols[dept]) _visibleCols[dept] = true;
+  });
+  saveVisibleCols();
+  applyColVisibility();
+  buildColCheckboxes();
+}
+
+// ── Full-screen table modal ────────────────────────────────────────────────
+
+function isTableModalOpen() {
+  const modal = document.getElementById('table-modal');
+  return modal && !modal.classList.contains('hidden');
+}
+
+function openTableModal() {
+  if (!_batchResult?.shots?.length) return;
+  const srcHead = document.getElementById('batch-thead-row');
+  const srcBody = document.getElementById('batch-table-body');
+  const destHead = document.getElementById('modal-thead-row');
+  const destBody = document.getElementById('modal-table-body');
+  if (!srcHead || !srcBody || !destHead || !destBody) return;
+
+  destHead.innerHTML = srcHead.innerHTML;
+  destBody.innerHTML = srcBody.innerHTML;
+
+  const modalTable = document.getElementById('modal-table');
+  modalTable.querySelectorAll('[data-dept]').forEach(cell => cell.classList.remove('col-hidden'));
+  applyModalStickyCols(modalTable);
+  refreshModalSummary();
+
+  document.getElementById('modal-project-title').textContent = getBatchProject() || 'Bid Breakdown';
+  document.getElementById('table-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTableModal() {
+  document.getElementById('table-modal')?.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function applyModalStickyCols(table) {
+  if (!table) return;
+  const lefts = ['0px', '36px', '92px', '210px'];
+  table.querySelectorAll('tr').forEach(row => {
+    const cells = row.querySelectorAll('th, td');
+    cells.forEach((cell, i) => {
+      cell.classList.remove('batch-col-sticky');
+      cell.style.left = '';
+      cell.style.zIndex = '';
+      if (i < 4) {
+        cell.classList.add('batch-col-sticky');
+        cell.style.left = lefts[i];
+        cell.style.zIndex = row.parentElement?.tagName === 'THEAD' ? '4' : '2';
+      }
+    });
+  });
+}
+
+function refreshModalSummary() {
+  const bar = document.getElementById('batch-summary-bar');
+  const modalBar = document.getElementById('modal-summary-bar');
+  const modalSummary = document.getElementById('modal-summary');
+  if (bar && modalBar) modalBar.innerHTML = bar.innerHTML;
+  if (modalSummary && _batchResult) {
+    modalSummary.textContent =
+      `${_batchResult.count || 0} shots · ${fmt(_batchResult.total_mandays || 0)}d · ${money(_batchResult.total_cost || 0)}`;
+  }
+}
+
+function syncTableRowToPartner(tr) {
+  if (!tr) return;
+  const idx = batchRowIndex(tr);
+  if (!Number.isFinite(idx)) return;
+  const inModal = !!tr.closest('#modal-table-body');
+  const partnerBody = document.getElementById(inModal ? 'batch-table-body' : 'modal-table-body');
+  if (!partnerBody) return;
+  const partner = partnerBody.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
+  if (!partner) return;
+
+  tr.querySelectorAll('.bid-dept-inp').forEach(inp => {
+    const peer = partner.querySelector(`.bid-dept-inp[data-dept="${inp.dataset.dept}"]`);
+    if (peer && peer.value !== inp.value) peer.value = inp.value;
+  });
+  const notes = tr.querySelector('.batch-notes-inp');
+  const peerNotes = partner.querySelector('.batch-notes-inp');
+  if (notes && peerNotes && peerNotes.value !== notes.value) peerNotes.value = notes.value;
+
+  const days = tr.querySelector('.batch-row-days');
+  const peerDays = partner.querySelector('.batch-row-days');
+  if (days && peerDays) peerDays.textContent = days.textContent;
+  const cost = tr.querySelector('.batch-row-cost');
+  const peerCost = partner.querySelector('.batch-row-cost');
+  if (cost && peerCost) peerCost.textContent = cost.textContent;
 }
 
 function batchRowIndex(tr) {
@@ -2266,6 +2825,7 @@ function updateBatchRowNotes(input) {
   _batchResult.shots[idx].vfx_notes = input.value;
   markBatchRowEdited(idx);
   _batchResult.export_csv_base64 = null;
+  syncTableRowToPartner(input.closest('tr.batch-data-row'));
 }
 
 function updateBatchRowTotals(tr, skipRefresh) {
@@ -2285,6 +2845,8 @@ function updateBatchRowTotals(tr, skipRefresh) {
     markBatchRowEdited(idx);
     _batchResult.export_csv_base64 = null;
   }
+  syncTableRowToPartner(tr);
+  if (isTableModalOpen()) refreshModalSummary();
   if (!skipRefresh) refreshBatchBidSummary();
 }
 
@@ -2365,6 +2927,179 @@ async function saveAllBatchCorrections() {
   }
 }
 
+// ── Bid history ────────────────────────────────────────────────────────────
+
+function formatBidDate(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return iso;
+  }
+}
+
+function normalizeSavedShot(shot, i) {
+  const total = parseFloat(shot.total_mandays ?? shot.total_days ?? 0) || 0;
+  const depts = shot.dept_days || {};
+  return {
+    ...shot,
+    item_number: shot.item_number || String(i + 1),
+    shot_code: shot.shot_code || null,
+    description: shot.description || shot.script_description || '',
+    script_description: shot.script_description || shot.description || '',
+    vfx_notes: shot.vfx_notes || shot._notes || '',
+    total_mandays: total,
+    dept_days: depts,
+    confidence: shot.confidence ?? 0,
+    cost_per_shot: shot.cost_per_shot ?? computeClientShotCost(depts, getDeptRates(), { mandaysFallback: total }),
+    _ai_total_mandays: shot._ai_total_mandays ?? shot.ai_total_mandays ?? total,
+    _notes: shot._notes ?? shot.vfx_notes ?? '',
+  };
+}
+
+async function autoSaveBid(project, shots) {
+  try {
+    const r = await fetch(`${API}/bid-history`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_name: project,
+        user_id: getUserId(),
+        shots: shots.map(s => ({
+          item_number: s.item_number,
+          shot_code: s.shot_code,
+          description: s.description || s.script_description,
+          script_description: s.script_description,
+          vfx_notes: s._notes ?? s.vfx_notes,
+          total_mandays: s.total_mandays,
+          total_days: s.total_mandays,
+          dept_days: s.dept_days,
+          confidence: s.confidence,
+          cost_per_shot: s.cost_per_shot,
+          ai_total_mandays: s._ai_total_mandays ?? s.ai_total_mandays,
+        })),
+        pre_qual: getPreQualData() || {},
+      }),
+    });
+    if (!r.ok) return;
+    toast(`Bid saved to history — ${project}`, 'info');
+  } catch {
+    // Fail silently — don't interrupt the user
+  }
+}
+
+function openHistoryDrawer() {
+  document.getElementById('history-backdrop')?.classList.add('open');
+  document.getElementById('history-drawer')?.classList.add('open');
+  loadBidHistoryList();
+}
+
+function closeHistoryDrawer() {
+  document.getElementById('history-backdrop')?.classList.remove('open');
+  document.getElementById('history-drawer')?.classList.remove('open');
+}
+
+async function loadBidHistoryList() {
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  el.innerHTML = '<div class="history-empty">Loading…</div>';
+  try {
+    const uid = getUserId();
+    const q = uid ? `?user_id=${encodeURIComponent(uid)}&limit=30` : '?limit=30';
+    const r = await fetch(`${API}/bid-history${q}`);
+    const data = await r.json();
+    const bids = data.bids || [];
+    if (!bids.length) {
+      el.innerHTML = '<div class="history-empty">No saved bids yet. Run a batch estimate to save one.</div>';
+      return;
+    }
+    el.innerHTML = bids.map(b => `
+      <div class="history-bid-card" data-bid-id="${b.id}">
+        <div class="hb-title">${escHtml(b.project_name || 'Untitled')}</div>
+        <div class="hb-meta">
+          ${b.shot_count ?? 0} shots · ${fmt(b.total_mandays ?? 0)} total days · ${formatBidDate(b.created_at)}
+          ${b.notes ? `<br>${escHtml(b.notes)}` : ''}
+        </div>
+        <div class="hb-actions">
+          <button type="button" class="btn-history" onclick="loadSavedBid(${b.id})">Load</button>
+          <button type="button" class="btn-history" onclick="exportSavedBidCsv(${b.id})">Export CSV</button>
+          <button type="button" class="btn-history danger" onclick="deleteSavedBid(${b.id})">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    el.innerHTML = '<div class="history-empty">Could not load bid history.</div>';
+  }
+}
+
+async function loadSavedBid(bidId) {
+  try {
+    const r = await fetch(`${API}/bid-history/${bidId}`);
+    if (!r.ok) throw new Error('Bid not found');
+    const bid = await r.json();
+
+    document.getElementById('batch-project').value = bid.project_name || '';
+
+    clearBatchResults();
+    document.getElementById('batch-results').classList.remove('hidden');
+
+    const shots = (bid.shots || []).map(normalizeSavedShot);
+    _batchResult = {
+      count: shots.length,
+      project: bid.project_name,
+      dept_rates: getDeptRates(),
+      shots,
+      total_mandays: bid.total_mandays ?? 0,
+    };
+
+    buildBatchTableHeader();
+    shots.forEach((shot, i) => appendBatchResultRow(i, shot));
+    updateBatchSummary(shots);
+    setBatchExportFromResults();
+    autoShowPopulatedCols(shots);
+    applyColVisibility();
+    closeHistoryDrawer();
+    document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast(`Loaded: ${bid.project_name} (${shots.length} shots)`);
+  } catch (e) {
+    toast('Could not load bid: ' + e.message, 'err');
+  }
+}
+
+async function exportSavedBidCsv(bidId) {
+  try {
+    const r = await fetch(`${API}/bid-history/${bidId}`);
+    if (!r.ok) throw new Error('Bid not found');
+    const bid = await r.json();
+    const prev = _batchResult;
+    const shots = (bid.shots || []).map(normalizeSavedShot);
+    _batchResult = {
+      count: shots.length,
+      project: bid.project_name,
+      dept_rates: getDeptRates(),
+      shots,
+    };
+    setBatchExportFromResults();
+    exportBatchCsv();
+    _batchResult = prev;
+  } catch (e) {
+    toast('Export failed: ' + e.message, 'err');
+  }
+}
+
+async function deleteSavedBid(bidId) {
+  if (!confirm('Delete this saved bid?')) return;
+  try {
+    const r = await fetch(`${API}/bid-history/${bidId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error('Delete failed');
+    toast('Bid deleted');
+    loadBidHistoryList();
+  } catch (e) {
+    toast('Delete failed: ' + e.message, 'err');
+  }
+}
+
 // ── Stats ──────────────────────────────────────────────────────────────────
 
 async function loadStats() {
@@ -2420,6 +3155,10 @@ setInterval(() => fetch(`${API}/ping`).catch(() => {}), 10 * 60 * 1000);
   loadTaxCreditPct();
   loadAdminFeePct();
   setupBatchDropZone();
+  buildColCheckboxes();
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isTableModalOpen()) closeTableModal();
+  });
   await loadDeptRates();
   await loadFxRates();
   await checkServer();

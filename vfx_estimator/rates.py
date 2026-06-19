@@ -19,6 +19,8 @@ DEFAULT_DEPT_RATES: Dict[str, float] = {
     "comp_paint": 750.0,
     "comp_roto": 700.0,
     "compositing": 750.0,
+    "crowds": 900.0,
+    "enviro": 800.0,
     "ai": 750.0,
     "prep": 650.0,
     "obj_track": 700.0,

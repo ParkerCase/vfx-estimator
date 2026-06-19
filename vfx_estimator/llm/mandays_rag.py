@@ -79,6 +79,17 @@ AI (Generative AI work):
    hundreds of people = +10 animation days
    thousands of people = +15 animation days
 
+9. CROWDS department:
+   Use when descriptions mention crowd multiplication, hundreds/thousands of people,
+   army, soldiers, extras. Maps to animation + crowds.
+   Use CROWDS for dedicated crowd sim work separate from character animation.
+   Department key "crowds" (maps to CROWDS column in bid).
+
+10. ENVIRO department:
+   Use for CG environment builds (full 3D environment construction separate from DMP).
+   Maps to ENVIRO / ENV LAYOUT in MARZ files.
+   Department key "enviro" (maps to ENVIRO column in bid).
+
 SHOT TYPE:
   establishing → MINIMUM 18 days total. lighting >=6, compositing >=5.
   hero         → All depts +30-50%.

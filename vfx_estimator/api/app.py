@@ -26,10 +26,17 @@ from vfx_estimator.api.bid_batch import (
 from vfx_estimator.config import get_settings
 from vfx_estimator.estimate.service import EstimatorService
 from vfx_estimator.fx import get_usd_fx_rates
-from vfx_estimator.integrations.xata import XataShotSearch
+from vfx_estimator.integrations.xata import (
+    XataShotSearch,
+    delete_bid_history,
+    get_bid_history,
+    list_bid_history,
+    save_bid_history,
+)
 from vfx_estimator.learning.flags import FlagsStore
 from vfx_estimator.types import (
     FLAG_TYPES,
+    SaveBidRequest,
     UserCorrection,
     UserFlag,
     bid_departments_to_internal,
@@ -68,6 +75,8 @@ DEPT_MAX_DAYS: Dict[str, float] = {
     "cfx": 10,
     "prep": 5,
     "ai": 10,
+    "crowds": 25,
+    "enviro": 15,
 }
 
 
@@ -449,5 +458,66 @@ def create_app() -> FastAPI:
         invalidate_index()
         _service = EstimatorService(get_settings())
         return {"ok": True, "path": str(path)}
+
+    @app.post("/bid-history")
+    def save_bid(req: SaveBidRequest) -> Dict[str, Any]:
+        """Save a completed batch estimate."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Bid history requires XATA_POSTGRES_URL")
+        if not req.project_name.strip():
+            raise HTTPException(400, "project_name required")
+        if not req.shots:
+            raise HTTPException(400, "shots required")
+        bid_id = save_bid_history(
+            pg_url,
+            project_name=req.project_name.strip(),
+            user_id=req.user_id or "supervisor",
+            shots=req.shots,
+            pre_qual=req.pre_qual,
+            notes=req.notes or "",
+        )
+        return {"ok": True, "bid_id": bid_id}
+
+    @app.get("/bid-history")
+    def list_bids(user_id: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+        """List saved bids."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            return {"bids": [], "count": 0}
+        bids = list_bid_history(pg_url, user_id=user_id, limit=limit)
+        for b in bids:
+            created = b.get("created_at")
+            if created is not None and hasattr(created, "isoformat"):
+                b["created_at"] = created.isoformat()
+        return {"bids": bids, "count": len(bids)}
+
+    @app.get("/bid-history/{bid_id}")
+    def get_bid(bid_id: int) -> Dict[str, Any]:
+        """Get a specific saved bid."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Bid history requires XATA_POSTGRES_URL")
+        bid = get_bid_history(pg_url, bid_id)
+        if not bid:
+            raise HTTPException(404, "Bid not found")
+        created = bid.get("created_at")
+        if created is not None and hasattr(created, "isoformat"):
+            bid["created_at"] = created.isoformat()
+        return bid
+
+    @app.delete("/bid-history/{bid_id}")
+    def remove_bid(bid_id: int) -> Dict[str, Any]:
+        """Delete a saved bid."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Bid history requires XATA_POSTGRES_URL")
+        if not delete_bid_history(pg_url, bid_id):
+            raise HTTPException(404, "Bid not found")
+        return {"ok": True, "deleted": bid_id}
 
     return app

@@ -107,6 +107,26 @@ CREATE TABLE IF NOT EXISTS vfx_corrections (
 );
 """
 
+BID_HISTORY_TABLE = "vfx_bid_history"
+
+CREATE_BID_HISTORY_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS vfx_bid_history (
+    id SERIAL PRIMARY KEY,
+    project_name TEXT NOT NULL,
+    user_id TEXT DEFAULT 'supervisor',
+    shot_count INTEGER DEFAULT 0,
+    total_mandays FLOAT DEFAULT 0,
+    shots JSONB DEFAULT '[]',
+    pre_qual JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    notes TEXT DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_bid_history_project ON vfx_bid_history(project_name);
+CREATE INDEX IF NOT EXISTS idx_bid_history_user ON vfx_bid_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_bid_history_created ON vfx_bid_history(created_at DESC);
+"""
+
 
 def resolve_xata_rest_base(database_url: str, branch: str = "main") -> str:
     """Turn database URL into REST base .../db/{name}:{branch} (Postgres or HTTPS)."""
@@ -510,3 +530,177 @@ class XataShotSearch:
         if self.api_key and self.rest_base.startswith("https://"):
             return self._search_rest(description, top_k=top_k)
         return []
+
+
+def _shot_total_mandays(shot: Dict[str, Any]) -> float:
+    for key in ("total_mandays", "total_days"):
+        try:
+            v = float(shot.get(key) or 0)
+            if v > 0:
+                return v
+        except (TypeError, ValueError):
+            continue
+    dept = shot.get("dept_days") or {}
+    if isinstance(dept, dict):
+        try:
+            return sum(float(v or 0) for v in dept.values())
+        except (TypeError, ValueError):
+            pass
+    return 0.0
+
+
+def save_bid_history(
+    pg_url: str,
+    project_name: str,
+    user_id: str,
+    shots: List[Dict[str, Any]],
+    pre_qual: Optional[Dict[str, Any]] = None,
+    notes: str = "",
+) -> int:
+    """Save a completed batch estimate to history."""
+    if not pg_url:
+        raise RuntimeError("Postgres URL not configured")
+    try:
+        import psycopg2
+        from psycopg2.extras import Json
+    except ImportError as e:
+        raise RuntimeError("psycopg2 not installed") from e
+
+    total_mandays = sum(_shot_total_mandays(s) for s in shots)
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO vfx_bid_history
+                  (project_name, user_id, shot_count, total_mandays,
+                   shots, pre_qual, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (
+                    project_name,
+                    user_id or "supervisor",
+                    len(shots),
+                    total_mandays,
+                    Json(shots),
+                    Json(pre_qual or {}),
+                    notes or "",
+                ),
+            )
+            bid_id = int(cur.fetchone()[0])
+        conn.commit()
+        return bid_id
+    finally:
+        conn.close()
+
+
+def list_bid_history(
+    pg_url: str,
+    user_id: Optional[str] = None,
+    limit: int = 20,
+) -> List[Dict[str, Any]]:
+    """List recent bids, optionally filtered by user."""
+    if not pg_url:
+        return []
+    try:
+        import psycopg2
+    except ImportError:
+        return []
+
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor() as cur:
+            if user_id:
+                cur.execute(
+                    """
+                    SELECT id, project_name, user_id, shot_count,
+                           total_mandays, created_at, notes
+                    FROM vfx_bid_history
+                    WHERE user_id = %s
+                    ORDER BY created_at DESC LIMIT %s
+                    """,
+                    (user_id, limit),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT id, project_name, user_id, shot_count,
+                           total_mandays, created_at, notes
+                    FROM vfx_bid_history
+                    ORDER BY created_at DESC LIMIT %s
+                    """,
+                    (limit,),
+                )
+
+            cols = [
+                "id",
+                "project_name",
+                "user_id",
+                "shot_count",
+                "total_mandays",
+                "created_at",
+                "notes",
+            ]
+            return [dict(zip(cols, row)) for row in cur.fetchall()]
+    except Exception as e:
+        logger.warning("list_bid_history failed: %s", e)
+        return []
+    finally:
+        conn.close()
+
+
+def get_bid_history(pg_url: str, bid_id: int) -> Optional[Dict[str, Any]]:
+    """Get a specific saved bid with full shots data."""
+    if not pg_url:
+        return None
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+    except ImportError:
+        return None
+
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT id, project_name, user_id, shot_count,
+                       total_mandays, shots, pre_qual,
+                       created_at, notes
+                FROM vfx_bid_history WHERE id = %s
+                """,
+                (bid_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return dict(row)
+    except Exception as e:
+        logger.warning("get_bid_history failed: %s", e)
+        return None
+    finally:
+        conn.close()
+
+
+def delete_bid_history(pg_url: str, bid_id: int) -> bool:
+    """Delete a saved bid by id."""
+    if not pg_url:
+        return False
+    try:
+        import psycopg2
+    except ImportError:
+        return False
+
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM vfx_bid_history WHERE id = %s", (bid_id,))
+            deleted = cur.rowcount > 0
+        conn.commit()
+        return deleted
+    except Exception as e:
+        logger.warning("delete_bid_history failed: %s", e)
+        return False
+    finally:
+        conn.close()
