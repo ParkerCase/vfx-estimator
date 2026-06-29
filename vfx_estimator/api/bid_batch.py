@@ -14,7 +14,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from vfx_estimator.estimate.service import EstimatorService
-from vfx_estimator.rates import compute_shot_cost
+from vfx_estimator.rates import build_dept_rates, compute_shot_cost
 from vfx_estimator.types import (
     BID_DEPT_MAP,
     BID_OUTPUT_COLUMNS,
@@ -355,6 +355,10 @@ def _estimate_bid_row(
         "adjustment_ranges": _compute_adjustment_ranges_bid(bid_dept, conf, compute_ranges),
         "mode": est.mode,
         "ai_total_mandays": float(est.per_shot_mandays),
+        "baseline_used": est.baseline_used,
+        "modifiers_applied": est.modifiers_applied,
+        "baseline_days": est.baseline_days,
+        "adjusted_days": est.adjusted_days,
     }
 
 
@@ -373,6 +377,8 @@ def run_bid_batch_estimate(
 
     rate = float(day_rate if day_rate is not None else svc.settings.day_rate)
     rates = svc.settings.resolved_dept_rates(overrides=dept_rates)
+    if not isinstance(rates, dict):
+        rates = build_dept_rates(fallback=rate, overrides=dept_rates)
     proj = project or (pre_qual.project if pre_qual else None) or "BID"
 
     rows = process_batch(

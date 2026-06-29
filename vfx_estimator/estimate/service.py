@@ -194,6 +194,10 @@ class EstimatorService:
         reasoning = ""
         confidence = 0.5
         dept: Dict[str, float] = {}
+        baseline_used: Optional[str] = None
+        modifiers_applied: List[str] = []
+        baseline_days: Optional[float] = None
+        adjusted_days: Optional[float] = None
 
         pq_aug = pre_qual
         if pre_qual and sp_matches:
@@ -220,6 +224,18 @@ class EstimatorService:
                 gemini_md = float(g.get("total_days") or 0)
                 reasoning = str(g.get("reasoning") or "")
                 confidence = float(g.get("confidence") or 0.5)
+                baseline_used = str(g.get("baseline_used") or "") or None
+                raw_modifiers = g.get("modifiers_applied") or []
+                if isinstance(raw_modifiers, list):
+                    modifiers_applied = [str(m) for m in raw_modifiers if m]
+                try:
+                    baseline_days = float(g["baseline_days"]) if g.get("baseline_days") is not None else None
+                except (TypeError, ValueError):
+                    baseline_days = None
+                try:
+                    adjusted_days = float(g["adjusted_days"]) if g.get("adjusted_days") is not None else None
+                except (TypeError, ValueError):
+                    adjusted_days = None
                 gemini_dept: Dict[str, float] = {}
                 if isinstance(g.get("departments"), dict):
                     for k, v in g["departments"].items():
@@ -304,6 +320,10 @@ class EstimatorService:
             numeric_mandays=numeric_md,
             gemini_mandays=gemini_md,
             retrieval_median_mandays=retrieval_med if retrieval_med > 0 else None,
+            baseline_used=baseline_used,
+            modifiers_applied=modifiers_applied,
+            baseline_days=baseline_days,
+            adjusted_days=adjusted_days,
         )
 
     def record_correction(self, correction: UserCorrection) -> None:

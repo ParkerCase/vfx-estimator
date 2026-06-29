@@ -29,13 +29,19 @@ from vfx_estimator.fx import get_usd_fx_rates
 from vfx_estimator.integrations.xata import (
     XataShotSearch,
     delete_bid_history,
+    delete_preset_from_db,
     get_bid_history,
     list_bid_history,
+    load_presets,
     save_bid_history,
+    upsert_preset,
 )
 from vfx_estimator.learning.flags import FlagsStore
+from vfx_estimator.llm.mandays_rag import SHOT_BASELINES
+from vfx_estimator.rates import build_dept_rates
 from vfx_estimator.types import (
     FLAG_TYPES,
+    PresetRequest,
     SaveBidRequest,
     UserCorrection,
     UserFlag,
@@ -133,6 +139,29 @@ class FlagRequest(BaseModel):
     ai_departments: Dict[str, float] = Field(default_factory=dict)
 
 
+class SuggestMethodologyRequest(BaseModel):
+    description: str
+    shot_code: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class AssetEstimateItem(BaseModel):
+    asset_name: str
+    description: str
+    variations: int = 1
+
+
+class AssetContextRequest(BaseModel):
+    tier: Optional[str] = None
+    notes: Optional[str] = None
+    day_rate: float = 500
+
+
+class AssetEstimateRequest(BaseModel):
+    assets: List[AssetEstimateItem]
+    asset_context: Optional[AssetContextRequest] = None
+
+
 def _prepare_batch_service(svc: EstimatorService) -> None:
     if svc.gemini:
         svc.gemini.flags = get_flags()
@@ -155,6 +184,17 @@ def _live_training_count(svc: EstimatorService) -> Dict[str, Any]:
         "corrections": correction_count,
         "training_count_source": "local",
     }
+
+
+def _merged_presets(pg_url: str = "") -> Dict[str, Dict[str, Any]]:
+    presets = {
+        key: {**value, "source": "system"}
+        for key, value in SHOT_BASELINES.items()
+    }
+    if pg_url:
+        for key, value in load_presets(pg_url).items():
+            presets[key] = {**presets.get(key, {}), **value}
+    return presets
 
 
 # ── App factory ────────────────────────────────────────────────────────────
@@ -248,6 +288,8 @@ def create_app() -> FastAPI:
         _prepare_batch_service(svc)
         rate = float(req.day_rate if req.day_rate is not None else svc.settings.day_rate)
         rates = svc.settings.resolved_dept_rates(overrides=req.dept_rates)
+        if not isinstance(rates, dict):
+            rates = build_dept_rates(fallback=rate, overrides=req.dept_rates)
         proj = req.project or (req.pre_qual.project if req.pre_qual else None) or "BID"
 
         async def generate():
@@ -329,6 +371,68 @@ def create_app() -> FastAPI:
             compute_ranges=_compute_adjustment_ranges,
         )
         return attach_csv_export(payload, artifact=artifact, project=proj, day_rate=rate)
+
+    @app.post("/suggest-methodology")
+    def suggest_methodology(req: SuggestMethodologyRequest) -> Dict[str, Any]:
+        svc = get_service()
+        prompt = f"""You are a senior VFX supervisor.
+Given this shot, suggest 2-3 possible VFX methodologies showing how the shot would be executed.
+
+SHOT: "{req.description}"
+SHOT CODE: "{req.shot_code or ''}"
+NOTES: "{req.notes or ''}"
+
+Each methodology should be 2-3 sentences describing the technical approach and which VFX departments are involved.
+Make them meaningfully different options (e.g. full 3D vs 2.5D DMP vs 2D comp-only approaches where applicable).
+
+Return JSON only:
+{{
+  "suggestions": [
+    {{
+      "label": "Full CG Integration",
+      "methodology": "Full CG element rendered in 3D and integrated with live-action plate. Camera track required. Lighting matched to practical plate.",
+      "departments": ["camera_track", "layout", "lighting", "compositing"]
+    }},
+    {{
+      "label": "2D Composite Only",
+      "methodology": "Plate-based 2D composite using roto, paint, and comp integration only.",
+      "departments": ["compositing"]
+    }}
+  ]
+}}"""
+        from vfx_estimator.llm.gemini_client import generate_json
+
+        try:
+            result = generate_json(prompt, settings=svc.settings)
+        except Exception:
+            result = None
+        return result or {"suggestions": []}
+
+    @app.post("/estimate/assets/stream")
+    async def estimate_assets_stream(req: AssetEstimateRequest) -> StreamingResponse:
+        if not req.assets:
+            raise HTTPException(400, "assets required")
+        svc = get_service()
+
+        async def generate():
+            from vfx_estimator.llm.asset_rag import estimate_single_asset
+
+            total = len(req.assets)
+            for i, asset in enumerate(req.assets):
+                yield f"data: {json.dumps({'type': 'progress', 'current': i + 1, 'total': total, 'asset_name': asset.asset_name})}\n\n"
+                try:
+                    result = estimate_single_asset(asset, req.asset_context, svc.settings)
+                    yield f"data: {json.dumps({'type': 'result', 'index': i, 'data': result})}\n\n"
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'index': i, 'error': str(e)})}\n\n"
+                await asyncio.sleep(0)
+            yield f"data: {json.dumps({'type': 'complete'})}\n\n"
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     @app.post("/corrections")
     def add_correction(req: CorrectionRequest) -> Dict[str, Any]:
@@ -519,5 +623,35 @@ def create_app() -> FastAPI:
         if not delete_bid_history(pg_url, bid_id):
             raise HTTPException(404, "Bid not found")
         return {"ok": True, "deleted": bid_id}
+
+    @app.get("/presets")
+    def list_presets() -> Dict[str, Any]:
+        """List all shot type presets."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        presets = _merged_presets(pg_url)
+        return {"presets": presets, "count": len(presets)}
+
+    @app.post("/presets")
+    def save_preset(req: PresetRequest) -> Dict[str, Any]:
+        """Save or update a shot type preset."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Presets require XATA_POSTGRES_URL")
+        if not req.shot_type.strip():
+            raise HTTPException(400, "shot_type required")
+        upsert_preset(pg_url, req)
+        return {"ok": True, "shot_type": req.shot_type}
+
+    @app.delete("/presets/{shot_type}")
+    def delete_preset(shot_type: str) -> Dict[str, Any]:
+        """Reset a preset back to system default."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Presets require XATA_POSTGRES_URL")
+        delete_preset_from_db(pg_url, shot_type)
+        return {"ok": True}
 
     return app

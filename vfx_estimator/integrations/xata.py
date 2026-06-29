@@ -127,6 +127,49 @@ CREATE INDEX IF NOT EXISTS idx_bid_history_user ON vfx_bid_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_bid_history_created ON vfx_bid_history(created_at DESC);
 """
 
+PRESET_DEPT_COLUMNS = (
+    "camera_track",
+    "matchmove",
+    "layout",
+    "animation",
+    "cfx",
+    "fx",
+    "lighting",
+    "dmp",
+    "comp_paint",
+    "comp_roto",
+    "compositing",
+)
+
+CREATE_PRESETS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS vfx_presets (
+    id SERIAL PRIMARY KEY,
+    shot_type TEXT NOT NULL UNIQUE,
+    description TEXT DEFAULT '',
+    camera_track FLOAT DEFAULT 0,
+    matchmove FLOAT DEFAULT 0,
+    layout FLOAT DEFAULT 0,
+    animation FLOAT DEFAULT 0,
+    cfx FLOAT DEFAULT 0,
+    fx FLOAT DEFAULT 0,
+    lighting FLOAT DEFAULT 0,
+    dmp FLOAT DEFAULT 0,
+    comp_paint FLOAT DEFAULT 0,
+    comp_roto FLOAT DEFAULT 0,
+    compositing FLOAT DEFAULT 0,
+    total FLOAT DEFAULT 0,
+    created_by TEXT DEFAULT 'system',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO vfx_presets (shot_type, description, matchmove, fx, compositing, total)
+VALUES
+  ('muzzle_flash', 'Gunfire muzzle flash', 0.25, 0.4, 0.75, 1.7),
+  ('wire_removal', 'Safety wire removal', 0, 0, 0.6, 1.9),
+  ('sky_replacement', 'Sky plate replacement', 0.3, 0, 1.0, 2.3)
+ON CONFLICT (shot_type) DO NOTHING;
+"""
+
 
 def resolve_xata_rest_base(database_url: str, branch: str = "main") -> str:
     """Turn database URL into REST base .../db/{name}:{branch} (Postgres or HTTPS)."""
@@ -701,6 +744,149 @@ def delete_bid_history(pg_url: str, bid_id: int) -> bool:
         return deleted
     except Exception as e:
         logger.warning("delete_bid_history failed: %s", e)
+        return False
+    finally:
+        conn.close()
+
+
+def _preset_from_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {
+        "description": str(row.get("description") or ""),
+        "source": "studio" if str(row.get("created_by") or "") != "system" else "system",
+    }
+    total = 0.0
+    for col in PRESET_DEPT_COLUMNS:
+        try:
+            value = float(row.get(col) or 0)
+        except (TypeError, ValueError):
+            value = 0.0
+        if value > 0:
+            out[col] = value
+            total += value
+    try:
+        db_total = float(row.get("total") or 0)
+    except (TypeError, ValueError):
+        db_total = 0.0
+    out["total"] = db_total if db_total > 0 else total
+    return out
+
+
+def load_presets(pg_url: str) -> Dict[str, Dict[str, Any]]:
+    """Load studio shot presets from vfx_presets table.
+
+    Returns an empty dict if the table doesn't exist yet.
+    """
+    if not pg_url:
+        return {}
+    try:
+        import psycopg2
+
+        conn = psycopg2.connect(pg_url, sslmode="require")
+        result: Dict[str, Dict[str, Any]] = {}
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables
+                        WHERE table_name = 'vfx_presets'
+                    )
+                    """
+                )
+                if not cur.fetchone()[0]:
+                    return {}
+                cur.execute(
+                    """
+                    SELECT shot_type, description, camera_track,
+                           matchmove, layout, animation, cfx, fx,
+                           lighting, dmp, comp_paint, comp_roto,
+                           compositing, total
+                    FROM vfx_presets
+                    """
+                )
+                cols = [
+                    "description",
+                    "camera_track",
+                    "matchmove",
+                    "layout",
+                    "animation",
+                    "cfx",
+                    "fx",
+                    "lighting",
+                    "dmp",
+                    "comp_paint",
+                    "comp_roto",
+                    "compositing",
+                    "total",
+                ]
+                for row in cur.fetchall():
+                    result[str(row[0])] = dict(zip(cols, row[1:]))
+        finally:
+            conn.close()
+        return result
+    except Exception as e:
+        logger.warning("[presets] load_presets failed: %s", e)
+        return {}
+
+
+def upsert_preset(pg_url: str, preset: Any) -> None:
+    """Save or update a shot type preset."""
+    if not pg_url:
+        raise RuntimeError("Postgres URL not configured")
+    try:
+        import psycopg2
+    except ImportError as e:
+        raise RuntimeError("psycopg2 not installed") from e
+
+    data = preset.model_dump() if hasattr(preset, "model_dump") else dict(preset)
+    shot_type = str(data.get("shot_type") or "").strip()
+    if not shot_type:
+        raise ValueError("shot_type required")
+
+    cols = [
+        "shot_type",
+        "description",
+        *PRESET_DEPT_COLUMNS,
+        "total",
+        "created_by",
+    ]
+    values = [data.get(col, "") if col in ("shot_type", "description", "created_by") else float(data.get(col) or 0) for col in cols]
+    updates = ", ".join(f"{col} = EXCLUDED.{col}" for col in cols if col != "shot_type")
+
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""
+                INSERT INTO vfx_presets ({", ".join(cols)})
+                VALUES ({", ".join(["%s"] * len(cols))})
+                ON CONFLICT (shot_type) DO UPDATE SET {updates}
+                """,
+                values,
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_preset_from_db(pg_url: str, shot_type: str) -> bool:
+    """Delete a studio preset override."""
+    if not pg_url:
+        return False
+    try:
+        import psycopg2
+    except ImportError:
+        return False
+
+    conn = psycopg2.connect(pg_url, connect_timeout=20)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM vfx_presets WHERE shot_type = %s", (shot_type,))
+            deleted = cur.rowcount > 0
+        conn.commit()
+        return deleted
+    except Exception as e:
+        logger.warning("delete_preset_from_db failed: %s", e)
         return False
     finally:
         conn.close()

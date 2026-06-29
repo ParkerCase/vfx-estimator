@@ -23,6 +23,55 @@ CG_DESCRIPTION_RE = re.compile(
 )
 MIN_CG_LIGHTING_DAYS = 3.0
 
+SHOT_BASELINES: Dict[str, Dict[str, float | str]] = {
+    "monitor_insert": {"description": "Screen/monitor replacement, UI insert", "matchmove": 0.5, "compositing": 0.75, "total": 1.9},
+    "muzzle_flash": {"description": "Gunfire muzzle flash effect", "matchmove": 0.25, "fx": 0.4, "compositing": 0.75, "total": 1.7},
+    "bullet_hits": {"description": "Bullet impact on surface or body", "matchmove": 0.25, "fx": 0.6, "compositing": 0.8, "total": 2.0},
+    "wire_removal": {"description": "Safety wire or rig removal from stunt", "comp_paint": 0.8, "comp_roto": 0.4, "compositing": 0.6, "total": 1.9},
+    "paint_cleanup": {"description": "Paint out, logo removal, period cleanup", "comp_paint": 1.0, "comp_roto": 0.3, "compositing": 0.5, "total": 1.5},
+    "blood_gore": {"description": "Blood spray, wound enhancement", "fx": 0.5, "comp_roto": 0.3, "compositing": 0.75, "total": 1.8},
+    "digital_makeup": {"description": "Beauty work, aging, de-aging, scar enhancement", "matchmove": 0.75, "compositing": 2.0, "comp_roto": 0.5, "total": 3.5},
+    "sky_replacement": {"description": "Sky plate replacement only", "matchmove": 0.3, "dmp": 0.5, "comp_roto": 0.5, "compositing": 1.0, "total": 2.3},
+    "set_extension_simple": {"description": "Simple set extension, DMP-based", "matchmove": 0.5, "layout": 0.5, "dmp": 1.5, "comp_roto": 0.5, "compositing": 1.25, "total": 4.5},
+    "matte_painting": {"description": "Full matte painting / DMP environment", "matchmove": 0.5, "dmp": 2.0, "comp_roto": 0.5, "compositing": 1.25, "total": 4.2},
+    "smoke_atmosphere": {"description": "Smoke, fog, mist, atmospheric particles", "matchmove": 0.3, "fx": 1.0, "compositing": 1.25, "total": 3.0},
+    "fire_enhancement": {"description": "Fire added to practical plate", "matchmove": 0.5, "fx": 1.25, "lighting": 0.75, "compositing": 1.5, "total": 4.5},
+    "explosion": {"description": "Explosion, blast, detonation", "matchmove": 0.75, "fx": 2.5, "lighting": 1.25, "compositing": 2.0, "total": 7.1},
+    "water_simulation": {"description": "Water FX, ocean, splash, rain simulation", "matchmove": 0.75, "fx": 3.0, "lighting": 1.5, "compositing": 2.0, "total": 7.9},
+    "destruction": {"description": "Building collapse, debris, destruction FX", "matchmove": 0.75, "fx": 3.5, "lighting": 1.5, "compositing": 2.5, "total": 9.5},
+    "cg_vehicle": {"description": "CG car, truck, ship, aircraft integration", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 1.0, "lighting": 1.25, "compositing": 1.5, "total": 6.1},
+    "cg_creature": {"description": "CG creature, animal, monster (asset excluded)", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 3.0, "cfx": 0.75, "lighting": 1.75, "compositing": 2.0, "total": 10.1},
+    "cg_character": {"description": "Full CG digital double or character", "camera_track": 1.0, "matchmove": 1.25, "layout": 0.75, "animation": 3.5, "cfx": 1.0, "lighting": 2.0, "compositing": 2.5, "total": 12.0},
+    "face_replacement": {"description": "Face swap, digital double face, likeness replacement", "matchmove": 1.0, "animation": 1.25, "lighting": 0.75, "compositing": 2.5, "total": 6.1},
+    "cg_environment": {"description": "Full CG environment build (3D, no DMP)", "camera_track": 0.75, "layout": 1.0, "lighting": 1.5, "dmp": 1.5, "compositing": 2.0, "total": 7.4},
+    "cg_environment_hero": {"description": "Hero CG environment, establishing shot quality", "camera_track": 1.0, "layout": 2.0, "lighting": 5.0, "dmp": 2.0, "compositing": 5.0, "total": 16.0},
+    "crowd_replication_dozens": {"description": "Crowd multiplication, dozens of people", "camera_track": 0.5, "matchmove": 0.75, "layout": 0.5, "animation": 2.0, "lighting": 1.0, "compositing": 1.5, "total": 6.3},
+    "crowd_replication_hundreds": {"description": "Crowd multiplication, hundreds of people", "camera_track": 1.0, "matchmove": 0.75, "layout": 0.75, "animation": 4.0, "lighting": 1.5, "compositing": 2.0, "total": 10.5},
+    "crowd_replication_thousands": {"description": "Massive crowd, thousands of people", "camera_track": 1.5, "matchmove": 1.0, "layout": 1.0, "animation": 8.0, "lighting": 2.5, "compositing": 3.0, "total": 17.5},
+    "cloth_hair_sim": {"description": "CFX cloth or hair simulation only", "cfx": 2.0, "lighting": 0.5, "compositing": 1.0, "total": 3.5},
+}
+
+COMPLEXITY_MODIFIERS: Dict[str, Dict[str, float]] = {
+    "establishing": {"all": 1.5, "lighting": 1.8, "compositing": 1.6},
+    "hero_close_up": {"all": 1.4, "animation": 1.5, "compositing": 1.5},
+    "background": {"all": 0.7},
+    "standard": {"all": 1.0},
+    "locked_off": {"camera_track": 0.0, "matchmove": 0.7},
+    "handheld": {"camera_track": 1.5, "matchmove": 1.4, "comp_roto": 1.3},
+    "crane_dolly": {"camera_track": 1.2, "matchmove": 1.1},
+    "night": {"lighting": 1.4},
+    "day": {"lighting": 1.0},
+    "dusk_dawn": {"lighting": 1.3},
+    "single_element": {"all": 1.0},
+    "multiple_elements": {"all": 1.3, "compositing": 1.4},
+    "short_under_2s": {"all": 0.8},
+    "medium_2_5s": {"all": 1.0},
+    "long_over_5s": {"all": 1.3},
+    "hero_quality": {"all": 1.4},
+    "standard_quality": {"all": 1.0},
+    "background_quality": {"all": 0.75},
+}
+
 VFX_RULES = """
 ABSOLUTE RULES — override similar shots if they conflict:
 
@@ -101,6 +150,70 @@ TYPICAL DAY RANGES (standard shot):
   cfx 1-4d           |  fx 3-10d        |  lighting 3-9d  |  dmp 2-5d
   comp_paint 2-6d    |  comp_roto 1-4d  |  compositing 3-8d  |  ai 0d (default) or 1-5d
 """
+
+
+def build_vfx_rules(custom_baselines: Optional[Dict[str, Dict[str, Any]]] = None) -> str:
+    """
+    Build the VFX rules prompt with shot baselines.
+
+    Custom baselines are studio-specific overrides loaded from Xata presets.
+    """
+    baselines: Dict[str, Dict[str, Any]] = {
+        key: dict(data) for key, data in SHOT_BASELINES.items()
+    }
+    if custom_baselines:
+        for key, data in custom_baselines.items():
+            if isinstance(data, dict):
+                baselines[key] = {**baselines.get(key, {}), **data}
+
+    baseline_text = "\n\nSHOT TYPE BASELINE ALLOCATIONS (medium complexity, standard shot):\n"
+    baseline_text += "Use these as your starting point, then apply modifiers.\n\n"
+    for key, data in baselines.items():
+        depts = {
+            k: v
+            for k, v in data.items()
+            if k not in ("description", "total", "source")
+        }
+        dept_str = ", ".join(
+            f"{k}={float(v):g}d"
+            for k, v in depts.items()
+            if isinstance(v, (int, float)) and float(v) > 0
+        )
+        total = data.get("total", 0)
+        baseline_text += f"  {key}: {data.get('description', key)}\n"
+        baseline_text += f"    Base: {dept_str} -> Total: {float(total or 0):g}d\n\n"
+
+    modifier_text = """
+COMPLEXITY MODIFIERS (multiply baseline days by):
+  establishing shot:    all depts x1.5, lighting x1.8, comp x1.6
+  hero/close-up:        all depts x1.4
+  background/distant:   all depts x0.7
+  handheld camera:      camera_track x1.5, matchmove x1.4
+  locked camera:        camera_track = 0
+  night scene:          lighting x1.4
+  multiple CG elements: all x1.3, comp x1.4
+  long shot (5s+):      all x1.3
+
+ESTIMATION PROCESS:
+1. Identify the closest shot type baseline from the list above
+2. Note which complexity modifiers apply
+3. Apply modifiers to the baseline days
+4. Check against similar shots from training data
+5. If training data strongly disagrees with baseline, weight training data at 60%, baseline at 40%
+6. Apply the absolute rules below (COMP minimum, etc.)
+7. Return final adjusted department days
+"""
+    return baseline_text + modifier_text + "\n\n" + VFX_RULES
+
+
+def _load_studio_presets(settings: Settings) -> Dict[str, Dict[str, Any]]:
+    """Load custom shot presets from Xata if any exist."""
+    try:
+        from vfx_estimator.integrations.xata import load_presets
+
+        return load_presets(settings.resolved_xata_postgres_url())
+    except Exception:
+        return {}
 
 
 def _round_half(x: float) -> float:
@@ -292,24 +405,29 @@ class GeminiMandaysEstimator:
         similar_block = self._format_similar(hits[:6])
         cg_ratio = cg_ratio_from_pre_qual(pre_qual)
         cg_rules = build_practical_cg_prompt_rules(cg_ratio)
+        rules = build_vfx_rules(_load_studio_presets(self.settings))
 
         prompt = f"""You are a senior VFX supervisor estimating MANDAYS (person-days of work, NOT dollars) for a single shot.
 
-{VFX_RULES}
+{rules}
 {cg_rules}{project_ctx}{brief}{flags_ctx}
 {similar_block}
 SHOT TO ESTIMATE: "{description}"
 
-Return a JSON object. You MUST include ALL FIVE of these fields — missing any field is an error:
+Return a JSON object. You MUST include these fields — missing core fields is an error:
 
   "shot_type"   — one of: establishing | hero | background | standard
   "departments" — object where each key is a department name and its value is {{"days": <number>}}.
                   Include ALL departments with non-zero work for this shot.
                   Valid dept names: camera_track, matchmove, layout, animation, cfx, fx,
-                  lighting, dmp, comp_paint, comp_roto, compositing, prep, ai
+                  lighting, dmp, comp_paint, comp_roto, compositing, prep, crowds, enviro, ai
   "total_days"  — float; MUST equal the exact arithmetic sum of all included department days
   "confidence"  — float between 0.0 and 1.0
   "reasoning"   — one sentence: shot type classification and key similar-shot anchor used
+  "baseline_used" — closest baseline key, e.g. cg_creature
+  "modifiers_applied" — array of modifier keys applied, e.g. ["hero_close_up", "night"]
+  "baseline_days" — baseline total before modifiers
+  "adjusted_days" — total after modifiers before similar-shot blending
 
 Rules:
   - Omit departments with 0 days (do not include them at all)

@@ -154,6 +154,10 @@ class ShotEstimate(BaseModel):
     numeric_mandays: Optional[float] = None
     gemini_mandays: Optional[float] = None
     retrieval_median_mandays: Optional[float] = None
+    baseline_used: Optional[str] = None
+    modifiers_applied: List[str] = Field(default_factory=list)
+    baseline_days: Optional[float] = None
+    adjusted_days: Optional[float] = None
 
 
 FLAG_TYPES = [
@@ -194,3 +198,21 @@ class SaveBidRequest(BaseModel):
     shots: List[Dict[str, Any]] = Field(default_factory=list)
     pre_qual: Optional[Dict[str, Any]] = None
     notes: Optional[str] = ""
+
+
+class PresetRequest(BaseModel):
+    shot_type: str
+    description: str = ""
+    camera_track: float = 0.0
+    matchmove: float = 0.0
+    layout: float = 0.0
+    animation: float = 0.0
+    cfx: float = 0.0
+    fx: float = 0.0
+    lighting: float = 0.0
+    dmp: float = 0.0
+    comp_paint: float = 0.0
+    comp_roto: float = 0.0
+    compositing: float = 0.0
+    total: float = 0.0
+    created_by: str = "supervisor"
