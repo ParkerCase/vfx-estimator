@@ -172,8 +172,11 @@ def _dept_days(data: Dict[str, Any]) -> Dict[str, float]:
 
 
 def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Settings) -> Dict[str, Any]:
-    tier = getattr(asset_context, "tier", "") if asset_context else ""
-    notes = getattr(asset_context, "notes", "") if asset_context else ""
+    if asset_context is None:
+        tier, notes = "", ""
+    else:
+        tier = getattr(asset_context, "tier", "") or ""
+        notes = getattr(asset_context, "notes", "") or ""
     prompt = ASSET_PROMPT.format(
         baselines=_baseline_text(),
         name=asset.asset_name,
@@ -182,8 +185,21 @@ def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Se
         tier=tier or "auto-detect",
         notes=notes or "none",
     )
-    result = generate_json(prompt, settings=settings)
+    print(f"[asset_estimate] Calling Gemini for: {asset.asset_name}", flush=True)
+    print(f"[asset_estimate] Prompt length: {len(prompt)} chars", flush=True)
+    try:
+        result = generate_json(
+            prompt,
+            settings=settings,
+            debug_label="asset_estimate",
+            timeout_sec=45,
+        )
+    except Exception as exc:
+        print(f"[asset_estimate] FAILED — generate_json raised {type(exc).__name__}: {exc}", flush=True)
+        raise
     if not result:
+        print("[asset_estimate] FAILED — generate_json returned None", flush=True)
+        print("[asset_estimate] Check: API key valid? Rate limited? Prompt too long?", flush=True)
         return {
             "asset_tier": "secondary",
             "departments": {},
@@ -191,6 +207,7 @@ def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Se
             "confidence": 0.2,
             "reasoning": "Estimation failed -- no Gemini response",
         }
+    print(f"[asset_estimate] SUCCESS — got keys: {list(result.keys())}", flush=True)
     dept = _dept_days(result)
     if dept:
         result["total_days"] = round(sum(dept.values()) * 2) / 2

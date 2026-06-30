@@ -69,6 +69,8 @@ def generate_json(
     max_output_tokens: int = 4096,
     temperature: float = 0.2,
     max_retries: int = 2,
+    debug_label: Optional[str] = None,
+    timeout_sec: float = 15,
 ) -> Optional[Dict[str, Any]]:
     """Call Gemini and return a parsed JSON dict.
 
@@ -83,6 +85,12 @@ def generate_json(
         raise RuntimeError("GEMINI_API_KEY or GOOGLE_API_KEY required")
     model = (model or settings.resolved_gemini_mandays_model()).strip()
     url = API_URL.format(model=model) + f"?key={key}"
+    if debug_label:
+        print(
+            f"[{debug_label}] Gemini model={model} api=v1beta "
+            f"prompt_len={len(prompt)} max_output_tokens={max_output_tokens} timeout={timeout_sec}s",
+            flush=True,
+        )
 
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
@@ -105,21 +113,31 @@ def generate_json(
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=timeout_sec) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
         except TimeoutError:
+            if debug_label:
+                print(f"[{debug_label}] Gemini request timed out", flush=True)
             return None
         except urllib.error.HTTPError as e:
             err_body = e.read().decode("utf-8", errors="replace")
             last_error = RuntimeError(f"Gemini HTTP {e.code}: {err_body[:400]}")
+            if debug_label:
+                print(f"[{debug_label}] Gemini HTTP {e.code}: {err_body[:500]}", flush=True)
             continue
         except urllib.error.URLError as e:
             if isinstance(getattr(e, "reason", None), TimeoutError):
+                if debug_label:
+                    print(f"[{debug_label}] Gemini URL timeout", flush=True)
                 return None
             last_error = e
+            if debug_label:
+                print(f"[{debug_label}] Gemini URL error: {e}", flush=True)
             continue
         except Exception as e:
             last_error = e
+            if debug_label:
+                print(f"[{debug_label}] Gemini request error: {e}", flush=True)
             continue
 
         # Collect text from all candidate parts
@@ -131,6 +149,8 @@ def generate_json(
             for part in content.get("parts") or []:
                 if "text" in part:
                     text += part["text"]
+        if debug_label:
+            print(f"[{debug_label}] RAW Gemini response: {text[:500]!r}", flush=True)
 
         raw = _extract_json(text)
         if not raw:
@@ -138,6 +158,8 @@ def generate_json(
                 f"Empty/unparseable response (finish={finish_reason!r}). "
                 f"Text ({len(text)} chars): {text[:200]!r}"
             )
+            if debug_label:
+                print(f"[{debug_label}] JSON extraction failed: {last_error}", flush=True)
             continue
 
         try:
@@ -151,6 +173,8 @@ def generate_json(
                 last_error = RuntimeError(
                     f"JSON parse failed after repair: {e2} | raw={raw[:200]!r}"
                 )
+                if debug_label:
+                    print(f"[{debug_label}] JSON parse failed: {last_error}", flush=True)
                 continue
 
     raise last_error

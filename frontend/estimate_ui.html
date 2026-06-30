@@ -2786,6 +2786,9 @@ function mapRowsToShots(rows, headerIdx, colMap) {
 
     const desc = descPreview;
     const methodology = csvCell(row, colMap.methodology);
+    if (methodology) {
+      console.log('Parsed methodology for shot', item || itemRaw || shots.length + 1, ':', methodology);
+    }
     const vfxWork = vfxPreview;
     const assump = csvCell(row, colMap.vfx_assumptions);
     const clientNotes = csvCell(row, colMap.client_notes);

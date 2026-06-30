@@ -39,6 +39,7 @@ class BidBatchShotItem(BaseModel):
     item_number: Optional[str] = None
     shot_code: Optional[str] = None
     script_description: str = ""
+    methodology: str = ""
     vfx_notes: str = ""
     vfx_assumptions: str = ""
     client_initial_thoughts: Optional[str] = None
@@ -73,6 +74,8 @@ def build_shot_description(shot: BidBatchShotItem) -> str:
     parts: List[str] = []
     if shot.script_description and shot.script_description.strip():
         parts.append(shot.script_description.strip())
+    if shot.methodology and shot.methodology.strip():
+        parts.append(f"METHODOLOGY: {shot.methodology.strip()}")
     if shot.vfx_notes and shot.vfx_notes.strip():
         parts.append(f"VFX: {shot.vfx_notes.strip()}")
     if shot.vfx_assumptions and shot.vfx_assumptions.strip():
@@ -150,6 +153,7 @@ def _error_bid_row(
         "shot_code": _resolve_shot_code(shot) or f"shot_{idx + 1}",
         "description": build_shot_description(shot),
         "script_description": shot.script_description,
+        "methodology": shot.methodology,
         "vfx_notes": shot.vfx_notes,
         "vfx_assumptions": shot.vfx_assumptions,
         "number_of_shots": _shot_count(shot),
@@ -170,6 +174,7 @@ def _excluded_bid_row(shot: BidBatchShotItem) -> Dict[str, Any]:
         "shot_code": _resolve_shot_code(shot) or shot.item_number or "excluded",
         "description": build_shot_description(shot),
         "script_description": shot.script_description,
+        "methodology": shot.methodology,
         "vfx_notes": shot.vfx_notes,
         "vfx_assumptions": shot.vfx_assumptions,
         "number_of_shots": 0,
@@ -373,6 +378,7 @@ def _estimate_bid_row(
         "shot_code": _resolve_shot_code(shot),
         "description": build_shot_description(shot),
         "script_description": shot.script_description,
+        "methodology": shot.methodology,
         "vfx_notes": shot.vfx_notes,
         "vfx_assumptions": shot.vfx_assumptions,
         "number_of_shots": n,
@@ -489,6 +495,7 @@ def parse_lvlup_bid_csv(content: bytes) -> Tuple[List[BidBatchShotItem], LvlupCs
     idx_item = _find_col(col_map, "ITEM#")
     idx_code = _find_col(col_map, "VFX SHOT CODE", "SHOT CODE")
     idx_script = _find_col(col_map, "SCRIPT DESCRIPTIONS", "SCRIPT DESCRIPTION")
+    idx_methodology = _find_col(col_map, "METHODOLOGY", "VFX METHODOLOGY", "SHOT METHODOLOGY")
     idx_notes = _find_col(col_map, "VFX NOTES")
     idx_assump = _find_col(col_map, "VFX ASSUMPTIONS")
     idx_client = _find_col(col_map, "CLIENT INITIAL THOUGHTS")
@@ -502,10 +509,11 @@ def parse_lvlup_bid_csv(content: bytes) -> Tuple[List[BidBatchShotItem], LvlupCs
         item = _cell(row, idx_item)
         code = _cell(row, idx_code)
         script = _cell(row, idx_script)
+        methodology = _cell(row, idx_methodology)
         notes = _cell(row, idx_notes)
         assump = _cell(row, idx_assump)
         client = _cell(row, idx_client)
-        if not item and not code and not script and not notes:
+        if not item and not code and not script and not methodology and not notes:
             continue
         data_row_indices.append(i)
         shots.append(
@@ -513,6 +521,7 @@ def parse_lvlup_bid_csv(content: bytes) -> Tuple[List[BidBatchShotItem], LvlupCs
                 item_number=item or str(len(shots) + 1),
                 shot_code=code or None,
                 script_description=script or code,
+                methodology=methodology,
                 vfx_notes=notes,
                 vfx_assumptions=assump,
                 client_initial_thoughts=client or None,
