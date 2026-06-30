@@ -254,6 +254,9 @@
     .batch-drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px;text-align:center;
                      background:var(--card2);cursor:pointer;transition:border-color .2s}
     .batch-drop-zone:hover,.batch-drop-zone.drag{border-color:var(--accent)}
+    .sample-download-hint{margin-top:6px;font-size:12px;color:var(--muted);text-align:center}
+    .sample-download-hint a{color:var(--accent);font-weight:700;text-decoration:none}
+    .sample-download-hint a:hover{text-decoration:underline}
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
       z-index:120;align-items:center;justify-content:center;padding:20px}
     .modal-overlay.open{display:flex}
@@ -489,6 +492,10 @@
                onchange="onBatchFileSelected(this)">
         <div id="batch-file-name" style="margin-top:8px;font-size:12px;color:var(--accent)"></div>
       </div>
+      <div class="sample-download-hint">
+        Not sure of the format?
+        <a href="#" onclick="downloadSampleShotCsv(); return false;">Download a sample CSV</a>
+      </div>
 
       <p style="font-size:12px;color:var(--muted);margin:14px 0 8px">Or paste shot descriptions (one per line):</p>
       <textarea id="batch-input" style="min-height:88px"
@@ -683,6 +690,10 @@
         <div>Drop asset CSV or Excel here</div>
         <div class="muted" style="font-size:12px;margin-top:4px">or <span style="color:var(--accent)">browse</span> — expects ITEM#, ASSET DESCRIPTION, ASSET ASSUMPTIONS</div>
         <input type="file" id="asset-file-input" class="hidden" accept=".csv,.xlsx,.xls" onchange="onAssetFileSelected(this)">
+      </div>
+      <div class="sample-download-hint">
+        Not sure of the format?
+        <a href="#" onclick="downloadSampleAssetCsv(); return false;">Download a sample CSV</a>
       </div>
       <div style="margin:10px 0;color:var(--muted);font-size:12px;text-align:center">— or —</div>
       <textarea id="asset-paste" rows="3"
@@ -950,6 +961,58 @@ function toast(msg, type='ok') {
   el.className = `show ${type}`;
   clearTimeout(el._t);
   el._t = setTimeout(()=>{ el.className=''; }, 3400);
+}
+
+function downloadCsv(filename, rows) {
+  const csv = rows
+    .map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadSampleShotCsv() {
+  const header = [
+    'ITEM#', 'THUMBNAIL', 'SCENE DESCRIPTION', 'SCENE NUMBER',
+    'SHOT DESCRIPTION', 'SHOT STATUS', 'VFX ASSUMPTIONS',
+    'CLIENT NOTES', 'NUMBER OF SHOTS', 'COST PER SHOT',
+    'TOTAL SHOT COST', 'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM',
+    'CFX', 'FX', 'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP',
+    'TOTAL MANDAYS',
+  ];
+  const sampleRow = [
+    '1', '', 'INT. ABANDONED WAREHOUSE - NIGHT', '14',
+    'Detective Reyes enters through a broken skylight, CG dust and debris falling from the ceiling as moonlight cuts through. Background warehouse interior extends beyond the practical set via DMP.',
+    'BIDDING',
+    'DMP set extension for warehouse interior beyond practical build. CG dust/debris particle FX triggered by entry. Locked camera, no tracking required. Moonlight beam is a practical gel light, no CG lighting needed beyond integration.',
+    'Client wants this to feel like the Bourne films - gritty, handheld energy but this particular shot is locked off.',
+    '1',
+  ];
+  while (sampleRow.length < header.length) sampleRow.push('');
+  downloadCsv('sample_shot_breakdown.csv', [header, sampleRow]);
+}
+
+function downloadSampleAssetCsv() {
+  const header = [
+    'ITEM#', 'THUMBNAIL', 'ASSET DESCRIPTION', 'SHOT STATUS',
+    'ASSET ASSUMPTIONS', 'CLIENT NOTES', 'NUMBER OF VARIATIONS',
+    'TOTAL ASSET COST', 'MODELLING', 'TEXTURING', 'RIGGING',
+    'CFX', 'FX', 'LOOKDEV', 'COMP DEV', 'TOTAL MANDAYS',
+  ];
+  const sampleRow = [
+    '1', '',
+    'Hero CG raven companion - mid-size bird character, appears in 6 shots across episode 1. Photoreal feathers, expressive eye animation for emotional beats.',
+    'BIDDING',
+    'Featured/hero asset, not background. Needs full feather groom and flight rig with secondary wing dynamics. Will be seen in extreme close-up in shot 1.4.2, so detail must hold up at that distance.',
+    'Client referenced the raven from The Crow as visual inspiration - same iridescent black plumage.',
+    '1',
+  ];
+  while (sampleRow.length < header.length) sampleRow.push('');
+  downloadCsv('sample_asset_breakdown.csv', [header, sampleRow]);
 }
 
 function renderCsvAuditSummary(audit) {
