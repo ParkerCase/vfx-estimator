@@ -403,9 +403,37 @@ Return JSON only:
         from vfx_estimator.llm.gemini_client import generate_json
 
         try:
-            result = generate_json(prompt, settings=svc.settings)
-        except Exception:
+            print("[suggest_methodology] Prompt being sent:", flush=True)
+            print(prompt, flush=True)
+            result = generate_json(
+                prompt,
+                settings=svc.settings,
+                debug_label="suggest_methodology",
+                timeout_sec=45,
+            )
+        except Exception as exc:
+            print(
+                f"[suggest_methodology] generate_json raised {type(exc).__name__}: {exc}",
+                flush=True,
+            )
             result = None
+        if not result:
+            print(
+                f"[suggest_methodology] generate_json returned None for: {req.description[:80]}",
+                flush=True,
+            )
+        elif "suggestions" not in result:
+            print(f"[suggest_methodology] Got result but no 'suggestions' key: {result}", flush=True)
+        elif not result["suggestions"]:
+            print(
+                f"[suggest_methodology] suggestions key present but EMPTY. Raw result: {result}",
+                flush=True,
+            )
+        else:
+            print(
+                f"[suggest_methodology] SUCCESS — {len(result['suggestions'])} suggestions",
+                flush=True,
+            )
         return result or {"suggestions": []}
 
     @app.post("/estimate/assets/stream")
