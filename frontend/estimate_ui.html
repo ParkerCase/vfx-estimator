@@ -146,6 +146,14 @@
     #toast.warn{border-color:var(--orange);color:var(--orange)}
     #toast.err{border-color:var(--red);color:var(--red)}
     #toast.info{border-color:var(--accent);color:var(--accent)}
+    .csv-audit-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text)}
+    .csv-audit-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .csv-audit-details{margin-top:12px;max-height:260px;overflow:auto;border-top:1px solid var(--border);padding-top:10px}
+    .csv-audit-row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+    .csv-audit-row:last-child{border-bottom:none}
+    .csv-audit-raw{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);
+      white-space:pre-wrap;word-break:break-word;margin-top:3px}
 
     /* ── Bid history drawer ── */
     .history-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;opacity:0;
@@ -197,6 +205,22 @@
     .batch-table td{color:var(--text)}
     .batch-table tbody tr.batch-data-row:nth-child(4n+1) td{background:rgba(255,255,255,0.02)}
     .batch-table tr.batch-data-row:hover td{background:rgba(79,142,247,.04)}
+    .batch-table tr.row-excluded{opacity:.45;border-left:3px solid var(--red)}
+    .batch-table tr.row-toggled-off{opacity:.4;border-left:3px solid var(--red)}
+    .batch-table tr.row-excluded td{color:var(--muted)}
+    .batch-include-cell{width:44px;text-align:center;vertical-align:middle!important}
+    .batch-include-cell input{position:absolute;opacity:0;pointer-events:none}
+    .include-toggle{display:inline-flex;align-items:center;justify-content:center;width:30px;height:18px;
+      border-radius:999px;border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:background .15s,border-color .15s,opacity .15s;
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+    .include-toggle::after{content:'';width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+    .include-toggle.on{background:var(--green);border-color:var(--green)}
+    .include-toggle.on::after{transform:translateX(5px)}
+    .include-toggle.off{background:var(--red);border-color:var(--red)}
+    .include-toggle.off::after{transform:translateX(-5px)}
+    .include-toggle.disabled{cursor:not-allowed;opacity:.45;background:var(--muted-soft);border-color:var(--muted-soft)}
+    .error-icon{display:inline-flex;color:var(--red);cursor:pointer;margin-left:4px;vertical-align:middle}
+    .row-error-detail{margin-top:5px;color:var(--red);font-size:10px;line-height:1.35;white-space:normal;max-width:260px}
     .batch-table .row-drag-cell{width:30px;padding:4px 6px;text-align:center;vertical-align:middle}
     .row-drag-handle{display:inline-flex;align-items:center;justify-content:center;width:20px;height:24px;
       border-radius:4px;color:var(--muted-soft);cursor:grab;touch-action:none;user-select:none}
@@ -212,9 +236,6 @@
     .batch-table textarea.batch-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:vertical}
     .batch-table .col-hidden{display:none!important}
     .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
-    .expand-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;
-      font-size:12px;font-weight:700;color:var(--text);cursor:pointer;white-space:nowrap}
-    .expand-btn:hover{border-color:var(--accent);color:var(--accent)}
     .col-toggle-bar{margin-bottom:12px}
     .col-toggle-trigger{background:var(--surface);border:1px solid var(--border);border-radius:8px;
       padding:7px 14px;font-size:12px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:8px}
@@ -226,17 +247,6 @@
     .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.08)}
     .col-check-item input{display:none}
     .col-toggle-actions{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
-    .table-modal{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column}
-    .table-modal-hdr{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
-      justify-content:space-between;gap:12px;flex-shrink:0}
-    .table-modal-body{flex:1;overflow:auto;padding:0;-webkit-overflow-scrolling:touch}
-    .batch-table-modal{min-width:max-content;width:100%}
-    .batch-table-modal th{position:sticky;top:0;z-index:5;box-shadow:0 1px 0 var(--border)}
-    .batch-table-modal .batch-col-sticky{position:sticky;background:var(--surface)}
-    .batch-table-modal thead .batch-col-sticky{z-index:6}
-    .batch-table-modal tbody .batch-col-sticky{z-index:2;background:var(--card)}
-    .batch-table-modal tbody tr.batch-data-row:nth-child(4n+1) td.batch-col-sticky{background:rgba(255,255,255,0.02)}
-    .batch-table-modal .col-desc{min-width:220px;max-width:360px}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
     .conf-badge.hi{background:#1a3a2a;color:var(--green)}
     .conf-badge.mid{background:#3a2e10;color:var(--orange)}
@@ -251,10 +261,12 @@
       padding:24px;max-width:720px;width:100%;max-height:90vh;overflow:auto;
       box-shadow:0 16px 48px rgba(0,0,0,.45)}
     .modal-title{font-size:16px;font-weight:800;margin-bottom:8px;color:var(--text-strong)}
+    .modal-card.small{max-width:420px}
+    .modal-actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
     .col-map-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
     .col-map-field{display:flex;flex-direction:column;gap:4px}
     .col-map-field label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text)}
-    .col-map-field select{padding:8px 10px;font-size:12px}
+    .col-map-field select,.col-map-field input{padding:8px 10px;font-size:12px}
     .col-map-preview{margin-top:14px;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
     .col-map-preview table{width:100%;border-collapse:collapse;font-size:11px}
     .col-map-preview th,.col-map-preview td{padding:6px 8px;border:1px solid var(--border);text-align:left;
@@ -573,10 +585,10 @@
         </div>
         <div class="progress-label" id="progress-label">Estimating IVL_001… (0%)</div>
       </div>
+      <div id="csv-audit-panel" class="csv-audit-panel hidden"></div>
       <div class="card hidden" id="batch-table-card" style="padding-bottom:8px">
         <div class="table-card-header">
           <span class="sec-label" style="margin:0">Results</span>
-          <button type="button" class="expand-btn hidden" id="expand-table-btn" onclick="openTableModal()">⤢ Expand</button>
         </div>
         <div class="col-toggle-bar">
           <button type="button" class="col-toggle-trigger" onclick="toggleColPanel()">
@@ -657,50 +669,6 @@
           </table>
         </div>
 
-        <div class="sec-label" style="margin:16px 0 10px">Tax Credit &amp; Net Bid</div>
-        <div class="tax-credit-wrap" id="tax-credit-wrap">
-          <table class="tax-credit-table">
-            <tbody>
-              <tr>
-                <td class="label">Gross Total</td>
-                <td class="amount" id="tax-total-cost">—</td>
-              </tr>
-              <tr>
-                <td class="label">
-                  Tax Credit
-                  (<input type="number" class="tax-credit-pct-inp" id="tax-credit-pct"
-                    min="0" max="100" step="0.5" value="0" placeholder="0"
-                    oninput="onTaxCreditPctChange(this.value)"
-                    aria-label="Tax credit percentage">%)
-                </td>
-                <td class="amount deduction" id="tax-credit-amount">—</td>
-              </tr>
-              <tr>
-                <td class="label">
-                  Admin &amp; Interest Fees
-                  (<input type="number" class="tax-credit-pct-inp" id="tax-admin-fee-pct"
-                    min="0" max="100" step="0.5" value="0" placeholder="0"
-                    oninput="onAdminFeePctChange(this.value)"
-                    aria-label="Admin and interest fee percentage">% of gross)
-                </td>
-                <td class="amount addition" id="tax-admin-fee-amount">—</td>
-              </tr>
-              <tr class="net">
-                <td class="label">Net Total VFX Bid</td>
-                <td class="amount" id="tax-net-total">—</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="tax-credit-hint">
-            Matches standard bid math: <strong>Net = Gross − Tax Credit + Admin Fees</strong>.
-            Enter your own rates — e.g. Ontario credit 24–28%, Montreal 21%, admin &amp; interest often ~8% of gross.
-            Saved in this browser; updates live when you edit rows or department rates.
-          </div>
-        </div>
-
-        <div class="sec-label" style="margin:16px 0 10px">Currency Equivalents</div>
-        <div class="fx-multi-summary" id="fx-multi-summary"></div>
-        <div class="fx-status-note" id="fx-status-note"></div>
       </div>
     </div>
 
@@ -736,7 +704,8 @@
         </div>
         <div>
           <label class="lbl">Day Rate Override</label>
-          <input type="number" id="asset-day-rate" value="500" min="0" style="width:100%" placeholder="500">
+          <input type="number" id="asset-day-rate" value="500" min="0" style="width:100%" placeholder="500"
+                 oninput="refreshAssetCosts()">
         </div>
         <div style="grid-column:1/-1">
           <label class="lbl">Asset Notes / Assumptions</label>
@@ -768,11 +737,58 @@
       <div class="sec-label">Combined Bid Summary</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:12px">
         <div class="stat-block"><div class="n" id="cs-shots">—</div><div class="l">VFX Shots</div></div>
-        <div class="stat-block"><div class="n" id="cs-shot-days">—</div><div class="l">Shot Mandays</div></div>
+        <div class="stat-block"><div class="n" id="cs-shot-cost">—</div><div class="l">Shot Cost</div></div>
         <div class="stat-block"><div class="n" id="cs-assets">—</div><div class="l">Assets</div></div>
-        <div class="stat-block"><div class="n" id="cs-asset-days">—</div><div class="l">Asset Mandays</div></div>
-        <div class="stat-block"><div class="n" id="cs-total-days" style="color:var(--accent)">—</div><div class="l">Total Mandays</div></div>
+        <div class="stat-block"><div class="n" id="cs-asset-cost">—</div><div class="l">Asset Cost</div></div>
+        <div class="stat-block"><div class="n" id="cs-gross-total" style="color:var(--accent)">—</div><div class="l">Gross Total</div></div>
       </div>
+    </div>
+
+    <div class="card hidden" id="tax-credit-card" style="margin-top:16px">
+      <div class="sec-label" style="margin-bottom:10px">Tax Credit &amp; Net Bid</div>
+      <div class="tax-credit-wrap" id="tax-credit-wrap">
+        <table class="tax-credit-table">
+          <tbody>
+            <tr>
+              <td class="label">Gross Total</td>
+              <td class="amount" id="tax-total-cost">—</td>
+            </tr>
+            <tr>
+              <td class="label">
+                Tax Credit
+                (<input type="number" class="tax-credit-pct-inp" id="tax-credit-pct"
+                  min="0" max="100" step="0.5" value="0" placeholder="0"
+                  oninput="onTaxCreditPctChange(this.value)"
+                  aria-label="Tax credit percentage">%)
+              </td>
+              <td class="amount deduction" id="tax-credit-amount">—</td>
+            </tr>
+            <tr>
+              <td class="label">
+                Admin &amp; Interest Fees
+                (<input type="number" class="tax-credit-pct-inp" id="tax-admin-fee-pct"
+                  min="0" max="100" step="0.5" value="0" placeholder="0"
+                  oninput="onAdminFeePctChange(this.value)"
+                  aria-label="Admin and interest fee percentage">% of gross)
+              </td>
+              <td class="amount addition" id="tax-admin-fee-amount">—</td>
+            </tr>
+            <tr class="net">
+              <td class="label">Net Total VFX Bid</td>
+              <td class="amount" id="tax-net-total">—</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="tax-credit-hint">
+          Matches standard bid math: <strong>Net = Gross − Tax Credit + Admin Fees</strong>.
+          Enter your own rates — e.g. Ontario credit 24–28%, Montreal 21%, admin &amp; interest often ~8% of gross.
+          Saved in this browser; updates live when you edit rows or department rates.
+        </div>
+      </div>
+
+      <div class="sec-label" style="margin:16px 0 10px">Currency Equivalents</div>
+      <div class="fx-multi-summary" id="fx-multi-summary"></div>
+      <div class="fx-status-note" id="fx-status-note"></div>
     </div>
 
   <!-- ── Stats ── -->
@@ -810,6 +826,23 @@
   </div>
 </div>
 
+<div id="bid-name-modal" class="modal-overlay">
+  <div class="modal-card small" onclick="event.stopPropagation()">
+    <div class="modal-title">Name this bid before saving</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:12px">
+      Enter a project or bid name to save this estimate to bid history.
+    </p>
+    <div class="col-map-field">
+      <label for="bid-name-input">Bid name</label>
+      <input type="text" id="bid-name-input" placeholder="e.g. IRON VEIL — VFX Bid">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" onclick="skipBidNameSave()">Skip</button>
+      <button type="button" class="btn-blue" onclick="saveNamedBidFromPrompt()">Save Bid</button>
+    </div>
+  </div>
+</div>
+
 <div id="history-backdrop" class="history-backdrop" onclick="closeHistoryDrawer()"></div>
 <aside id="history-drawer" class="history-drawer" aria-label="Bid history">
   <div class="history-drawer-hdr">
@@ -820,29 +853,6 @@
     <div class="history-empty">Loading…</div>
   </div>
 </aside>
-
-<div id="table-modal" class="table-modal hidden">
-  <div class="table-modal-hdr">
-    <span id="modal-project-title" style="font-weight:700;font-size:15px">Bid Breakdown</span>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <span id="modal-summary" style="color:var(--muted);font-size:13px"></span>
-      <button type="button" onclick="closeTableModal()" class="btn-ghost">✕ Close</button>
-    </div>
-  </div>
-  <div class="table-modal-body">
-    <table class="batch-table batch-table-modal" id="modal-table">
-      <thead><tr id="modal-thead-row"></tr></thead>
-      <tbody id="modal-table-body"></tbody>
-    </table>
-  </div>
-  <div class="batch-bar" id="modal-batch-bar">
-    <span id="modal-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
-    <div class="btn-row" style="margin:0">
-      <button type="button" class="btn-green with-icon" onclick="saveAllBatchCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save All Corrections</button>
-      <button type="button" class="btn-ghost with-icon" onclick="exportBatchCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
-    </div>
-  </div>
-</div>
 
 <div id="toast"></div>
 
@@ -859,6 +869,7 @@ const DISPLAY_CURRENCY_STORAGE_KEY = 'vfx_estimator_display_currency';
 const BASE_CURRENCY = 'USD';
 const DISPLAY_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD'];
 const CURRENCY_SYMBOLS = { USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$' };
+const ALLOTMENT_EFFICIENCY = 0.88;
 const RATE_DEPARTMENTS = [
   'animation', 'fx', 'lighting', 'compositing', 'comp_paint', 'comp_roto',
   'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'crowds', 'enviro', 'ai',
@@ -876,6 +887,7 @@ let _adminFeePct = 0;
 let _displayCurrency = 'USD';
 let _fxRates = { USD: 1 };
 let _fxMeta = { date: null, source: null, fallback: false };
+let _lastCsvAudit = null;
 
 function getUserId() {
   const v = (document.getElementById('user-id')?.value || '').trim();
@@ -924,7 +936,7 @@ const ASSET_DEPT_SHORT = {
   LGT: 'LGT', DMP: 'DMP', LOOKDEV: 'LKDV', 'COMP DEV': 'CDEV',
 };
 const ASSET_DEPT_DEFAULTS = {
-  MODELLING: true, TEXTURING: true, RIGGING: true, CFX: false, FX: false,
+  MODELLING: true, TEXTURING: true, RIGGING: true, CFX: true, FX: true,
   LGT: false, DMP: false, LOOKDEV: true, 'COMP DEV': true,
 };
 let _assetResults = [];
@@ -938,6 +950,47 @@ function toast(msg, type='ok') {
   el.className = `show ${type}`;
   clearTimeout(el._t);
   el._t = setTimeout(()=>{ el.className=''; }, 3400);
+}
+
+function renderCsvAuditSummary(audit) {
+  _lastCsvAudit = audit || null;
+  const panel = document.getElementById('csv-audit-panel');
+  if (!panel) return;
+  if (!audit) {
+    panel.classList.add('hidden');
+    panel.innerHTML = '';
+    return;
+  }
+  const skipped = audit.skipLog?.length || 0;
+  const parsed = audit.parsedCount ?? 0;
+  const total = audit.totalRowsScanned ?? 0;
+  const summary = `Parsed ${parsed} of ${total} rows. ${skipped} skipped`;
+  panel.classList.remove('hidden');
+  panel.innerHTML = `
+    <div class="csv-audit-summary">
+      <span><strong>CSV Parse Audit:</strong> ${escHtml(summary)}${audit.fileName ? ` · ${escHtml(audit.fileName)}` : ''}</span>
+      ${skipped ? '<button type="button" class="btn-ghost" onclick="toggleCsvAuditDetails()">View skipped rows</button>' : ''}
+    </div>
+    <div id="csv-audit-details" class="csv-audit-details hidden"></div>`;
+  if (skipped) renderCsvAuditDetails(false);
+}
+
+function renderCsvAuditDetails(open) {
+  const detail = document.getElementById('csv-audit-details');
+  if (!detail || !_lastCsvAudit) return;
+  const rows = _lastCsvAudit.skipLog || [];
+  detail.classList.toggle('hidden', !open);
+  detail.innerHTML = rows.length
+    ? rows.map(s => `<div class="csv-audit-row">
+        <strong>Row ${Number(s.row) + 1}</strong> · ${escHtml(s.reason || 'skipped')}
+        <div class="csv-audit-raw">${escHtml(JSON.stringify(s.raw || []))}</div>
+      </div>`).join('')
+    : '<div style="color:var(--muted)">No skipped rows.</div>';
+}
+
+function toggleCsvAuditDetails() {
+  const detail = document.getElementById('csv-audit-details');
+  renderCsvAuditDetails(detail?.classList.contains('hidden'));
 }
 
 function fmt(n, d=1) {
@@ -1053,6 +1106,7 @@ function refreshAllMoneyDisplays() {
   updateRatesSummary();
   renderDeptRatesPanel();
   if (_batchResult) refreshBatchBidSummary();
+  else updateCombinedSummary();
 }
 
 function renderFxMultiSummary(grossUsd, netUsd) {
@@ -1110,6 +1164,11 @@ function onDeptRateChange(dept, raw) {
   if (_batchResult) recalcBatchTotals();
 }
 
+function assetDayRate() {
+  const raw = parseFloat(document.getElementById('asset-day-rate')?.value);
+  return Number.isFinite(raw) && raw > 0 ? raw : 500;
+}
+
 function getDeptRates() {
   return { ..._deptRates };
 }
@@ -1157,6 +1216,21 @@ function computeClientShotCost(deptDays, rates, { mandaysFallback = 0, allot = 1
     perShot = mandaysFallback * _fallbackDayRate;
   }
   return Math.round(perShot * Math.max(1, allot) * 100) / 100;
+}
+
+function sequenceCostForRow(row) {
+  const n = parseInt(row?.number_of_shots ?? 1, 10);
+  const perShot = parseFloat(row?.cost_per_shot) || 0;
+  if (!Number.isFinite(n) || n <= 1 || perShot <= 0) return null;
+  return Math.round(perShot * (1 + (n - 1) * ALLOTMENT_EFFICIENCY) * 100) / 100;
+}
+
+function batchCostCellHtml(row) {
+  const perShot = parseFloat(row?.cost_per_shot) || 0;
+  const n = parseInt(row?.number_of_shots ?? 1, 10);
+  const seqCost = sequenceCostForRow(row);
+  if (seqCost == null) return money(perShot);
+  return `<div>Per shot: ${money(perShot)}</div><div class="muted" style="font-size:10px">Sequence (×${n}): ${money(seqCost)}</div>`;
 }
 
 function escHtml(s) {
@@ -1243,8 +1317,11 @@ function getPreQualData() {
 
 let _batchResult = null;
 let _batchDragRow = null;
+let _lastDragOverRow = null;
+let _lastDragOverBefore = null;
 let _globalDeptMult = {};
 let _mixDeptDomMap = {};
+let _pendingHistorySaveShots = null;
 
 const BID_DEPTS = [
   'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM', 'CFX', 'FX',
@@ -1445,6 +1522,41 @@ function confBadge(conf) {
   return `<span class="conf-badge ${cls}">${p}%</span>`;
 }
 
+function isExcludedShot(row) {
+  return !!row?.excluded || Number(row?.number_of_shots) === 0;
+}
+
+function isIncludedShot(row) {
+  return !!row && !isExcludedShot(row) && row._included !== false;
+}
+
+function includeToggleState(row) {
+  if (isExcludedShot(row)) return 'disabled off';
+  return isIncludedShot(row) ? 'on' : 'off';
+}
+
+function setIncludeToggleState(input, row) {
+  const toggle = input?.closest('.batch-include-cell')?.querySelector('.include-toggle');
+  if (!toggle) return;
+  toggle.className = `include-toggle ${includeToggleState(row)}`;
+}
+
+function humanReadableError(err) {
+  const msg = String(err || '').trim();
+  if (!msg) return '';
+  if (/Gemini request timed out/i.test(msg)) {
+    return 'AI estimate timed out — click rerun to retry this row.';
+  }
+  if (/total too low|total too high|sanity/i.test(msg)) {
+    return 'Estimate failed sanity check — click rerun to retry or adjust manually.';
+  }
+  return msg;
+}
+
+function toggleRowErrorDetail(idx) {
+  document.getElementById(`row-error-detail-${idx}`)?.classList.toggle('hidden');
+}
+
 function methodologyCellHtml(idx, methodology) {
   const text = String(methodology || '').trim();
   const content = text
@@ -1472,13 +1584,14 @@ function clearBatchResults() {
   document.getElementById('batch-table-body').innerHTML = '';
   document.getElementById('batch-thead-row').innerHTML = '';
   document.getElementById('batch-summary-bar').textContent = '—';
+  renderCsvAuditSummary(null);
   document.getElementById('batch-table-card').classList.add('hidden');
-  document.getElementById('expand-table-btn')?.classList.add('hidden');
-  closeTableModal();
   document.getElementById('batch-mix-panel')?.classList.add('hidden');
   document.getElementById('batch-mix-grid').innerHTML = '';
   resetGlobalDeptMixers(true);
   document.getElementById('batch-bid-summary').classList.add('hidden');
+  document.getElementById('combined-summary')?.classList.add('hidden');
+  document.getElementById('tax-credit-card')?.classList.add('hidden');
   document.getElementById('batch-bid-summary-stats').innerHTML = '';
   document.getElementById('batch-dept-summary-body').innerHTML = '';
   document.getElementById('batch-dept-summary-foot').innerHTML = '';
@@ -1510,21 +1623,36 @@ function appendBatchResultRow(i, row) {
   const desc = row.description || row.script_description || '';
   const notes = row._notes ?? row.vfx_notes ?? '';
   row._edited = false;
+  if (row._included == null) row._included = !isExcludedShot(row);
   row._notes = notes;
   row._ai_dept_days = { ...depts };
   row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
 
   const tr = document.createElement('tr');
   tr.className = 'batch-data-row';
+  if (isExcludedShot(row)) tr.classList.add('row-excluded');
+  if (!isIncludedShot(row) && !isExcludedShot(row)) tr.classList.add('row-toggled-off');
   tr.dataset.idx = String(i);
 
   const methodology = row.methodology || '';
+  const readableError = humanReadableError(row.error);
+  const errorIconHtml = row.error
+    ? ` <span class="error-icon" title="${escAttr(readableError)}" onclick="toggleRowErrorDetail(${i})">${iconSvg('alert', 'icon icon-sm')}</span>
+        <div id="row-error-detail-${i}" class="row-error-detail hidden">${escHtml(readableError)}<br><span class="muted">${escHtml(row.error)}</span></div>`
+    : '';
   let cells = `
+    <td class="batch-include-cell">
+      <input type="checkbox" id="include-row-${i}" data-idx="${i}" ${isIncludedShot(row) ? 'checked' : ''} ${isExcludedShot(row) ? 'disabled' : ''}
+        title="${isExcludedShot(row) ? 'Excluded because NUMBER OF SHOTS is 0' : 'Include this row in totals'}"
+        onchange="toggleBatchRowIncluded(batchRowIndex(this.closest('tr.batch-data-row')), this.checked)">
+      <label class="include-toggle ${includeToggleState(row)}" for="include-row-${i}"
+        title="${isExcludedShot(row) ? 'Excluded because NUMBER OF SHOTS is 0' : 'Include this row in totals'}"></label>
+    </td>
     <td class="row-drag-cell"><span class="row-drag-handle" draggable="true" title="Drag to reorder">
       <svg class="icon icon-sm" aria-hidden="true"><use href="#i-grip"></use></svg>
     </span></td>
     <td>${escHtml(row.item_number || String(i + 1))}</td>
-    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${row.error ? ` <span style="color:var(--red)">${iconSvg('alert', 'icon icon-sm')}</span>` : ''}</td>
+    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${errorIconHtml}</td>
     <td class="col-desc">${escHtml(desc)}</td>
     <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology)}</td>
     <td class="col-notes"><textarea class="batch-notes-inp" data-idx="${i}"
@@ -1533,9 +1661,11 @@ function appendBatchResultRow(i, row) {
 
   BID_DEPTS.forEach(dept => {
     const v = depts[dept] ?? 0;
-    cells += `<td data-dept="${escAttr(dept)}"><input type="number" class="bid-dept-inp" min="0" step="0.5"
-      data-dept="${escAttr(dept)}" data-idx="${i}" value="${v}"
-      oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))"></td>`;
+    cells += isExcludedShot(row)
+      ? `<td data-dept="${escAttr(dept)}" class="muted">—</td>`
+      : `<td data-dept="${escAttr(dept)}"><input type="number" class="bid-dept-inp" min="0" step="0.5"
+          data-dept="${escAttr(dept)}" data-idx="${i}" value="${v}"
+          oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))"></td>`;
   });
 
   const shotCost = row.cost_per_shot ?? computeClientShotCost(depts, getDeptRates(), { mandaysFallback: row.total_mandays });
@@ -1543,14 +1673,15 @@ function appendBatchResultRow(i, row) {
 
   cells += `
     <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
-    <td class="batch-row-cost" style="font-weight:700;color:var(--green)">${money(shotCost)}</td>
-    <td>${confBadge(row.confidence)}</td>`;
+    <td class="batch-row-cost" style="font-weight:700;color:var(--green)">${batchCostCellHtml(row)}</td>
+    <td>${isExcludedShot(row) ? '<span class="conf-badge lo">Excluded</span>' : confBadge(row.confidence)}</td>`;
 
   tr.innerHTML = cells;
   tbody.appendChild(tr);
   applyDeptMixToRow(row, tr, { skipRefresh: true });
-  document.getElementById('expand-table-btn')?.classList.remove('hidden');
+  if (row.error) showRowRerun(i);
   applyColVisibility();
+  updateIncludeMasterCheckbox();
   if (_batchResult) recalcBatchTotals();
 }
 
@@ -1650,6 +1781,7 @@ function onGlobalDeptMixChange(dept, rawPct, domId) {
 
 function applyDeptMixToRow(row, tr, opts) {
   if (!row || !tr) return;
+  if (isExcludedShot(row)) return;
   initGlobalDeptMixers();
   tr.querySelectorAll('.bid-dept-inp').forEach(inp => {
     const dept = inp.dataset.dept;
@@ -1685,12 +1817,14 @@ function collectBatchRowsFromTable() {
   document.querySelectorAll('#batch-table-body tr.batch-data-row').forEach(tr => {
     const idx = parseInt(tr.dataset.idx, 10);
     const shot = Number.isFinite(idx) ? _batchResult?.shots?.[idx] : null;
+    if (!isIncludedShot(shot)) return;
     const depts = readRowDepts(tr);
     const days = parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0;
     const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
     rows.push({
       shot_code: shot?.shot_code || '',
       item_number: shot?.item_number || '',
+      number_of_shots: shot?.number_of_shots ?? 1,
       dept_days: depts,
       total_mandays: days,
       cost_per_shot: cost,
@@ -1754,9 +1888,9 @@ function computeBatchBidStats(rows) {
   let totalCost = 0;
   const deptDays = {};
   const deptCost = {};
+  const includedRows = (rows || []).filter(isIncludedShot);
 
-  (rows || []).forEach(row => {
-    if (!row) return;
+  includedRows.forEach(row => {
     totalDays += parseFloat(row.total_mandays) || 0;
     totalCost += parseFloat(row.cost_per_shot) || 0;
     Object.entries(row.dept_days || {}).forEach(([bid, rawDays]) => {
@@ -1770,7 +1904,7 @@ function computeBatchBidStats(rows) {
 
   totalDays = Math.round(totalDays * 2) / 2;
   totalCost = Math.round(totalCost * 100) / 100;
-  const shotCount = (rows || []).filter(Boolean).length;
+  const shotCount = includedRows.length;
   const avgCost = shotCount > 0 ? Math.round((totalCost / shotCount) * 100) / 100 : 0;
 
   const deptRows = BID_DEPTS
@@ -1840,8 +1974,7 @@ function onTaxCreditPctChange(raw) {
   if (v === null) return;
   _taxCreditPct = v;
   try { localStorage.setItem(TAX_CREDIT_STORAGE_KEY, String(_taxCreditPct)); } catch {}
-  if (_batchResult) refreshBatchBidSummary();
-  else updateTaxCreditDisplay(0);
+  updateCombinedSummary();
 }
 
 function onAdminFeePctChange(raw) {
@@ -1849,8 +1982,7 @@ function onAdminFeePctChange(raw) {
   if (v === null) return;
   _adminFeePct = v;
   try { localStorage.setItem(ADMIN_FEE_STORAGE_KEY, String(_adminFeePct)); } catch {}
-  if (_batchResult) refreshBatchBidSummary();
-  else updateTaxCreditDisplay(0);
+  updateCombinedSummary();
 }
 
 function updateTaxCreditDisplay(totalCost) {
@@ -1889,13 +2021,14 @@ function renderBatchBidSummary(stats) {
   }
 
   panel.classList.remove('hidden');
+  const combined = updateCombinedSummary(stats);
   const statBlocks = [
     { n: fmt(stats.totalDays) + 'd', l: 'Total Mandays' },
     { n: money(stats.totalCost), l: 'Total Cost' },
     { n: money(stats.avgCost), l: 'Avg Cost / Shot' },
     { n: String(stats.shotCount), l: 'Shots' },
   ];
-  const netSummary = computeBidNetSummary(stats.totalCost);
+  const netSummary = computeBidNetSummary(combined.grossCost);
   if (_taxCreditPct > 0 || _adminFeePct > 0) {
     statBlocks.push({ n: money(netSummary.net), l: `Net bid (${bidNetSummaryLabel()})` });
   }
@@ -1948,9 +2081,6 @@ function renderBatchBidSummary(stats) {
     </tr>`;
   }
 
-  updateTaxCreditDisplay(stats.totalCost);
-  renderFxMultiSummary(stats.totalCost, netSummary.net);
-  updateFxStatusNote();
   renderBatchMixPanel();
 }
 
@@ -1962,23 +2092,28 @@ function refreshBatchBidSummary() {
   _batchResult.total_cost = stats.totalCost;
   _batchResult.avg_cost_per_shot = stats.avgCost;
   _batchResult.dept_totals = stats.deptRows;
+  const combinedForBar = updateCombinedSummary(stats);
 
   let bar =
     `<strong>${stats.shotCount}</strong> shots &nbsp;|&nbsp; ` +
     `<strong>${fmt(stats.totalDays)}d</strong> total mandays &nbsp;|&nbsp; ` +
     `<strong>${money(stats.totalCost)}</strong> total cost &nbsp;|&nbsp; ` +
     `<strong>${money(stats.avgCost)}</strong> avg / shot`;
-  const netSummary = computeBidNetSummary(stats.totalCost);
+  const netSummary = computeBidNetSummary(combinedForBar.grossCost);
   if (_taxCreditPct > 0 || _adminFeePct > 0) {
     bar += ` &nbsp;|&nbsp; <strong>${money(netSummary.net)}</strong> net bid`;
     const lbl = bidNetSummaryLabel();
     if (lbl) bar += ` (${lbl})`;
   }
+  const totalRows = (_batchResult.shots || []).filter(Boolean).length;
+  const includedRows = (_batchResult.shots || []).filter(isIncludedShot).length;
+  if (totalRows && includedRows < totalRows) {
+    bar += ` &nbsp;|&nbsp; <strong>${includedRows} of ${totalRows}</strong> shots included`;
+  }
   bar += _batchResult.project ? ` &nbsp;·&nbsp; ${_batchResult.project}` : '';
   document.getElementById('batch-summary-bar').innerHTML = bar;
 
   renderBatchBidSummary(stats);
-  if (isTableModalOpen()) refreshModalSummary();
 }
 
 function updateBatchSummary(results) {
@@ -2010,7 +2145,7 @@ function parseCsvLine(line) {
 }
 
 function parseFullCsv(text) {
-  text = text.replace(/^\uFEFF/, '');
+  text = text.replace(/^\uFEFF/, '').replace(/\r(?!\n)/g, '\n');
 
   const rows = [];
   let row = [];
@@ -2274,12 +2409,13 @@ function buildColumnMap(headers) {
 }
 
 function findHeaderRowIndex(rows) {
-  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+  const scanLimit = Math.min(rows.length, 100);
+  for (let i = 0; i < scanLimit; i++) {
     const headers = rows[i] || [];
     const colMap = buildColumnMap(headers);
     if (columnMapIsUsable(colMap)) return i;
   }
-  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+  for (let i = 0; i < scanLimit; i++) {
     const normalized = (rows[i] || []).map(c => String(c || '').trim().toUpperCase());
     const vfxHeaders = [
       'SHOT', 'SCENE', 'DESCRIPTION', 'COMP', 'CAMERA', 'TRACKING',
@@ -2342,7 +2478,7 @@ function isLikelyDataItem(item, hasItemCol) {
 
 async function parseFileToShots(file) {
   const rows = await readFileToRows(file);
-  if (!rows.length) return [];
+  if (!rows.length) return { shots: [], skipLog: [], totalRowsScanned: 0 };
 
   let headerIdx = findHeaderRowIndex(rows);
   let colMap = headerIdx >= 0 ? buildColumnMap(rows[headerIdx]) : {};
@@ -2488,10 +2624,10 @@ function confirmColumnMap() {
     toast('Select at least a Description column (or VFX notes / approach).', 'warn');
     return;
   }
-  const shots = mapRowsToShots(_colMapRows, headerIdx, colMap);
+  const parsed = mapRowsToShots(_colMapRows, headerIdx, colMap);
   closeColMapModal(false);
   if (_colMapResolve) {
-    _colMapResolve(shots);
+    _colMapResolve(parsed);
     _colMapResolve = null;
     _colMapReject = null;
   }
@@ -2546,6 +2682,10 @@ function mapRowsToShots(rows, headerIdx, colMap) {
   const headers = rows[headerIdx] || [];
   const hasItemCol = colMap.item_number !== undefined;
   const shots = [];
+  const skipLog = [];
+  const logSkip = (rowIndex, reason, row) => {
+    skipLog.push({ row: rowIndex, reason, raw: row });
+  };
 
   const idx3D = findColByAliases(headers, ['3d days', '3d day +/-']);
   const idx2D = findColByAliases(headers, ['2d days', '2d day +/-']);
@@ -2553,25 +2693,37 @@ function mapRowsToShots(rows, headerIdx, colMap) {
 
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const row = rows[i] || [];
-    if (row.every(c => !String(c ?? '').trim())) continue;
+    if (row.every(c => !String(c ?? '').trim())) {
+      logSkip(i, 'empty_row', row);
+      continue;
+    }
 
     const itemRaw = hasItemCol ? csvCell(row, colMap.item_number) : '';
     const shotCode = colMap.shot_code !== undefined ? csvCell(row, colMap.shot_code) : '';
+    const descPreview = csvCell(row, colMap.description);
+    const vfxPreview = collectVfxWork(row, headers, colMap);
 
     if (hasItemCol) {
-      if (!itemRaw && !shotCode) continue;
-      if (itemRaw && !isLikelyDataItem(itemRaw, true) && !shotCode) {
-        if (shots.length > 0) continue;
+      if (!itemRaw && !shotCode && !descPreview && !vfxPreview) {
+        logSkip(i, 'empty_item_shot_description_and_vfx_notes', row);
+        continue;
       }
-    } else if (!shotCode && !csvCell(row, colMap.description)) {
+      if (itemRaw && !isLikelyDataItem(itemRaw, true) && !shotCode) {
+        if (shots.length > 0 && !descPreview && !vfxPreview) {
+          logSkip(i, 'section_label_without_description_or_vfx_notes', row);
+          continue;
+        }
+      }
+    } else if (!shotCode && !descPreview && !vfxPreview) {
+      logSkip(i, 'no_shot_code_or_description', row);
       continue;
     }
 
     const item = itemRaw || String(shots.length + 1);
 
-    const desc = csvCell(row, colMap.description);
+    const desc = descPreview;
     const methodology = csvCell(row, colMap.methodology);
-    const vfxWork = collectVfxWork(row, headers, colMap);
+    const vfxWork = vfxPreview;
     const assump = csvCell(row, colMap.vfx_assumptions);
     const clientNotes = csvCell(row, colMap.client_notes);
     const scene = csvCell(row, colMap.scene);
@@ -2607,12 +2759,19 @@ function mapRowsToShots(rows, headerIdx, colMap) {
     }
 
     const combined = parts.join(' | ');
-    if (!combined.trim() || (combined.length < 5 && !shotCode)) continue;
+    if (!combined.trim()) {
+      logSkip(i, 'empty_combined_description', row);
+      continue;
+    }
+    if (combined.length < 3 && !shotCode) {
+      logSkip(i, 'combined_description_too_short_without_shot_code', row);
+      continue;
+    }
 
     let nShots = 1;
     if (colMap.number_of_shots !== undefined) {
       const parsed = parseInt(csvCell(row, colMap.number_of_shots), 10);
-      if (!Number.isNaN(parsed) && parsed > 0) nShots = parsed;
+      if (!Number.isNaN(parsed) && parsed >= 0) nShots = parsed;
     }
 
     const shot = {
@@ -2632,15 +2791,15 @@ function mapRowsToShots(rows, headerIdx, colMap) {
     shots.push(shot);
   }
 
-  return shots;
+  return { shots, skipLog, totalRowsScanned: rows.length - headerIdx - 1 };
 }
 
 function buildBatchExportCsvBase64() {
-  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES', ...BID_DEPTS, 'TOTAL MANDAYS'];
+  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES', ...BID_DEPTS, 'TOTAL MANDAYS', 'PER SHOT COST', 'SEQUENCE COST'];
   const esc = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
   const lines = [header.join(',')];
   (_batchResult?.shots || []).forEach(row => {
-    if (!row) return;
+    if (!isIncludedShot(row)) return;
     const depts = row.dept_days || {};
     lines.push([
       row.item_number || '',
@@ -2650,6 +2809,8 @@ function buildBatchExportCsvBase64() {
       esc(row._notes ?? row.vfx_notes ?? ''),
       ...BID_DEPTS.map(d => depts[d] ?? 0),
       row.total_mandays ?? 0,
+      row.cost_per_shot ?? 0,
+      sequenceCostForRow(row) ?? '',
     ].join(','));
   });
   const csv = '\uFEFF' + lines.join('\n');
@@ -2719,12 +2880,80 @@ function assetInternalKey(bidDept) {
   return map[bidDept] || String(bidDept || '').toLowerCase();
 }
 
-function findAssetCol(colMap, ...names) {
-  for (const name of names) {
-    const norm = String(name || '').toUpperCase().trim();
-    if (colMap[norm] !== undefined) return colMap[norm];
-    for (const [key, idx] of Object.entries(colMap)) {
-      if (key.includes(norm) || norm.includes(key)) return idx;
+const ASSET_COLUMN_ALIASES = {
+  item_number: [
+    'item#', 'item', 'item no', 'item number', '#', 'no', 'number',
+    'asset #', 'asset no', 'asset number', 'row', 'line',
+  ],
+  asset_name: [
+    'asset description', 'asset name', 'asset', 'cg asset', 'cg assets',
+    'asset title', 'asset type', 'asset build', 'element', 'element name',
+    'creature', 'character', 'prop', 'vehicle', 'environment', 'env',
+    'description', 'name', 'scope',
+  ],
+  assumptions: [
+    'asset assumptions', 'assumptions', 'notes to marz', 'notes',
+    'production notes', 'methodology', 'approach', 'asset notes',
+    'build notes', 'scope of work', 'technical approach',
+    'requirements', 'asset requirements', 'description notes',
+  ],
+  client_notes: [
+    'client notes', 'client facing notes', 'notes from client',
+    'client feedback', 'client comments', 'bid notes',
+  ],
+  variations: [
+    'number of variations', 'variations', '# variations', 'asset count',
+    '# assets', 'qty', 'quantity', 'count', 'versions', 'variants',
+    'number of assets', 'num assets',
+  ],
+  ref_shot: [
+    'reference shot code', 'ref shot', 'shot code', 'used in shots',
+    'reference', 'shot ref', 'linked shot', 'source shot',
+  ],
+};
+
+const ASSET_DEPT_ALIASES = {
+  MODELLING: ['modelling', 'modeling', 'model', 'model build', 'modeling days'],
+  TEXTURING: ['texturing', 'texture', 'textures', 'surfacing', 'shading'],
+  RIGGING: ['rigging', 'rig', 'setup rig'],
+  CFX: ['cfx', 'cloth', 'hair', 'fur', 'groom', 'sim', 'simulation'],
+  FX: ['fx', 'effects', 'asset fx'],
+  LGT: ['lgt', 'lighting', 'light rig'],
+  DMP: ['dmp', 'matte painting', 'digital matte'],
+  LOOKDEV: ['lookdev', 'look dev', 'look development', 'look-dev'],
+  'COMP DEV': ['comp dev', 'comp development', 'compositing dev', 'integration test'],
+};
+
+function findAssetCol(headers, aliases) {
+  for (const alias of aliases) {
+    const idx = findBestColumnMatch(headers, [alias]);
+    if (idx !== -1) return idx;
+  }
+  return undefined;
+}
+
+function looksLikeAssetDeptHeader(header) {
+  return Object.values(ASSET_DEPT_ALIASES).some(aliases =>
+    aliases.some(alias => headerMatchesAlias(header, alias))
+  );
+}
+
+function guessAssetNameColumn(headers) {
+  const skipAliases = [
+    ...ASSET_COLUMN_ALIASES.item_number,
+    ...ASSET_COLUMN_ALIASES.assumptions,
+    ...ASSET_COLUMN_ALIASES.client_notes,
+    ...ASSET_COLUMN_ALIASES.variations,
+    ...ASSET_COLUMN_ALIASES.ref_shot,
+  ];
+  for (let i = 0; i < headers.length; i++) {
+    const h = String(headers[i] || '').trim();
+    if (!h) continue;
+    if (looksLikeAssetDeptHeader(h)) continue;
+    if (skipAliases.some(alias => headerMatchesAlias(h, alias))) continue;
+    const norm = normalizeHeader(h);
+    if (norm && !norm.includes('cost') && !norm.includes('total') && !norm.includes('manday')) {
+      return i;
     }
   }
   return undefined;
@@ -2734,22 +2963,43 @@ function parseAssetRows(rows) {
   if (!rows.length) return [];
   let headerIdx = -1;
   for (let i = 0; i < Math.min(rows.length, 20); i++) {
-    const norm = rows[i].map(c => String(c || '').trim().toUpperCase());
-    const score = ['ASSET', 'MODELLING', 'MODELING', 'RIGGING', 'LOOKDEV', 'TEXTURING', 'COMP DEV']
-      .filter(kw => norm.some(h => h.includes(kw))).length;
-    if (score >= 2) { headerIdx = i; break; }
+    const headers = rows[i] || [];
+    const hasAssetName = findAssetCol(headers, ASSET_COLUMN_ALIASES.asset_name) !== undefined;
+    const hasAssetDept = headers.some(looksLikeAssetDeptHeader);
+    const hasContext = findAssetCol(headers, ASSET_COLUMN_ALIASES.assumptions) !== undefined
+      || findAssetCol(headers, ASSET_COLUMN_ALIASES.variations) !== undefined
+      || findAssetCol(headers, ASSET_COLUMN_ALIASES.item_number) !== undefined;
+    if ((hasAssetName && hasContext) || (hasAssetName && hasAssetDept) || (hasAssetDept && hasContext)) {
+      headerIdx = i;
+      break;
+    }
   }
-  if (headerIdx < 0) return [];
+  if (headerIdx < 0) {
+    return rows
+      .map((row, i) => {
+        const name = (row || []).map(c => String(c || '').trim()).find(Boolean);
+        if (!name || name.length < 2) return null;
+        return {
+          item_number: String(i + 1),
+          asset_name: name,
+          assumptions: '',
+          description: name,
+          variations: 1,
+          ref_shot: '',
+        };
+      })
+      .filter(Boolean);
+  }
 
-  const headers = rows[headerIdx].map(c => String(c || '').trim().toUpperCase());
-  const colMap = {};
-  headers.forEach((name, idx) => { if (name) colMap[name] = idx; });
-  const idxItem = findAssetCol(colMap, 'ITEM#', 'ITEM', '#', 'NO');
-  const idxName = findAssetCol(colMap, 'ASSET DESCRIPTION', 'ASSET NAME', 'ASSET', 'CG ASSETS', 'CREATURE', 'CHARACTER', 'DESCRIPTION', 'NAME');
-  const idxAssump = findAssetCol(colMap, 'ASSET ASSUMPTIONS', 'ASSUMPTIONS', 'NOTES TO MARZ', 'NOTES', 'PRODUCTION NOTES', 'METHODOLOGY');
-  const idxClient = findAssetCol(colMap, 'CLIENT NOTES', 'CLIENT FACING NOTES', 'NOTES FROM CLIENT');
-  const idxVars = findAssetCol(colMap, 'NUMBER OF VARIATIONS', 'VARIATIONS', '# VARIATIONS', 'ASSET COUNT', '# ASSETS', 'QTY', 'COUNT');
-  const idxRef = findAssetCol(colMap, 'REFERENCE SHOT CODE', 'REF SHOT', 'SHOT CODE', 'USED IN SHOTS', 'REFERENCE');
+  const headers = rows[headerIdx] || [];
+  const idxItem = findAssetCol(headers, ASSET_COLUMN_ALIASES.item_number);
+  let idxName = findAssetCol(headers, ASSET_COLUMN_ALIASES.asset_name);
+  if (idxName === undefined) idxName = guessAssetNameColumn(headers);
+  const idxAssump = findAssetCol(headers, ASSET_COLUMN_ALIASES.assumptions);
+  const idxClient = findAssetCol(headers, ASSET_COLUMN_ALIASES.client_notes);
+  const idxVars = findAssetCol(headers, ASSET_COLUMN_ALIASES.variations);
+  const idxRef = findAssetCol(headers, ASSET_COLUMN_ALIASES.ref_shot);
+  if (idxName === undefined) return [];
 
   const assets = [];
   for (let i = headerIdx + 1; i < rows.length; i++) {
@@ -2818,7 +3068,7 @@ function toggleAssetContext() {
 function buildAssetTableHeader() {
   const thead = document.getElementById('asset-thead');
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const cols = ['#', 'ASSET', 'VARS', ...visibleDepts.map(d => ASSET_DEPT_SHORT[d]), 'DAYS', 'CONF'];
+  const cols = ['#', 'ASSET', 'VARS', ...visibleDepts.map(d => ASSET_DEPT_SHORT[d]), 'DAYS', 'COST', 'CONF'];
   thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
   document.getElementById('asset-tbody').innerHTML = '';
 }
@@ -2834,6 +3084,8 @@ function appendAssetResultRow(idx, asset, result) {
     return `<td><input type="number" class="bid-dept-inp" value="${days || ''}" min="0" step="0.5"
       data-asset-idx="${idx}" data-asset-dept="${escAttr(bidDept)}" oninput="updateAssetRowTotal(this)"></td>`;
   }).join('');
+  const totalDays = Number(result.total_days || 0);
+  const cost = Math.round(totalDays * assetDayRate() * 100) / 100;
   const conf = result.confidence || 0;
   const tr = document.createElement('tr');
   tr.dataset.assetIdx = idx;
@@ -2844,43 +3096,85 @@ function appendAssetResultRow(idx, asset, result) {
     </td>
     <td>${asset.variations || 1}</td>
     ${deptCells}
-    <td class="batch-row-days" style="font-weight:700">${fmt(result.total_days || 0)}</td>
+    <td class="batch-row-days" style="font-weight:700">${fmt(totalDays)}</td>
+    <td class="asset-row-cost" style="font-weight:700;color:var(--green)">${money(cost)}</td>
     <td>${confBadge(conf)}</td>`;
   tbody.appendChild(tr);
 }
 
 function updateAssetRowTotal(input) {
   const tr = input.closest('tr');
+  updateAssetRowTotals(tr);
+  updateAssetSummary();
+  updateCombinedSummary();
+}
+
+function updateAssetRowTotals(tr) {
+  if (!tr) return { days: 0, cost: 0 };
   let total = 0;
   tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
     total += parseFloat(inp.value) || 0;
   });
   tr.querySelector('.batch-row-days').textContent = fmt(total);
+  const cost = Math.round(total * assetDayRate() * 100) / 100;
+  const costEl = tr.querySelector('.asset-row-cost');
+  if (costEl) costEl.textContent = money(cost);
+  return { days: total, cost };
+}
+
+function refreshAssetCosts() {
+  document.querySelectorAll('#asset-tbody tr').forEach(tr => updateAssetRowTotals(tr));
   updateAssetSummary();
   updateCombinedSummary();
 }
 
 function updateAssetSummary() {
   const rows = document.querySelectorAll('#asset-tbody tr');
-  let total = 0;
-  rows.forEach(tr => tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
-    total += parseFloat(inp.value) || 0;
-  }));
-  document.getElementById('asset-summary').textContent = `${rows.length} assets · ${fmt(total)} total mandays`;
-  return { count: rows.length, totalDays: total };
+  let totalDays = 0;
+  let totalCost = 0;
+  rows.forEach(tr => {
+    const stats = updateAssetRowTotals(tr);
+    totalDays += stats.days;
+    totalCost += stats.cost;
+  });
+  totalDays = Math.round(totalDays * 2) / 2;
+  totalCost = Math.round(totalCost * 100) / 100;
+  const avgCost = rows.length ? Math.round((totalCost / rows.length) * 100) / 100 : 0;
+  document.getElementById('asset-summary').textContent =
+    `${rows.length} assets · ${fmt(totalDays)} total mandays · ${money(avgCost)} avg asset · ${money(totalCost)} total asset cost`;
+  return { count: rows.length, totalDays, totalCost, avgCost };
 }
 
-function updateCombinedSummary() {
+function currentShotStats() {
+  const rows = collectBatchRowsFromTable();
+  return computeBatchBidStats(rows.length ? rows : (_batchResult?.shots || []).filter(Boolean));
+}
+
+function updateCombinedSummary(shotStats) {
   const assetStats = updateAssetSummary();
-  const shotCount = _batchResult?.shots?.length || 0;
-  const shotDays = _batchResult?.total_mandays || 0;
-  if (!shotCount || !assetStats.count) return;
-  document.getElementById('combined-summary').classList.remove('hidden');
+  const stats = shotStats || currentShotStats();
+  const shotCount = stats?.shotCount || 0;
+  const shotCost = stats?.totalCost || 0;
+  const grossCost = Math.round((shotCost + assetStats.totalCost) * 100) / 100;
+  const hasAnyCost = shotCount > 0 || assetStats.count > 0;
+  document.getElementById('combined-summary')?.classList.toggle('hidden', !hasAnyCost);
+  document.getElementById('tax-credit-card')?.classList.toggle('hidden', !hasAnyCost);
+  if (!hasAnyCost) {
+    updateTaxCreditDisplay(0);
+    renderFxMultiSummary(0, 0);
+    updateFxStatusNote();
+    return { shotCost: 0, assetCost: 0, grossCost: 0, net: 0 };
+  }
   document.getElementById('cs-shots').textContent = shotCount;
-  document.getElementById('cs-shot-days').textContent = fmt(shotDays);
+  document.getElementById('cs-shot-cost').textContent = money(shotCost);
   document.getElementById('cs-assets').textContent = assetStats.count;
-  document.getElementById('cs-asset-days').textContent = fmt(assetStats.totalDays);
-  document.getElementById('cs-total-days').textContent = fmt(shotDays + assetStats.totalDays);
+  document.getElementById('cs-asset-cost').textContent = money(assetStats.totalCost);
+  document.getElementById('cs-gross-total').textContent = money(grossCost);
+  const netSummary = computeBidNetSummary(grossCost);
+  updateTaxCreditDisplay(grossCost);
+  renderFxMultiSummary(grossCost, netSummary.net);
+  updateFxStatusNote();
+  return { shotCost, assetCost: assetStats.totalCost, grossCost, net: netSummary.net };
 }
 
 async function runAssetEstimate() {
@@ -2976,8 +3270,12 @@ function exportAssetCsv() {
   URL.revokeObjectURL(a.href);
 }
 
+function getBatchProjectRaw() {
+  return (document.getElementById('batch-project')?.value || '').trim();
+}
+
 function getBatchProject() {
-  return (document.getElementById('batch-project')?.value || 'BID').trim() || 'BID';
+  return getBatchProjectRaw() || 'BID';
 }
 
 async function runBatchStream(shots, project, preQual) {
@@ -3044,7 +3342,12 @@ async function runBatchStream(shots, project, preQual) {
       if (msg.type === 'complete') {
         _batchResult.count = msg.count ?? msg.total_shots ?? totalShots;
         _batchResult.total_mandays = msg.total_mandays ?? 0;
-        if (msg.shots) _batchResult.shots = msg.shots;
+        if (msg.shots) {
+          _batchResult.shots = msg.shots.map((shot, idx) => ({
+            ...shot,
+            _included: _batchResult.shots[idx]?._included ?? !isExcludedShot(shot),
+          }));
+        }
         if (msg.export_csv_base64) {
           _batchResult.export_csv_base64 = msg.export_csv_base64;
           _batchResult.export_csv_filename = msg.export_csv_filename;
@@ -3058,8 +3361,14 @@ async function runBatchStream(shots, project, preQual) {
         checkServer();
         autoShowPopulatedCols(_batchResult.shots.filter(Boolean));
         applyColVisibility();
-        if (project && (_batchResult?.shots || []).filter(Boolean).length > 0) {
-          autoSaveBid(project, _batchResult.shots.filter(Boolean));
+        const includedShots = (_batchResult?.shots || []).filter(isIncludedShot);
+        if (includedShots.length > 0) {
+          const projectName = getBatchProjectRaw();
+          if (projectName) {
+            autoSaveBid(projectName, includedShots);
+          } else {
+            promptBidNameBeforeSave(includedShots);
+          }
         }
         toast(`Batch complete — ${_batchResult.count} shots · ${fmt(_batchResult.total_mandays)}d · ${money(_batchResult.total_cost)} total`);
       }
@@ -3085,18 +3394,28 @@ async function runBatchEstimate() {
     let shots = [];
 
     if (file) {
+      let parsed;
       try {
-        shots = await parseFileToShots(file);
+        parsed = await parseFileToShots(file);
       } catch (e) {
         if (e.cancelled) return;
         throw e;
       }
+      shots = parsed.shots || [];
+      const audit = {
+        fileName: file.name,
+        parsedCount: shots.length,
+        totalRowsScanned: parsed.totalRowsScanned || 0,
+        skipLog: parsed.skipLog || [],
+      };
+      renderCsvAuditSummary(audit);
       if (!shots.length) {
         toast('No shots found. Check your file has description columns.', 'warn');
         document.getElementById('batch-results').classList.add('hidden');
         return;
       }
-      toast(`Parsed ${shots.length} shots from ${file.name}`, 'ok');
+      const skipped = audit.skipLog.length;
+      toast(`Parsed ${shots.length} of ${audit.totalRowsScanned} rows. ${skipped} skipped${skipped ? ' — click View skipped rows.' : '.'}`, skipped ? 'warn' : 'ok');
     } else {
       shots = parseBatchPaste(document.getElementById('batch-input').value);
       if (!shots.length) {
@@ -3118,7 +3437,9 @@ async function runBatchEstimate() {
 }
 
 function buildBatchTableHeader() {
-  let html = '<th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th>NOTES</th>';
+  let html = `<th class="batch-include-cell"><input type="checkbox" id="batch-include-all" checked
+    title="Select or deselect all rows" onchange="toggleAllBatchRowsIncluded(this.checked)">
+    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th>NOTES</th>`;
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
@@ -3226,99 +3547,50 @@ function autoShowPopulatedCols(results) {
   buildColCheckboxes();
 }
 
-// ── Full-screen table modal ────────────────────────────────────────────────
-
-function isTableModalOpen() {
-  const modal = document.getElementById('table-modal');
-  return modal && !modal.classList.contains('hidden');
+function batchRowIndex(tr) {
+  return parseInt(tr?.dataset?.idx ?? '', 10);
 }
 
-function openTableModal() {
-  if (!_batchResult?.shots?.length) return;
-  const srcHead = document.getElementById('batch-thead-row');
-  const srcBody = document.getElementById('batch-table-body');
-  const destHead = document.getElementById('modal-thead-row');
-  const destBody = document.getElementById('modal-table-body');
-  if (!srcHead || !srcBody || !destHead || !destBody) return;
-
-  destHead.innerHTML = srcHead.innerHTML;
-  destBody.innerHTML = srcBody.innerHTML;
-
-  const modalTable = document.getElementById('modal-table');
-  modalTable.querySelectorAll('[data-dept]').forEach(cell => cell.classList.remove('col-hidden'));
-  applyModalStickyCols(modalTable);
-  refreshModalSummary();
-
-  document.getElementById('modal-project-title').textContent = getBatchProject() || 'Bid Breakdown';
-  document.getElementById('table-modal').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeTableModal() {
-  document.getElementById('table-modal')?.classList.add('hidden');
-  document.body.style.overflow = '';
-}
-
-function applyModalStickyCols(table) {
-  if (!table) return;
-  const lefts = ['0px', '36px', '92px', '210px'];
-  table.querySelectorAll('tr').forEach(row => {
-    const cells = row.querySelectorAll('th, td');
-    cells.forEach((cell, i) => {
-      cell.classList.remove('batch-col-sticky');
-      cell.style.left = '';
-      cell.style.zIndex = '';
-      if (i < 4) {
-        cell.classList.add('batch-col-sticky');
-        cell.style.left = lefts[i];
-        cell.style.zIndex = row.parentElement?.tagName === 'THEAD' ? '4' : '2';
-      }
-    });
-  });
-}
-
-function refreshModalSummary() {
-  const bar = document.getElementById('batch-summary-bar');
-  const modalBar = document.getElementById('modal-summary-bar');
-  const modalSummary = document.getElementById('modal-summary');
-  if (bar && modalBar) modalBar.innerHTML = bar.innerHTML;
-  if (modalSummary && _batchResult) {
-    modalSummary.textContent =
-      `${_batchResult.count || 0} shots · ${fmt(_batchResult.total_mandays || 0)}d · ${money(_batchResult.total_cost || 0)}`;
+function updateIncludeMasterCheckbox() {
+  const master = document.getElementById('batch-include-all');
+  if (!master || !_batchResult?.shots?.length) return;
+  const eligible = _batchResult.shots.filter(row => row && !isExcludedShot(row));
+  const included = eligible.filter(isIncludedShot);
+  master.checked = eligible.length > 0 && included.length === eligible.length;
+  master.indeterminate = included.length > 0 && included.length < eligible.length;
+  const toggle = master.closest('.batch-include-cell')?.querySelector('.include-toggle');
+  if (toggle) {
+    toggle.className = `include-toggle ${master.checked ? 'on' : 'off'}`;
   }
 }
 
-function syncTableRowToPartner(tr) {
-  if (!tr) return;
-  const idx = batchRowIndex(tr);
-  if (!Number.isFinite(idx)) return;
-  const inModal = !!tr.closest('#modal-table-body');
-  const partnerBody = document.getElementById(inModal ? 'batch-table-body' : 'modal-table-body');
-  if (!partnerBody) return;
-  const partner = partnerBody.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
-  if (!partner) return;
-
-  tr.querySelectorAll('.bid-dept-inp').forEach(inp => {
-    const peer = partner.querySelector(`.bid-dept-inp[data-dept="${inp.dataset.dept}"]`);
-    if (peer && peer.value !== inp.value) peer.value = inp.value;
-  });
-  const notes = tr.querySelector('.batch-notes-inp');
-  const peerNotes = partner.querySelector('.batch-notes-inp');
-  if (notes && peerNotes && peerNotes.value !== notes.value) peerNotes.value = notes.value;
-  const method = tr.querySelector('.method-cell');
-  const peerMethod = partner.querySelector('.method-cell');
-  if (method && peerMethod) peerMethod.innerHTML = method.innerHTML;
-
-  const days = tr.querySelector('.batch-row-days');
-  const peerDays = partner.querySelector('.batch-row-days');
-  if (days && peerDays) peerDays.textContent = days.textContent;
-  const cost = tr.querySelector('.batch-row-cost');
-  const peerCost = partner.querySelector('.batch-row-cost');
-  if (cost && peerCost) peerCost.textContent = cost.textContent;
+function toggleBatchRowIncluded(idx, checked) {
+  if (!Number.isFinite(idx) || !_batchResult?.shots?.[idx]) return;
+  const row = _batchResult.shots[idx];
+  if (isExcludedShot(row)) return;
+  row._included = !!checked;
+  const tr = document.querySelector(`#batch-table-body tr.batch-data-row[data-idx="${idx}"]`);
+  tr?.classList.toggle('row-toggled-off', !row._included);
+  setIncludeToggleState(tr?.querySelector('.batch-include-cell input'), row);
+  _batchResult.export_csv_base64 = null;
+  updateIncludeMasterCheckbox();
+  refreshBatchBidSummary();
 }
 
-function batchRowIndex(tr) {
-  return parseInt(tr?.dataset?.idx ?? '', 10);
+function toggleAllBatchRowsIncluded(checked) {
+  if (!_batchResult?.shots?.length) return;
+  _batchResult.shots.forEach((row, idx) => {
+    if (!row || isExcludedShot(row)) return;
+    row._included = !!checked;
+    const tr = document.querySelector(`#batch-table-body tr.batch-data-row[data-idx="${idx}"]`);
+    tr?.classList.toggle('row-toggled-off', !row._included);
+    const input = tr?.querySelector('.batch-include-cell input');
+    if (input) input.checked = row._included;
+    setIncludeToggleState(input, row);
+  });
+  _batchResult.export_csv_base64 = null;
+  updateIncludeMasterCheckbox();
+  refreshBatchBidSummary();
 }
 
 function sortBatchTableToShotOrder() {
@@ -3342,6 +3614,7 @@ function syncBatchPresentationOrder() {
     tr.querySelectorAll('[data-idx]').forEach(el => { el.dataset.idx = String(i); });
   });
   _batchResult.export_csv_base64 = null;
+  updateIncludeMasterCheckbox();
 }
 
 function moveBatchRow(dragTr, targetTr, insertBefore) {
@@ -3355,6 +3628,26 @@ function moveBatchRow(dragTr, targetTr, insertBefore) {
     tbody.appendChild(dragTr);
   }
   syncBatchPresentationOrder();
+}
+
+function clearDragOverIndicator() {
+  if (_lastDragOverRow) {
+    _lastDragOverRow.classList.remove('drag-over-above', 'drag-over-below');
+  }
+  _lastDragOverRow = null;
+  _lastDragOverBefore = null;
+}
+
+function updateDragOverIndicator(targetRow, before) {
+  if (!targetRow) {
+    clearDragOverIndicator();
+    return;
+  }
+  if (targetRow === _lastDragOverRow && before === _lastDragOverBefore) return;
+  clearDragOverIndicator();
+  targetRow.classList.add(before ? 'drag-over-above' : 'drag-over-below');
+  _lastDragOverRow = targetRow;
+  _lastDragOverBefore = before;
 }
 
 function setupBatchTableDragDrop() {
@@ -3375,22 +3668,20 @@ function setupBatchTableDragDrop() {
   tbody.addEventListener('dragend', () => {
     if (_batchDragRow) _batchDragRow.classList.remove('dragging');
     _batchDragRow = null;
-    tbody.querySelectorAll('.batch-data-row').forEach(r => {
-      r.classList.remove('drag-over-above', 'drag-over-below');
-    });
+    clearDragOverIndicator();
   });
 
   tbody.addEventListener('dragover', (e) => {
     if (!_batchDragRow) return;
     e.preventDefault();
     const tr = e.target.closest('tr.batch-data-row');
-    if (!tr || tr === _batchDragRow) return;
-    tbody.querySelectorAll('.batch-data-row').forEach(r => {
-      r.classList.remove('drag-over-above', 'drag-over-below');
-    });
+    if (!tr || tr === _batchDragRow) {
+      clearDragOverIndicator();
+      return;
+    }
     const rect = tr.getBoundingClientRect();
     const before = e.clientY < rect.top + rect.height / 2;
-    tr.classList.add(before ? 'drag-over-above' : 'drag-over-below');
+    updateDragOverIndicator(tr, before);
   });
 
   tbody.addEventListener('drop', (e) => {
@@ -3401,7 +3692,7 @@ function setupBatchTableDragDrop() {
     const rect = tr.getBoundingClientRect();
     const before = e.clientY < rect.top + rect.height / 2;
     moveBatchRow(_batchDragRow, tr, before);
-    tr.classList.remove('drag-over-above', 'drag-over-below');
+    clearDragOverIndicator();
   });
 }
 
@@ -3552,7 +3843,6 @@ function updateBatchRowNotes(input) {
   _batchResult.shots[idx].vfx_notes = input.value;
   markBatchRowEdited(idx);
   _batchResult.export_csv_base64 = null;
-  syncTableRowToPartner(input.closest('tr.batch-data-row'));
 }
 
 function updateBatchRowTotals(tr, skipRefresh) {
@@ -3564,17 +3854,15 @@ function updateBatchRowTotals(tr, skipRefresh) {
   const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
   tr.querySelector('.batch-row-days').textContent = fmt(days);
   const costEl = tr.querySelector('.batch-row-cost');
-  if (costEl) costEl.textContent = money(cost);
   if (_batchResult?.shots[idx]) {
     _batchResult.shots[idx].dept_days = depts;
     _batchResult.shots[idx].total_mandays = days;
     _batchResult.shots[idx].cost_per_shot = cost;
+    if (costEl) costEl.innerHTML = batchCostCellHtml(_batchResult.shots[idx]);
     markBatchRowEdited(idx);
     showRowRerun(idx);
     _batchResult.export_csv_base64 = null;
   }
-  syncTableRowToPartner(tr);
-  if (isTableModalOpen()) refreshModalSummary();
   if (!skipRefresh) refreshBatchBidSummary();
 }
 
@@ -3613,7 +3901,7 @@ async function saveAllBatchCorrections() {
   for (const tr of dataRows) {
     const idx = batchRowIndex(tr);
     const row = Number.isFinite(idx) ? _batchResult.shots[idx] : null;
-    if (!row || !row._edited) continue;
+    if (!isIncludedShot(row) || !row._edited) continue;
 
     const depts = readRowDepts(tr);
     const finalTotal = Math.round(Object.values(depts).reduce((a, b) => a + b, 0) * 2) / 2;
@@ -3688,14 +3976,17 @@ function normalizeSavedShot(shot, i) {
 }
 
 async function autoSaveBid(project, shots) {
+  const projectName = String(project || '').trim();
+  const includedShots = (shots || []).filter(isIncludedShot);
+  if (!projectName || !includedShots.length) return;
   try {
     const r = await fetch(`${API}/bid-history`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        project_name: project,
+        project_name: projectName,
         user_id: getUserId(),
-        shots: shots.map(s => ({
+        shots: includedShots.map(s => ({
           item_number: s.item_number,
           shot_code: s.shot_code,
           description: s.description || s.script_description,
@@ -3717,10 +4008,49 @@ async function autoSaveBid(project, shots) {
       }),
     });
     if (!r.ok) return;
-    toast(`Bid saved to history — ${project}`, 'info');
+    toast(`Bid saved to history — ${projectName}`, 'info');
   } catch {
     // Fail silently — don't interrupt the user
   }
+}
+
+function promptBidNameBeforeSave(shots) {
+  const includedShots = (shots || []).filter(isIncludedShot);
+  if (!includedShots.length) return;
+  _pendingHistorySaveShots = includedShots;
+  const modal = document.getElementById('bid-name-modal');
+  const input = document.getElementById('bid-name-input');
+  if (!modal || !input) return;
+  input.value = getBatchProjectRaw();
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 0);
+}
+
+function closeBidNameModal() {
+  document.getElementById('bid-name-modal')?.classList.remove('open');
+}
+
+function skipBidNameSave() {
+  _pendingHistorySaveShots = null;
+  closeBidNameModal();
+  toast('Bid history save skipped.', 'info');
+}
+
+function saveNamedBidFromPrompt() {
+  const input = document.getElementById('bid-name-input');
+  const name = (input?.value || '').trim();
+  if (!name) {
+    toast('Enter a bid name to save history, or choose Skip.', 'warn');
+    input?.focus();
+    return;
+  }
+  const projectInput = document.getElementById('batch-project');
+  if (projectInput) projectInput.value = name;
+  if (_batchResult) _batchResult.project = name;
+  const shots = _pendingHistorySaveShots || [];
+  _pendingHistorySaveShots = null;
+  closeBidNameModal();
+  autoSaveBid(name, shots);
 }
 
 function openHistoryDrawer() {
@@ -3882,6 +4212,10 @@ async function loadStats() {
 // Wake Render on load, keep alive every 10 min
 fetch(`${API}/ping`).catch(() => {});
 setInterval(() => fetch(`${API}/ping`).catch(() => {}), 10 * 60 * 1000);
+setInterval(loadFxRates, 60 * 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadFxRates();
+});
 
 (async()=>{
   loadUserId();
@@ -3893,9 +4227,6 @@ setInterval(() => fetch(`${API}/ping`).catch(() => {}), 10 * 60 * 1000);
   buildColCheckboxes();
   document.addEventListener('click', e => {
     if (!e.target.closest('.method-cell')) closeMethodologySuggestions();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && isTableModalOpen()) closeTableModal();
   });
   await loadDeptRates();
   await loadFxRates();

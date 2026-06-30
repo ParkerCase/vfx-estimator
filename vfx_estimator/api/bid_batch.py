@@ -87,11 +87,22 @@ def _resolve_shot_code(shot: BidBatchShotItem) -> Optional[str]:
     return shot.shot_code or shot.shot_number
 
 
+def _shot_count(shot: BidBatchShotItem) -> int:
+    if shot.number_of_shots is None:
+        return 1
+    try:
+        return max(0, int(shot.number_of_shots))
+    except (TypeError, ValueError):
+        return 1
+
+
 def apply_allotment_per_shot_mandays(
     est: ShotEstimate,
     number_of_shots: int,
 ) -> float:
-    n = max(1, int(number_of_shots or 1))
+    n = max(0, int(number_of_shots or 0))
+    if n == 0:
+        return 0.0
     if n > 1:
         return _round_half(float(est.total_mandays) / (n * ALLOTMENT_EFFICIENCY))
     return float(est.per_shot_mandays)
@@ -141,7 +152,7 @@ def _error_bid_row(
         "script_description": shot.script_description,
         "vfx_notes": shot.vfx_notes,
         "vfx_assumptions": shot.vfx_assumptions,
-        "number_of_shots": max(1, int(shot.number_of_shots or 1)),
+        "number_of_shots": _shot_count(shot),
         "dept_days": {},
         "total_mandays": 0,
         "cost_per_shot": 0,
@@ -150,6 +161,27 @@ def _error_bid_row(
         "adjustment_ranges": {},
         "mode": "error",
         "ai_total_mandays": 0,
+    }
+
+
+def _excluded_bid_row(shot: BidBatchShotItem) -> Dict[str, Any]:
+    return {
+        "item_number": shot.item_number,
+        "shot_code": _resolve_shot_code(shot) or shot.item_number or "excluded",
+        "description": build_shot_description(shot),
+        "script_description": shot.script_description,
+        "vfx_notes": shot.vfx_notes,
+        "vfx_assumptions": shot.vfx_assumptions,
+        "number_of_shots": 0,
+        "dept_days": {},
+        "total_mandays": 0,
+        "cost_per_shot": 0,
+        "confidence": 0,
+        "reasoning": "Excluded from bid because NUMBER OF SHOTS is 0.",
+        "adjustment_ranges": {},
+        "mode": "excluded",
+        "ai_total_mandays": 0,
+        "excluded": True,
     }
 
 
@@ -182,7 +214,9 @@ def estimate_single_shot(
     pre_qual: Optional[BidPreQual] = None,
     compute_ranges,
 ) -> Dict[str, Any]:
-    n = max(1, int(shot.number_of_shots or 1))
+    n = _shot_count(shot)
+    if n == 0:
+        return _excluded_bid_row(shot)
     pq = _merge_pre_qual(pre_qual, project=project, allotment_n=n)
     desc = build_shot_description(shot)
     est = svc.estimate(desc, pre_qual=pq, mode=mode, dept_rates=dept_rates)
@@ -327,7 +361,7 @@ def _estimate_bid_row(
     dept_rates: Dict[str, float],
     compute_ranges,
 ) -> Dict[str, Any]:
-    n = max(1, int(shot.number_of_shots or 1))
+    n = _shot_count(shot)
     per_shot_md = apply_allotment_per_shot_mandays(est, n)
     scale = per_shot_md / float(est.per_shot_mandays) if est.per_shot_mandays > 0 else 1.0
     internal_dept = scale_internal_depts(est.dept_days or {}, scale)
@@ -428,7 +462,7 @@ def _parse_number_of_shots(raw: str) -> int:
     if not raw:
         return 1
     try:
-        return max(1, int(float(raw)))
+        return max(0, int(float(raw)))
     except ValueError:
         return 1
 
@@ -466,17 +500,22 @@ def parse_lvlup_bid_csv(content: bytes) -> Tuple[List[BidBatchShotItem], LvlupCs
     for i in range(header_idx + 1, len(all_rows)):
         row = all_rows[i]
         item = _cell(row, idx_item)
-        if not item:
+        code = _cell(row, idx_code)
+        script = _cell(row, idx_script)
+        notes = _cell(row, idx_notes)
+        assump = _cell(row, idx_assump)
+        client = _cell(row, idx_client)
+        if not item and not code and not script and not notes:
             continue
         data_row_indices.append(i)
         shots.append(
             BidBatchShotItem(
-                item_number=item,
-                shot_code=_cell(row, idx_code) or None,
-                script_description=_cell(row, idx_script),
-                vfx_notes=_cell(row, idx_notes),
-                vfx_assumptions=_cell(row, idx_assump),
-                client_initial_thoughts=_cell(row, idx_client) or None,
+                item_number=item or str(len(shots) + 1),
+                shot_code=code or None,
+                script_description=script or code,
+                vfx_notes=notes,
+                vfx_assumptions=assump,
+                client_initial_thoughts=client or None,
                 number_of_shots=_parse_number_of_shots(_cell(row, idx_nshots)),
             )
         )
