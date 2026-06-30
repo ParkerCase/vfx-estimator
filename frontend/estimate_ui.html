@@ -254,6 +254,11 @@
     .batch-drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px;text-align:center;
                      background:var(--card2);cursor:pointer;transition:border-color .2s}
     .batch-drop-zone:hover,.batch-drop-zone.drag{border-color:var(--accent)}
+    .batch-drop-zone.has-file,.drop-zone.has-file{border-color:var(--green);background:rgba(67,211,142,.08)}
+    .upload-file-pill{display:none;margin:10px auto 0;padding:6px 10px;border-radius:999px;
+      background:rgba(67,211,142,.12);border:1px solid rgba(67,211,142,.45);color:var(--green);
+      font-size:12px;font-weight:800;width:max-content;max-width:100%;word-break:break-word}
+    .batch-drop-zone.has-file .upload-file-pill,.drop-zone.has-file .upload-file-pill{display:block}
     .sample-download-hint{margin-top:6px;font-size:12px;color:var(--muted);text-align:center}
     .sample-download-hint a{color:var(--accent);font-weight:700;text-decoration:none}
     .sample-download-hint a:hover{text-decoration:underline}
@@ -377,7 +382,7 @@
       font-size:11px;text-transform:uppercase;letter-spacing:.8px}
     .section-divider div{flex:1;height:1px;background:var(--border)}
     .drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;
-      background:var(--card2);cursor:pointer;transition:border-color .2s;color:var(--text)}
+      background:var(--card2);cursor:pointer;transition:border-color .2s,background .2s;color:var(--text)}
     .drop-zone.drag{border-color:var(--accent)}
     .muted{color:var(--muted)}
     .lbl{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text);margin-bottom:4px}
@@ -490,7 +495,7 @@
         </div>
         <input type="file" id="batch-csv-file" accept=".csv,.xlsx,.xls" style="display:none"
                onchange="onBatchFileSelected(this)">
-        <div id="batch-file-name" style="margin-top:8px;font-size:12px;color:var(--accent)"></div>
+        <div id="batch-file-name" class="upload-file-pill"></div>
       </div>
       <div class="sample-download-hint">
         Not sure of the format?
@@ -690,6 +695,7 @@
         <div>Drop asset CSV or Excel here</div>
         <div class="muted" style="font-size:12px;margin-top:4px">or <span style="color:var(--accent)">browse</span> — expects ITEM#, ASSET DESCRIPTION, ASSET ASSUMPTIONS</div>
         <input type="file" id="asset-file-input" class="hidden" accept=".csv,.xlsx,.xls" onchange="onAssetFileSelected(this)">
+        <div id="asset-file-name" class="upload-file-pill"></div>
       </div>
       <div class="sample-download-hint">
         Not sure of the format?
@@ -1434,7 +1440,11 @@ let _presets = {};
 
 function onBatchFileSelected(input) {
   const file = input.files?.[0];
-  document.getElementById('batch-file-name').textContent = file ? `Selected: ${file.name}` : '';
+  const zone = document.getElementById('batch-drop-zone');
+  const name = document.getElementById('batch-file-name');
+  zone?.classList.toggle('has-file', !!file);
+  if (name) name.textContent = file ? `Selected: ${file.name}` : '';
+  if (file) toast(`Selected bid file: ${file.name}`, 'info');
 }
 
 // ── Shot baseline presets ──────────────────────────────────────────────────
@@ -3105,6 +3115,10 @@ async function parseAssetFile(file) {
 
 function onAssetFileSelected(input) {
   const file = input.files?.[0];
+  const zone = document.getElementById('asset-drop-zone');
+  const name = document.getElementById('asset-file-name');
+  zone?.classList.toggle('has-file', !!file);
+  if (name) name.textContent = file ? `Selected: ${file.name}` : '';
   if (file) toast(`Selected asset file: ${file.name}`, 'info');
 }
 
