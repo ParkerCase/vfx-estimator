@@ -38,6 +38,11 @@
     .hdr-currency select{padding:5px 8px;font-size:12px;border-radius:8px;min-width:72px}
     .hdr h1{font-size:15px;font-weight:800;letter-spacing:.2px;color:var(--text-strong)}
     .hdr h1 span{color:var(--accent)}
+    .back-to-dash{font-size:12px;color:var(--accent);font-weight:800;text-decoration:none;border:1px solid var(--border);
+      border-radius:8px;padding:5px 9px;background:var(--card)}
+    .back-to-dash:hover{border-color:var(--accent)}
+    .project-context{display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px}
+    .project-context strong{font-size:13px;color:var(--text-strong)}
     .pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card2);
           border:1px solid var(--border);color:var(--text);white-space:nowrap;
           display:inline-flex;align-items:center;gap:6px}
@@ -413,7 +418,12 @@
 <!-- ── Header ── -->
 <div class="hdr">
   <div class="hdr-left">
+    <a href="/" class="back-to-dash">← Dashboard</a>
     <h1>VFX <span>Estimator</span></h1>
+    <div class="project-context" id="project-context-display" style="display:none">
+      <strong id="project-context-name"></strong>
+      <span class="muted" id="project-context-date"></span>
+    </div>
     <span id="srv-pill" class="pill">checking…</span>
     <span id="training-pill" class="pill hidden"></span>
   </div>
@@ -878,6 +888,9 @@ const API = (window.location.hostname === 'localhost' ||
              window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
+const urlParams = new URLSearchParams(location.search);
+const PROJECT_ID = urlParams.get('project_id');
+const PROJECT_NAME = urlParams.get('project_name');
 const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
 const DEPT_RATES_STORAGE_KEY = 'vfx_estimator_dept_rates';
 const TAX_CREDIT_STORAGE_KEY = 'vfx_estimator_tax_credit_pct';
@@ -911,6 +924,20 @@ function getUserId() {
   return v || 'supervisor';
 }
 
+function getSessionUserId() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('vfx_user') || 'null');
+    return saved?.id || '';
+  } catch {
+    return '';
+  }
+}
+
+function projectIdForSave() {
+  const id = parseInt(PROJECT_ID || '', 10);
+  return Number.isFinite(id) ? id : null;
+}
+
 function saveUserId() {
   try {
     localStorage.setItem(USER_ID_STORAGE_KEY, getUserId());
@@ -920,11 +947,33 @@ function saveUserId() {
 function loadUserId() {
   try {
     const saved = (localStorage.getItem(USER_ID_STORAGE_KEY) || '').trim();
+    const sessionUser = JSON.parse(localStorage.getItem('vfx_user') || 'null');
     if (saved) {
       const el = document.getElementById('user-id');
       if (el) el.value = saved;
+    } else if (sessionUser?.name || sessionUser?.email) {
+      const el = document.getElementById('user-id');
+      if (el) el.value = sessionUser.name || sessionUser.email;
     }
   } catch {}
+}
+
+function applyProjectContext() {
+  if (!PROJECT_NAME) return;
+  const wrap = document.getElementById('project-context-display');
+  const name = document.getElementById('project-context-name');
+  const date = document.getElementById('project-context-date');
+  if (wrap) wrap.style.display = 'flex';
+  if (name) name.textContent = PROJECT_NAME;
+  if (date) {
+    date.textContent = new Date().toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+  const projectInput = document.getElementById('batch-project');
+  if (projectInput && !projectInput.value.trim()) projectInput.value = PROJECT_NAME;
 }
 
 const FLAG_LABELS = {
@@ -4065,7 +4114,8 @@ async function autoSaveBid(project, shots) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         project_name: projectName,
-        user_id: getUserId(),
+        project_id: projectIdForSave(),
+        user_id: getSessionUserId() || getUserId(),
         shots: includedShots.map(s => ({
           item_number: s.item_number,
           shot_code: s.shot_code,
@@ -4299,6 +4349,7 @@ document.addEventListener('visibilitychange', () => {
 
 (async()=>{
   loadUserId();
+  applyProjectContext();
   loadDisplayCurrency();
   loadTaxCreditPct();
   loadAdminFeePct();

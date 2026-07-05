@@ -36,6 +36,7 @@ class Settings(BaseSettings):
 
     gemini_api_key: str = Field(default="", validation_alias="GEMINI_API_KEY")
     google_api_key: str = Field(default="", validation_alias="GOOGLE_API_KEY")
+    google_client_id: str = Field(default="", validation_alias="GOOGLE_CLIENT_ID")
     gemini_model: str = Field(default="gemini-2.5-flash", validation_alias="GEMINI_MODEL")
     gemini_mandays_model: str = Field(default="", validation_alias="GEMINI_MANDAYS_MODEL")
 

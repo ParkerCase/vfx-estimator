@@ -599,6 +599,7 @@ def save_bid_history(
     shots: List[Dict[str, Any]],
     pre_qual: Optional[Dict[str, Any]] = None,
     notes: str = "",
+    project_id: Optional[int] = None,
 ) -> int:
     """Save a completed batch estimate to history."""
     if not pg_url:
@@ -617,8 +618,8 @@ def save_bid_history(
                 """
                 INSERT INTO vfx_bid_history
                   (project_name, user_id, shot_count, total_mandays,
-                   shots, pre_qual, notes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                   shots, pre_qual, notes, project_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
                 (
@@ -629,6 +630,7 @@ def save_bid_history(
                     Json(shots),
                     Json(pre_qual or {}),
                     notes or "",
+                    project_id,
                 ),
             )
             bid_id = int(cur.fetchone()[0])

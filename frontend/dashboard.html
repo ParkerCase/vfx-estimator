@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VFX Estimator AI Dashboard</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root{
+      --bg:#0b0f1a;--surface:#121826;--card:#171f31;--card2:#1d2740;
+      --accent:#6ea8ff;--green:#43d38e;--red:#ff5b73;--orange:#ffbd5b;
+      --text:#e8eefc;--text-strong:#fff;--muted:#9aa7bd;--border:#2a3550;
+      --r:14px;
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input,select{font:inherit} button{cursor:pointer}
+    .hidden{display:none!important}.muted{color:var(--muted)}
+    .sec-label{font-size:11px;font-weight:900;letter-spacing:.9px;text-transform:uppercase;color:var(--text)}
+    .btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-weight:800}
+    .btn-ghost:hover{border-color:var(--accent)}
+    .btn-accent,.qa-btn{background:linear-gradient(135deg,#4f8ef7,#6ea8ff);border:none;color:#fff;border-radius:10px;padding:10px 15px;font-weight:900}
+    .btn-accent-sm{background:var(--accent);border:none;color:#fff;border-radius:8px;width:34px;font-weight:900}
+    #sign-in-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .signin-card{width:min(460px,100%);background:var(--card);border:1px solid var(--border);border-radius:22px;padding:42px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .logo,.dash-logo{font-weight:950;letter-spacing:1.1px;color:var(--text-strong)}
+    .signin-card .logo{font-size:24px;margin-bottom:14px}.tagline{color:var(--muted);margin-bottom:28px}
+    #google-btn{display:flex;justify-content:center}.signin-error{margin-top:14px;color:var(--orange);font-size:13px;line-height:1.45}
+    .dash-header{height:68px;border-bottom:1px solid var(--border);background:rgba(18,24,38,.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+    .dash-user{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card2)}
+    .dash-main{max-width:1180px;margin:0 auto;padding:28px}
+    .dash-greeting{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .dash-greeting h1{margin:0;font-size:30px}.quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .kpi-card,.dash-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+    .kpi-card{padding:18px}.kpi-value{font-size:30px;font-weight:950;color:var(--accent)}.kpi-label{font-size:12px;font-weight:800;color:var(--muted);margin-top:4px}
+    .dash-section{padding:16px;margin-bottom:18px}.section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .dash-table{width:100%;border-collapse:collapse;font-size:13px}.dash-table th,.dash-table td{padding:12px;border-bottom:1px solid var(--border);text-align:left}
+    .dash-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:900}.project-row:hover td{background:rgba(110,168,255,.05)}
+    .stage-badge{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900}
+    .stage-estimating{color:var(--orange);border-color:rgba(255,189,91,.45)}.stage-submitted,.stage-negotiating{color:var(--accent);border-color:rgba(110,168,255,.45)}.stage-awarded{color:var(--green);border-color:rgba(67,211,142,.45)}
+    .dash-two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}.task-list{list-style:none;padding:0;margin:12px 0}.task-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer}
+    .task-item:hover{background:var(--card2)}.task-title.done{text-decoration:line-through;color:var(--muted)}.task-project{margin-left:auto;color:var(--muted);font-size:11px}
+    .task-add{display:flex;gap:8px}.task-add input,.modal-card input,.modal-card select,.dash-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px}
+    .recs-list{display:grid;gap:10px;margin-top:12px}.rec-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px}.rec-text{font-size:13px;line-height:1.45}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal-card{width:min(440px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.45)}
+    .modal-title{font-size:18px;font-weight:950;margin-bottom:14px}.modal-card input,.modal-card select{margin-bottom:10px}
+    @keyframes doneOut{to{opacity:0;transform:translateX(20px)}}.task-done-anim{animation:doneOut .35s ease forwards}
+    @media (max-width:800px){.kpi-grid,.dash-two-col{grid-template-columns:1fr}.dash-header{padding:0 16px}.dash-main{padding:18px}.dash-greeting{display:block}.dash-table{font-size:12px}}
+  </style>
+</head>
+<body>
+  <div id="sign-in-screen">
+    <div class="signin-card">
+      <div class="logo">VFX ESTIMATOR AI</div>
+      <div class="tagline">AI-powered bid estimation for film &amp; TV</div>
+      <div id="google-btn"></div>
+      <div id="signin-error" class="signin-error hidden"></div>
+    </div>
+  </div>
+
+  <div id="dashboard-screen" style="display:none">
+    <header class="dash-header">
+      <div class="dash-logo">VFX ESTIMATOR AI</div>
+      <input class="dash-search" style="max-width:320px" placeholder="Search projects..." oninput="filterProjects(this.value)">
+      <div class="dash-user">
+        <img id="user-avatar" src="" class="avatar" alt="">
+        <span id="user-name-display"></span>
+        <button onclick="signOut()" class="btn-ghost">Sign out</button>
+      </div>
+    </header>
+
+    <main class="dash-main">
+      <div class="dash-greeting">
+        <div>
+          <h1 id="greeting">Good morning</h1>
+          <div id="date-display" class="muted"></div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button onclick="showNewProjectModal()" class="qa-btn">+ New Estimate</button>
+        <button onclick="window.location='/estimate'" class="qa-btn">Open Estimator</button>
+        <button onclick="loadProjects('active')" class="btn-ghost">Refresh</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-value" id="kpi-projects">-</div><div class="kpi-label">Active Projects</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpi-bids">-</div><div class="kpi-label">Total Bids</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpi-mandays">-</div><div class="kpi-label">Mandays Estimated</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpi-corrections">-</div><div class="kpi-label">AI Corrections Made</div></div>
+      </div>
+
+      <div class="dash-section">
+        <div class="section-header">
+          <span class="sec-label">Projects</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="loadProjects('archived')" class="btn-ghost">Show Archived</button>
+            <button onclick="showNewProjectModal()" class="btn-accent">+ New Project</button>
+          </div>
+        </div>
+        <table class="dash-table">
+          <thead><tr><th>Project</th><th>Client</th><th>Stage</th><th>Bids</th><th>Due</th><th></th></tr></thead>
+          <tbody id="projects-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Loading...</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="dash-two-col">
+        <div class="dash-section">
+          <div class="sec-label">My Tasks</div>
+          <ul id="task-list" class="task-list"></ul>
+          <div class="task-add">
+            <input id="new-task-input" type="text" placeholder="Add a task..." onkeydown="if(event.key==='Enter') addTask()">
+            <button onclick="addTask()" class="btn-accent-sm">+</button>
+          </div>
+        </div>
+        <div class="dash-section">
+          <div class="sec-label">AI Recommendations</div>
+          <div id="ai-recs" class="recs-list"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="new-project-modal" class="hidden modal-overlay">
+      <div class="modal-card">
+        <div class="modal-title">New Project</div>
+        <input id="new-project-name" type="text" placeholder="Project name *">
+        <input id="new-project-client" type="text" placeholder="Client name">
+        <select id="new-project-stage">
+          <option value="lead">Lead</option>
+          <option value="estimating" selected>Estimating</option>
+          <option value="submitted">Submitted</option>
+          <option value="negotiating">Negotiating</option>
+          <option value="awarded">Awarded</option>
+        </select>
+        <input id="new-project-due" type="date">
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="createProject()" class="btn-accent">Create &amp; Open</button>
+          <button onclick="document.getElementById('new-project-modal').classList.add('hidden')" class="btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:8090'
+  : 'https://vfx-estimator.onrender.com';
+let GOOGLE_CLIENT_ID = '';
+let _user = null;
+let _token = null;
+let _projects = [];
+
+function esc(s){return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function escJs(s){return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function loadSession(){try{_token=localStorage.getItem('vfx_auth_token');const saved=localStorage.getItem('vfx_user');_user=saved?JSON.parse(saved):null}catch{}}
+function saveSession(user, token){_user=user;_token=token;localStorage.setItem('vfx_auth_token',token);localStorage.setItem('vfx_user',JSON.stringify(user))}
+function clearSession(){_user=null;_token=null;localStorage.removeItem('vfx_auth_token');localStorage.removeItem('vfx_user');try{google.accounts.id.disableAutoSelect()}catch{}}
+function authHeaders(){return {Authorization:`Bearer ${_token}`}}
+async function loadAuthConfig(){try{const r=await fetch(`${API}/auth/config`);const d=await r.json();GOOGLE_CLIENT_ID=d.google_client_id||''}catch{}}
+function waitForGoogle(){return new Promise((resolve,reject)=>{let n=0;const t=setInterval(()=>{if(window.google?.accounts?.id){clearInterval(t);resolve()}else if(++n>80){clearInterval(t);reject(new Error('Google Identity script did not load'))}},100)})}
+
+async function handleGoogleCredential(response){
+  try{
+    const r=await fetch(`${API}/auth/google`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})});
+    const data=await r.json();
+    if(!r.ok || !data.ok) throw new Error(data.detail || 'Sign-in failed');
+    saveSession(data.user,response.credential);
+    showDashboard();
+  }catch(e){document.getElementById('signin-error').textContent=e.message;document.getElementById('signin-error').classList.remove('hidden')}
+}
+function signOut(){clearSession();showSignIn()}
+async function showSignIn(){
+  document.getElementById('sign-in-screen').style.display='flex';
+  document.getElementById('dashboard-screen').style.display='none';
+  if(!GOOGLE_CLIENT_ID){document.getElementById('signin-error').textContent='GOOGLE_CLIENT_ID is not configured.';document.getElementById('signin-error').classList.remove('hidden');return}
+  try{
+    await waitForGoogle();
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential,auto_select:true});
+    google.accounts.id.renderButton(document.getElementById('google-btn'),{theme:'outline',size:'large',text:'sign_in_with',shape:'rectangular',width:300});
+    google.accounts.id.prompt();
+  }catch(e){document.getElementById('signin-error').textContent=e.message;document.getElementById('signin-error').classList.remove('hidden')}
+}
+async function showDashboard(){
+  document.getElementById('sign-in-screen').style.display='none';
+  document.getElementById('dashboard-screen').style.display='block';
+  document.getElementById('user-avatar').src=_user?.picture||'';
+  document.getElementById('user-name-display').textContent=_user?.name||_user?.email||'';
+  updateGreeting();
+  await Promise.all([loadStats(),loadProjects(),loadTasks(),loadAiRecommendations()]);
+}
+function updateGreeting(){
+  const hour=new Date().getHours();
+  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  const name=_user?.name?.split(' ')[0]||'there';
+  document.getElementById('greeting').textContent=`${greeting}, ${name}`;
+  document.getElementById('date-display').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+async function loadStats(){
+  try{
+    const r=await fetch(`${API}/dashboard/stats`,{headers:authHeaders()});if(r.status===401) return signOut();
+    const s=await r.json();
+    document.getElementById('kpi-projects').textContent=s.active_projects;
+    document.getElementById('kpi-bids').textContent=s.total_bids;
+    document.getElementById('kpi-mandays').textContent=Number(s.total_mandays||0).toLocaleString();
+    document.getElementById('kpi-corrections').textContent=s.corrections_made;
+  }catch{}
+}
+async function loadProjects(status='active'){
+  try{
+    const r=await fetch(`${API}/projects?status=${encodeURIComponent(status)}`,{headers:authHeaders()});if(r.status===401) return signOut();
+    const data=await r.json();_projects=data.projects||[];renderProjectsTable(_projects);
+  }catch{}
+}
+function filterProjects(q){q=String(q||'').toLowerCase();renderProjectsTable(_projects.filter(p=>`${p.name} ${p.client}`.toLowerCase().includes(q)))}
+function renderProjectsTable(projects){
+  const tbody=document.getElementById('projects-tbody');
+  if(!projects.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No projects yet - create one to get started.</td></tr>';return}
+  const dots={active:'🟡',awarded:'🟢',lost:'🔴',archived:'⚫',submitted:'🔵'};
+  const labels={lead:'Lead',estimating:'Estimating',submitted:'Submitted',negotiating:'Negotiating',awarded:'Awarded'};
+  tbody.innerHTML=projects.map(p=>{const due=p.due_date?new Date(p.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'-';return `
+    <tr onclick="openProject(${p.id},'${escJs(p.name)}')" class="project-row" style="cursor:pointer">
+      <td style="font-weight:800">${esc(p.name)}</td><td>${esc(p.client||'-')}</td>
+      <td><span class="stage-badge stage-${esc(p.stage)}">${esc(labels[p.stage]||p.stage)}</span></td>
+      <td class="muted">${p.bid_count} bid${p.bid_count!==1?'s':''}</td><td class="muted">${due}</td><td>${dots[p.status]||'⚪'}</td>
+    </tr>`}).join('');
+}
+function openProject(projectId, projectName){window.location.href=`/estimate?project_id=${projectId}&project_name=${encodeURIComponent(projectName)}`}
+function showNewProjectModal(){document.getElementById('new-project-modal').classList.remove('hidden');document.getElementById('new-project-name').focus()}
+async function createProject(){
+  const name=document.getElementById('new-project-name').value.trim();
+  const client=document.getElementById('new-project-client').value.trim();
+  const stage=document.getElementById('new-project-stage').value;
+  const due=document.getElementById('new-project-due').value;
+  if(!name) return;
+  const r=await fetch(`${API}/projects`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({name,client,stage,due_date:due||null})});
+  const proj=await r.json();
+  document.getElementById('new-project-modal').classList.add('hidden');
+  openProject(proj.id,proj.name);
+}
+async function loadTasks(){try{const r=await fetch(`${API}/tasks`,{headers:authHeaders()});const data=await r.json();renderTasks(data.tasks||[])}catch{}}
+function renderTasks(tasks){
+  const list=document.getElementById('task-list');const open=tasks.filter(t=>!t.done).slice(0,5);
+  list.innerHTML=open.map(t=>`<li class="task-item" onclick="toggleTask(${t.id},this)"><span class="task-check">☐</span><span class="task-title">${esc(t.title)}</span>${t.project_name?`<span class="task-project">${esc(t.project_name)}</span>`:''}</li>`).join('') || '<li class="muted" style="padding:8px">No open tasks</li>';
+}
+async function toggleTask(id,el){await fetch(`${API}/tasks/${id}`,{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({done:true})});el.classList.add('task-done-anim');setTimeout(()=>loadTasks(),400)}
+async function addTask(){const input=document.getElementById('new-task-input');const title=input.value.trim();if(!title)return;await fetch(`${API}/tasks`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({title})});input.value='';loadTasks()}
+async function loadAiRecommendations(){
+  const container=document.getElementById('ai-recs');const recs=[];
+  try{
+    const q=_user?.id?`?user_id=${encodeURIComponent(_user.id)}&limit=10`:'?limit=10';
+    const r=await fetch(`${API}/bid-history${q}`,{headers:authHeaders()});const data=await r.json();const bids=data.bids||[];
+    if(bids[0]) recs.push({icon:'💡',text:`Your last bid (${bids[0].project_name}) had ${bids[0].shot_count} shots and ${Math.round(Number(bids[0].total_mandays||0)*10)/10} mandays.`});
+    recs.push({icon:'🏷️',text:'Tip: Add a methodology column to your CSV for more accurate department estimates.'});
+    recs.push({icon:'📋',text:'Corrections improve accuracy - reviewed bids make the AI smarter for your workflow.'});
+  }catch{}
+  container.innerHTML=recs.slice(0,4).map(r=>`<div class="rec-item"><span class="rec-icon">${r.icon}</span><span class="rec-text">${esc(r.text)}</span></div>`).join('') || '<div class="muted" style="padding:8px">Run some bids to see recommendations</div>';
+}
+(async()=>{await loadAuthConfig();loadSession();if(_user&&_token) showDashboard();else showSignIn()})();
+</script>
+</body>
+</html>

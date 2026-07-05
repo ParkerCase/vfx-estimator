@@ -20,6 +20,51 @@ from vfx_estimator.integrations.xata import (
 from vfx_estimator.types import UserCorrection
 
 
+CREATE_DASHBOARD_TABLES_SQL = """
+CREATE TABLE IF NOT EXISTS vfx_users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT DEFAULT '',
+    picture TEXT DEFAULT '',
+    role TEXT DEFAULT 'vendor',
+    org_name TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    last_seen TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS vfx_projects (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    client TEXT DEFAULT '',
+    status TEXT DEFAULT 'active',
+    stage TEXT DEFAULT 'estimating',
+    due_date DATE,
+    owner_id TEXT REFERENCES vfx_users(id),
+    org_name TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS vfx_tasks (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT REFERENCES vfx_users(id),
+    project_id INTEGER REFERENCES vfx_projects(id),
+    title TEXT NOT NULL,
+    done BOOLEAN DEFAULT FALSE,
+    due_date DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE vfx_bid_history
+    ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES vfx_projects(id),
+    ADD COLUMN IF NOT EXISTS user_id TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_projects_owner ON vfx_projects(owner_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_user ON vfx_tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_bid_history_project_id ON vfx_bid_history(project_id);
+"""
+
+
 def _load_jsonl(path: Path) -> list[UserCorrection]:
     if not path.is_file():
         return []
@@ -51,9 +96,11 @@ def main() -> None:
             with conn.cursor() as cur:
                 cur.execute(CREATE_CORRECTIONS_TABLE_SQL)
                 cur.execute(CREATE_PRESETS_TABLE_SQL)
+                cur.execute(CREATE_DASHBOARD_TABLES_SQL)
             conn.commit()
         print("OK    Table vfx_corrections ready (CREATE TABLE IF NOT EXISTS)")
         print("OK    Table vfx_presets ready (CREATE TABLE IF NOT EXISTS + seed presets)")
+        print("OK    Dashboard auth/project/task tables ready")
     except Exception as e:
         print(f"FAIL  Could not create table: {e}")
         sys.exit(1)

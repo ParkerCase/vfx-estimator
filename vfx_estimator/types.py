@@ -195,6 +195,7 @@ class UserCorrection(BaseModel):
 class SaveBidRequest(BaseModel):
     project_name: str
     user_id: Optional[str] = "supervisor"
+    project_id: Optional[int] = None
     shots: List[Dict[str, Any]] = Field(default_factory=list)
     pre_qual: Optional[Dict[str, Any]] = None
     notes: Optional[str] = ""

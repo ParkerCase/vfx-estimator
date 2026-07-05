@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -34,6 +34,7 @@ from vfx_estimator.integrations.xata import (
     list_bid_history,
     load_presets,
     save_bid_history,
+    get_postgres_connection,
     upsert_preset,
 )
 from vfx_estimator.learning.flags import FlagsStore
@@ -145,6 +146,28 @@ class SuggestMethodologyRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str
+
+
+class UserUpdateRequest(BaseModel):
+    role: Optional[str] = None
+    org_name: Optional[str] = None
+
+
+class ProjectCreate(BaseModel):
+    name: str
+    client: str = ""
+    stage: str = "estimating"
+    due_date: Optional[str] = None
+
+
+class TaskCreate(BaseModel):
+    title: str
+    project_id: Optional[int] = None
+    due_date: Optional[str] = None
+
+
 class AssetEstimateItem(BaseModel):
     asset_name: str
     description: str
@@ -197,6 +220,45 @@ def _merged_presets(pg_url: str = "") -> Dict[str, Dict[str, Any]]:
     return presets
 
 
+def _iso_row(row: Dict[str, Any], keys: tuple[str, ...]) -> Dict[str, Any]:
+    for key in keys:
+        value = row.get(key)
+        if value is not None and hasattr(value, "isoformat"):
+            row[key] = value.isoformat()
+    return row
+
+
+def _require_auth(authorization: Optional[str]) -> Dict[str, Any]:
+    """Extract and verify Google token from Authorization header."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "Authentication required")
+    credential = authorization.split(" ", 1)[1]
+    from vfx_estimator.integrations.auth import verify_google_token
+
+    try:
+        return verify_google_token(credential)
+    except ValueError as exc:
+        raise HTTPException(401, str(exc)) from exc
+
+
+def _current_user_record(user_id: str) -> Dict[str, Any]:
+    settings = get_service().settings
+    with get_postgres_connection(settings) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, email, name, picture, role, org_name, created_at
+                FROM vfx_users WHERE id = %s
+                """,
+                (user_id,),
+            )
+            row = cur.fetchone()
+    if not row:
+        raise HTTPException(404, "User not found — sign in first")
+    cols = ["id", "email", "name", "picture", "role", "org_name", "created_at"]
+    return _iso_row(dict(zip(cols, row)), ("created_at",))
+
+
 # ── App factory ────────────────────────────────────────────────────────────
 
 
@@ -243,6 +305,265 @@ def create_app() -> FastAPI:
     def fx_rates() -> Dict[str, Any]:
         """USD-base FX for display (Frankfurter, cached 1h)."""
         return get_usd_fx_rates()
+
+    @app.get("/auth/config")
+    def auth_config() -> Dict[str, Any]:
+        return {"google_client_id": get_settings().google_client_id}
+
+    @app.post("/auth/google")
+    def google_auth(req: GoogleAuthRequest) -> Dict[str, Any]:
+        """Verify Google token, upsert user, return user record."""
+        from vfx_estimator.integrations.auth import verify_google_token
+
+        try:
+            user_info = verify_google_token(req.credential)
+        except ValueError as exc:
+            raise HTTPException(401, str(exc)) from exc
+
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO vfx_users (id, email, name, picture, last_seen)
+                    VALUES (%s, %s, %s, %s, NOW())
+                    ON CONFLICT (id) DO UPDATE SET
+                        email = EXCLUDED.email,
+                        name = EXCLUDED.name,
+                        picture = EXCLUDED.picture,
+                        last_seen = NOW()
+                    RETURNING id, email, name, picture, role, org_name, created_at
+                    """,
+                    (
+                        user_info["id"],
+                        user_info["email"],
+                        user_info["name"],
+                        user_info["picture"],
+                    ),
+                )
+                row = cur.fetchone()
+            conn.commit()
+        cols = ["id", "email", "name", "picture", "role", "org_name", "created_at"]
+        user = _iso_row(dict(zip(cols, row)), ("created_at",))
+        return {"ok": True, "user": user, "token": req.credential}
+
+    @app.get("/auth/me")
+    def get_me(authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
+        user_info = _require_auth(authorization)
+        return _current_user_record(user_info["id"])
+
+    @app.put("/auth/me")
+    def update_me(
+        req: UserUpdateRequest,
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        updates = {k: v for k, v in req.model_dump().items() if v is not None}
+        if "role" in updates and updates["role"] not in {"vendor", "production"}:
+            raise HTTPException(400, "role must be 'vendor' or 'production'")
+        if not updates:
+            return {"ok": True}
+        set_clause = ", ".join(f"{k} = %s" for k in updates)
+        values = list(updates.values()) + [user["id"]]
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"UPDATE vfx_users SET {set_clause} WHERE id = %s", values)
+            conn.commit()
+        return {"ok": True}
+
+    @app.post("/projects")
+    def create_project(
+        req: ProjectCreate,
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        if not req.name.strip():
+            raise HTTPException(400, "name required")
+        user_record = _current_user_record(user["id"])
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO vfx_projects
+                      (name, client, stage, due_date, owner_id, org_name)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, name, client, status, stage, due_date,
+                              owner_id, created_at
+                    """,
+                    (
+                        req.name.strip(),
+                        req.client.strip(),
+                        req.stage,
+                        req.due_date or None,
+                        user["id"],
+                        user_record.get("org_name", ""),
+                    ),
+                )
+                row = cur.fetchone()
+            conn.commit()
+        cols = ["id", "name", "client", "status", "stage", "due_date", "owner_id", "created_at"]
+        return _iso_row(dict(zip(cols, row)), ("due_date", "created_at"))
+
+    @app.get("/projects")
+    def list_projects(
+        status: str = "active",
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT p.id, p.name, p.client, p.status, p.stage,
+                           p.due_date, p.created_at, p.updated_at,
+                           COUNT(b.id) AS bid_count,
+                           COALESCE(SUM(b.total_mandays), 0) AS total_mandays
+                    FROM vfx_projects p
+                    LEFT JOIN vfx_bid_history b ON b.project_id = p.id
+                    WHERE p.owner_id = %s AND p.status = %s
+                    GROUP BY p.id
+                    ORDER BY p.updated_at DESC
+                    """,
+                    (user["id"], status),
+                )
+                cols = [
+                    "id",
+                    "name",
+                    "client",
+                    "status",
+                    "stage",
+                    "due_date",
+                    "created_at",
+                    "updated_at",
+                    "bid_count",
+                    "total_mandays",
+                ]
+                projects = [dict(zip(cols, row)) for row in cur.fetchall()]
+        for project in projects:
+            _iso_row(project, ("due_date", "created_at", "updated_at"))
+            project["bid_count"] = int(project.get("bid_count") or 0)
+            project["total_mandays"] = float(project.get("total_mandays") or 0)
+        return {"projects": projects, "count": len(projects)}
+
+    @app.put("/projects/{project_id}")
+    def update_project(
+        project_id: int,
+        req: Dict[str, Any],
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        allowed = {"name", "client", "stage", "status", "due_date"}
+        updates = {k: v for k, v in req.items() if k in allowed}
+        if not updates:
+            return {"ok": True}
+        set_clause = ", ".join(f"{k} = %s" for k in updates)
+        set_clause += ", updated_at = NOW()"
+        values = list(updates.values()) + [project_id, user["id"]]
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"UPDATE vfx_projects SET {set_clause} WHERE id = %s AND owner_id = %s",
+                    values,
+                )
+            conn.commit()
+        return {"ok": True}
+
+    @app.get("/dashboard/stats")
+    def dashboard_stats(authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM vfx_projects WHERE owner_id = %s AND status = 'active'",
+                    (user["id"],),
+                )
+                active_projects = int(cur.fetchone()[0])
+                cur.execute(
+                    """
+                    SELECT COUNT(*), COALESCE(SUM(total_mandays), 0),
+                           COALESCE(AVG(shot_count), 0)
+                    FROM vfx_bid_history
+                    WHERE user_id = %s
+                    """,
+                    (user["id"],),
+                )
+                bid_count, total_mandays, avg_shots = cur.fetchone()
+                cur.execute(
+                    "SELECT COUNT(*) FROM vfx_corrections WHERE user_id = %s",
+                    (user["id"],),
+                )
+                corrections = int(cur.fetchone()[0])
+        return {
+            "active_projects": active_projects,
+            "total_bids": int(bid_count or 0),
+            "total_mandays": round(float(total_mandays or 0), 1),
+            "avg_shots_per_bid": round(float(avg_shots or 0), 1),
+            "corrections_made": corrections,
+        }
+
+    @app.get("/tasks")
+    def list_tasks(authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT t.id, t.title, t.done, t.due_date,
+                           t.created_at, p.name AS project_name
+                    FROM vfx_tasks t
+                    LEFT JOIN vfx_projects p ON p.id = t.project_id
+                    WHERE t.user_id = %s
+                    ORDER BY t.done ASC, t.due_date ASC NULLS LAST
+                    """,
+                    (user["id"],),
+                )
+                cols = ["id", "title", "done", "due_date", "created_at", "project_name"]
+                tasks = [dict(zip(cols, row)) for row in cur.fetchall()]
+        for task in tasks:
+            _iso_row(task, ("due_date", "created_at"))
+        return {"tasks": tasks}
+
+    @app.post("/tasks")
+    def create_task(
+        req: TaskCreate,
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        if not req.title.strip():
+            raise HTTPException(400, "title required")
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO vfx_tasks (user_id, project_id, title, due_date)
+                    VALUES (%s, %s, %s, %s) RETURNING id
+                    """,
+                    (user["id"], req.project_id, req.title.strip(), req.due_date or None),
+                )
+                task_id = cur.fetchone()[0]
+            conn.commit()
+        return {"ok": True, "id": task_id}
+
+    @app.put("/tasks/{task_id}")
+    def update_task(
+        task_id: int,
+        req: Dict[str, Any],
+        authorization: Optional[str] = Header(None),
+    ) -> Dict[str, Any]:
+        user = _require_auth(authorization)
+        allowed = {"title", "done", "due_date"}
+        updates = {k: v for k, v in req.items() if k in allowed}
+        if not updates:
+            return {"ok": True}
+        set_clause = ", ".join(f"{k} = %s" for k in updates)
+        values = list(updates.values()) + [task_id, user["id"]]
+        with get_postgres_connection(get_service().settings) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"UPDATE vfx_tasks SET {set_clause} WHERE id = %s AND user_id = %s",
+                    values,
+                )
+            conn.commit()
+        return {"ok": True}
 
     @app.post("/estimate")
     def estimate(req: EstimateRequest) -> Dict[str, Any]:
@@ -609,6 +930,7 @@ Return JSON only:
             shots=req.shots,
             pre_qual=req.pre_qual,
             notes=req.notes or "",
+            project_id=req.project_id,
         )
         return {"ok": True, "bid_id": bid_id}
 
