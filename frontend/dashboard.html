@@ -161,13 +161,18 @@ async function loadAuthConfig(){try{const r=await fetch(`${API}/auth/config`);co
 function waitForGoogle(){return new Promise((resolve,reject)=>{let n=0;const t=setInterval(()=>{if(window.google?.accounts?.id){clearInterval(t);resolve()}else if(++n>80){clearInterval(t);reject(new Error('Google Identity script did not load'))}},100)})}
 
 async function handleGoogleCredential(response){
+  const errEl=document.getElementById('signin-error');
   try{
     const r=await fetch(`${API}/auth/google`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})});
-    const data=await r.json();
-    if(!r.ok || !data.ok) throw new Error(data.detail || 'Sign-in failed');
+    let data={};
+    try{data=await r.json()}catch{throw new Error(r.ok?'Invalid server response':'Sign-in failed — server unreachable')}
+    if(!r.ok || !data.ok){
+      const detail=data.detail;
+      throw new Error(typeof detail==='string'?detail:Array.isArray(detail)?detail.map(d=>d.msg||d).join(', '):'Sign-in failed');
+    }
     saveSession(data.user,response.credential);
     showDashboard();
-  }catch(e){document.getElementById('signin-error').textContent=e.message;document.getElementById('signin-error').classList.remove('hidden')}
+  }catch(e){errEl.textContent=e.message||'Sign-in failed';errEl.classList.remove('hidden')}
 }
 function signOut(){clearSession();showSignIn()}
 async function showSignIn(){
@@ -176,9 +181,8 @@ async function showSignIn(){
   if(!GOOGLE_CLIENT_ID){document.getElementById('signin-error').textContent='GOOGLE_CLIENT_ID is not configured.';document.getElementById('signin-error').classList.remove('hidden');return}
   try{
     await waitForGoogle();
-    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential,auto_select:true});
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
     google.accounts.id.renderButton(document.getElementById('google-btn'),{theme:'outline',size:'large',text:'sign_in_with',shape:'rectangular',width:300});
-    google.accounts.id.prompt();
   }catch(e){document.getElementById('signin-error').textContent=e.message;document.getElementById('signin-error').classList.remove('hidden')}
 }
 async function showDashboard(){

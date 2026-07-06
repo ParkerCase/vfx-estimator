@@ -324,28 +324,36 @@ def create_app() -> FastAPI:
         except Exception as exc:
             raise HTTPException(503, f"Google auth verifier unavailable: {exc}") from exc
 
-        with get_postgres_connection(get_service().settings) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO vfx_users (id, email, name, picture, last_seen)
-                    VALUES (%s, %s, %s, %s, NOW())
-                    ON CONFLICT (id) DO UPDATE SET
-                        email = EXCLUDED.email,
-                        name = EXCLUDED.name,
-                        picture = EXCLUDED.picture,
-                        last_seen = NOW()
-                    RETURNING id, email, name, picture, role, org_name, created_at
-                    """,
-                    (
-                        user_info["id"],
-                        user_info["email"],
-                        user_info["name"],
-                        user_info["picture"],
-                    ),
-                )
-                row = cur.fetchone()
-            conn.commit()
+        try:
+            with get_postgres_connection(get_service().settings) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO vfx_users (id, email, name, picture, last_seen)
+                        VALUES (%s, %s, %s, %s, NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            email = EXCLUDED.email,
+                            name = EXCLUDED.name,
+                            picture = EXCLUDED.picture,
+                            last_seen = NOW()
+                        RETURNING id, email, name, picture, role, org_name, created_at
+                        """,
+                        (
+                            user_info["id"],
+                            user_info["email"],
+                            user_info["name"],
+                            user_info["picture"],
+                        ),
+                    )
+                    row = cur.fetchone()
+                conn.commit()
+        except RuntimeError as exc:
+            raise HTTPException(503, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(
+                503,
+                "User database unavailable — run scripts/migrate_xata_corrections on Postgres",
+            ) from exc
         cols = ["id", "email", "name", "picture", "role", "org_name", "created_at"]
         user = _iso_row(dict(zip(cols, row)), ("created_at",))
         return {"ok": True, "user": user, "token": req.credential}

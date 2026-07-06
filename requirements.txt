@@ -10,4 +10,5 @@ uvicorn[standard]>=0.27
 httpx>=0.26
 psycopg2-binary>=2.9   
 google-auth>=2.29
+requests>=2.31
 pytest>=7.4

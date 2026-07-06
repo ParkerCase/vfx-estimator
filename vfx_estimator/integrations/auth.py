@@ -4,10 +4,21 @@ from __future__ import annotations
 
 from typing import Dict
 
-from google.auth.transport import requests as grequests
 from google.oauth2 import id_token
 
 from vfx_estimator.config import get_settings
+
+
+def _google_auth_request():
+    """Build a google-auth HTTP transport (requests preferred, urllib3 fallback)."""
+    try:
+        from google.auth.transport import requests as google_requests
+
+        return google_requests.Request()
+    except Exception:
+        from google.auth.transport import urllib3 as google_urllib3
+
+        return google_urllib3.Request()
 
 
 def verify_google_token(credential: str) -> Dict[str, str]:
@@ -19,7 +30,7 @@ def verify_google_token(credential: str) -> Dict[str, str]:
     try:
         info = id_token.verify_oauth2_token(
             credential,
-            grequests.Request(),
+            _google_auth_request(),
             client_id,
         )
         return {
