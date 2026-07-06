@@ -233,12 +233,14 @@ def _require_auth(authorization: Optional[str]) -> Dict[str, Any]:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Authentication required")
     credential = authorization.split(" ", 1)[1]
-    from vfx_estimator.integrations.auth import verify_google_token
-
     try:
+        from vfx_estimator.integrations.auth import verify_google_token
+
         return verify_google_token(credential)
     except ValueError as exc:
         raise HTTPException(401, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(503, f"Google auth verifier unavailable: {exc}") from exc
 
 
 def _current_user_record(user_id: str) -> Dict[str, Any]:
@@ -313,12 +315,14 @@ def create_app() -> FastAPI:
     @app.post("/auth/google")
     def google_auth(req: GoogleAuthRequest) -> Dict[str, Any]:
         """Verify Google token, upsert user, return user record."""
-        from vfx_estimator.integrations.auth import verify_google_token
-
         try:
+            from vfx_estimator.integrations.auth import verify_google_token
+
             user_info = verify_google_token(req.credential)
         except ValueError as exc:
             raise HTTPException(401, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(503, f"Google auth verifier unavailable: {exc}") from exc
 
         with get_postgres_connection(get_service().settings) as conn:
             with conn.cursor() as cur:
