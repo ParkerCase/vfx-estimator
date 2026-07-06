@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "frontend/dashboard.html", "use": "@vercel/static" },
-    { "src": "frontend/estimate_ui.html", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/", "dest": "frontend/dashboard.html" },
-    { "src": "/dashboard", "dest": "frontend/dashboard.html" },
-    { "src": "/estimate", "dest": "frontend/estimate_ui.html" }
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "cp frontend/dashboard.html frontend/index.html && cp frontend/estimate_ui.html frontend/estimate.html",
+  "outputDirectory": "frontend",
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/estimate", "destination": "/estimate.html" }
   ]
 }
