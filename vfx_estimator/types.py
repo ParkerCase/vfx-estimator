@@ -217,3 +217,18 @@ class PresetRequest(BaseModel):
     compositing: float = 0.0
     total: float = 0.0
     created_by: str = "supervisor"
+
+
+class AssetPresetRequest(BaseModel):
+    asset_type: str
+    description: str = ""
+    modelling: float = 0.0
+    texturing: float = 0.0
+    rigging: float = 0.0
+    cfx: float = 0.0
+    fx: float = 0.0
+    lookdev: float = 0.0
+    dmp: float = 0.0
+    comp_dev: float = 0.0
+    total: float = 0.0
+    created_by: str = "supervisor"

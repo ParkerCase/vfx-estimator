@@ -136,10 +136,6 @@
     .stat-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
     .stat-block .n{font-size:24px;font-weight:900;color:var(--accent)}
     .stat-block .l{font-size:11px;color:var(--text);font-weight:700;margin-top:2px}
-    .freq-bar{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
-    .freq-bar .bar{height:6px;border-radius:3px;background:var(--accent);transition:width .4s}
-    .freq-bar .name{min-width:100px;color:var(--text);font-weight:700}
-    .freq-bar .count{color:var(--text);font-weight:700;min-width:20px;text-align:right}
 
     /* ── Toast ── */
     #toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);
@@ -194,7 +190,6 @@
     .batch-table-wrap{
       overflow:auto;
       width:100%;
-      max-height:min(72vh,calc(100vh - 260px));
       border:1px solid var(--border);
       border-radius:var(--r);
       -webkit-overflow-scrolling:touch;
@@ -238,7 +233,7 @@
     .batch-table input.bid-dept-inp{width:40px;padding:3px 4px;font-size:11px;text-align:center}
     .batch-table .col-desc{max-width:160px;font-size:11px}
     .batch-table .col-notes{min-width:180px}
-    .batch-table textarea.batch-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:vertical}
+    .batch-table textarea.batch-notes-inp,.batch-table textarea.asset-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:none;border:1px solid var(--border);background:var(--card2);border-radius:6px;color:var(--text)}
     .batch-table .col-hidden{display:none!important}
     .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
     .col-toggle-bar{margin-bottom:12px}
@@ -311,8 +306,8 @@
     .dept-chip{font-size:10px;padding:2px 6px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text)}
     #batch-input{width:100%;min-height:120px;padding:12px 14px;resize:vertical}
     .batch-summary{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
-    .batch-bid-summary-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px}
-    .batch-bid-summary-stats .stat-block .n{font-size:26px}
+    .batch-bid-summary-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+    .batch-bid-summary-stats .stat-block .n{font-size:clamp(16px,2.2vw,26px);word-break:break-all;line-height:1.2}
     .batch-dept-summary-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
     table.batch-dept-summary{width:100%;border-collapse:collapse;font-size:12px}
     .batch-dept-summary th,.batch-dept-summary td{padding:8px 12px;border:1px solid var(--border);text-align:left}
@@ -464,18 +459,18 @@
     <div class="rates-grid" id="rates-grid"></div>
     <p style="font-size:11px;color:var(--muted);margin-top:10px">
       Enter rates in your selected display currency. Stored as USD internally for estimates.
-      Shot cost = sum of each department's mandays × its day rate.
+      Shot cost = sum of each department's production days × its day rate.
     </p>
   </div>
 
   <div id="presets-panel" class="card" style="display:none;margin-top:-6px;padding-top:14px">
-    <div class="sec-label" style="margin-bottom:10px">Shot Type Baselines</div>
+    <div class="sec-label" style="margin-bottom:8px">Shot Type Baselines</div>
     <p class="presets-note">
-      These baselines are your starting point. The AI adjusts from here based on shot complexity,
-      similar-shot retrieval, and your correction history.
+      Starting point for each shot category. The AI adjusts based on complexity,
+      similar shots, and correction history.
     </p>
-    <div class="btn-row" style="margin-top:0">
-      <button type="button" class="btn-blue" onclick="addCustomPreset()">Add Custom Preset</button>
+    <div class="btn-row" style="margin-top:0;margin-bottom:12px">
+      <button type="button" class="btn-blue" onclick="addCustomPreset()">+ Add Shot Preset</button>
       <button type="button" class="btn-ghost" onclick="loadPresets()">Refresh</button>
     </div>
     <div class="presets-wrap">
@@ -488,6 +483,37 @@
         </thead>
         <tbody id="presets-body">
           <tr><td colspan="15" style="color:var(--muted)">Loading presets...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-divider" style="margin:28px 0 20px">
+      <div class="divider-line"></div>
+      Asset Type Baselines
+      <div class="divider-line"></div>
+    </div>
+
+    <p class="presets-note">
+      One-time build baselines per asset category. The AI adjusts based on tier
+      (hero/secondary/background) and your asset correction history.
+    </p>
+    <div class="btn-row" style="margin-top:0;margin-bottom:12px">
+      <button type="button" onclick="addCustomAssetPreset()" class="btn-blue">+ Add Asset Preset</button>
+      <button type="button" onclick="loadAssetPresets()" class="btn-ghost">Refresh</button>
+    </div>
+
+    <div class="presets-wrap">
+      <table class="presets-table">
+        <thead>
+          <tr>
+            <th>Asset Type</th><th>Description</th>
+            <th>MODEL</th><th>TEX</th><th>RIG</th><th>CFX</th>
+            <th>FX</th><th>LKDV</th><th>DMP</th><th>CDEV</th>
+            <th>Total</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="asset-presets-body">
+          <tr><td colspan="12" style="color:var(--muted)">Loading asset presets...</td></tr>
         </tbody>
       </table>
     </div>
@@ -597,7 +623,10 @@
         after the batch runs — click ✨ on any row.
       </div>
 
-      <button class="btn-blue" id="batch-est-btn" onclick="runBatchEstimate()">Run Batch Estimate</button>
+      <div class="btn-row">
+        <button class="btn-blue" id="batch-est-btn" onclick="runBatchEstimate()">Run Batch Estimate</button>
+        <button id="batch-stop-btn" style="display:none" class="btn-red" onclick="stopBatch()">⏹ Stop</button>
+      </div>
     </div>
 
     <div id="batch-results" class="hidden">
@@ -656,7 +685,7 @@
       </div>
 
       <div class="card hidden" id="batch-bid-summary">
-        <div class="sec-label" style="margin-bottom:14px">Bid Summary</div>
+        <div class="sec-label" style="margin-bottom:14px">Shot Cost Summary</div>
         <div class="batch-bid-summary-stats" id="batch-bid-summary-stats"></div>
         <div class="sec-label" style="margin:16px 0 10px">Department Totals</div>
         <div class="batch-dept-summary-wrap">
@@ -739,7 +768,22 @@
           <textarea id="asset-context-notes" rows="2" placeholder="e.g. Hero dragon needs full hero-quality rig, fur sim, fire breath FX dev..." style="width:100%;resize:vertical"></textarea>
         </div>
       </div>
-      <button class="btn-blue" id="asset-est-btn" onclick="runAssetEstimate()" style="margin-top:14px;width:100%">Estimate Assets</button>
+      <div class="prequal-toggle" onclick="toggleAssetRatesPanel()" style="margin-top:12px">
+        <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
+        <span>Asset Dept Rates</span>
+        <span id="asset-rates-arrow" style="margin-left:auto;font-size:11px">▾</span>
+      </div>
+      <div id="asset-rates-panel" class="hidden" style="margin-top:8px;padding:14px;background:var(--card2);border-radius:var(--r)">
+        <div class="rates-grid" id="asset-rates-grid"></div>
+        <div class="rates-hint muted" style="font-size:11px;margin-top:6px">
+          Rates shown in <span id="asset-rates-currency">USD</span>/day.
+          Changes apply to all future asset cost calculations.
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn-blue" id="asset-est-btn" onclick="runAssetEstimate()" style="flex:1">Estimate Assets</button>
+        <button id="asset-stop-btn" style="display:none" class="btn-red" onclick="stopAssets()">⏹ Stop</button>
+      </div>
       <div id="asset-progress" class="hidden" style="margin-top:12px">
         <div class="progress-track"><div class="progress-fill" id="asset-progress-fill" style="width:0%"></div></div>
         <div id="asset-progress-label" class="muted" style="font-size:12px;margin-top:4px">Starting...</div>
@@ -751,23 +795,31 @@
             <tbody id="asset-tbody"></tbody>
           </table>
         </div>
+        <div id="asset-dept-summary" style="margin-top:16px"></div>
         <div class="batch-bar" style="margin-top:0">
           <span id="asset-summary" style="color:var(--muted);font-size:13px"></span>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn-green with-icon" onclick="saveAssetCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save Corrections</button>
             <button class="btn-ghost" onclick="exportAssetCsv()">↓ Export CSV</button>
+            <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
           </div>
         </div>
       </div>
     </div>
 
     <div id="combined-summary" class="card hidden" style="margin-top:16px">
-      <div class="sec-label">Combined Bid Summary</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:12px">
-        <div class="stat-block"><div class="n" id="cs-shots">—</div><div class="l">VFX Shots</div></div>
+      <div class="sec-label">Bid Summary</div>
+      <div id="cs-reference" class="muted" style="font-size:12px;margin-top:4px">—</div>
+      <div class="batch-bid-summary-stats" style="margin-top:12px">
+        <div class="stat-block"><div class="n" id="cs-shot-days">—</div><div class="l">Shot Production Days</div></div>
+        <div class="stat-block"><div class="n" id="cs-asset-days">—</div><div class="l">Asset Production Days</div></div>
         <div class="stat-block"><div class="n" id="cs-shot-cost">—</div><div class="l">Shot Cost</div></div>
-        <div class="stat-block"><div class="n" id="cs-assets">—</div><div class="l">Assets</div></div>
         <div class="stat-block"><div class="n" id="cs-asset-cost">—</div><div class="l">Asset Cost</div></div>
-        <div class="stat-block"><div class="n" id="cs-gross-total" style="color:var(--accent)">—</div><div class="l">Gross Total</div></div>
+      </div>
+      <hr>
+      <div class="batch-bid-summary-stats" style="margin-bottom:0">
+        <div class="stat-block"><div class="n" id="cs-total-days">—</div><div class="l">Total Production Days</div></div>
+        <div class="stat-block"><div class="n" id="cs-gross-total" style="color:var(--green)">—</div><div class="l">Gross Total</div></div>
       </div>
     </div>
 
@@ -817,20 +869,6 @@
       <div class="fx-multi-summary" id="fx-multi-summary"></div>
       <div class="fx-status-note" id="fx-status-note"></div>
     </div>
-
-  <!-- ── Stats ── -->
-  <div class="card" style="margin-top:4px">
-    <div class="sec-label" style="margin-bottom:14px">Active Learning Dashboard</div>
-    <div class="stats-grid">
-      <div class="stat-block"><div class="n" id="st-corr">—</div><div class="l">Corrections</div></div>
-      <div class="stat-block"><div class="n" id="st-flags">—</div><div class="l">Flags</div></div>
-      <div class="stat-block"><div class="n" id="st-ai">—</div><div class="l">Avg AI Days</div></div>
-      <div class="stat-block"><div class="n" id="st-final">—</div><div class="l">Avg Final Days</div></div>
-      <div class="stat-block"><div class="n" id="st-delta">—</div><div class="l">Avg Delta</div></div>
-    </div>
-    <div id="dept-freq-bars"></div>
-    <div id="flag-freq" style="margin-top:12px;font-size:12px;color:var(--muted)"></div>
-  </div>
 
 </div><!-- /wrap -->
 
@@ -893,6 +931,7 @@ const PROJECT_ID = urlParams.get('project_id');
 const PROJECT_NAME = urlParams.get('project_name');
 const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
 const DEPT_RATES_STORAGE_KEY = 'vfx_estimator_dept_rates';
+const ASSET_DEPT_RATES_STORAGE_KEY = 'vfx_estimator_asset_dept_rates';
 const TAX_CREDIT_STORAGE_KEY = 'vfx_estimator_tax_credit_pct';
 const ADMIN_FEE_STORAGE_KEY = 'vfx_estimator_admin_fee_pct';
 const DISPLAY_CURRENCY_STORAGE_KEY = 'vfx_estimator_display_currency';
@@ -995,18 +1034,42 @@ const DEPT_LABELS = {
 };
 
 const ASSET_DEPTS = [
-  'MODELLING', 'TEXTURING', 'RIGGING', 'CFX', 'FX', 'LGT', 'DMP', 'LOOKDEV', 'COMP DEV',
+  'MODELLING', 'TEXTURING', 'RIGGING', 'CFX', 'FX', 'DMP', 'LOOKDEV', 'COMP DEV',
 ];
 const ASSET_DEPT_SHORT = {
   MODELLING: 'MODEL', TEXTURING: 'TEX', RIGGING: 'RIG', CFX: 'CFX', FX: 'FX',
-  LGT: 'LGT', DMP: 'DMP', LOOKDEV: 'LKDV', 'COMP DEV': 'CDEV',
+  DMP: 'DMP', LOOKDEV: 'LKDV', 'COMP DEV': 'CDEV',
 };
 const ASSET_DEPT_DEFAULTS = {
   MODELLING: true, TEXTURING: true, RIGGING: true, CFX: true, FX: true,
-  LGT: false, DMP: false, LOOKDEV: true, 'COMP DEV': true,
+  DMP: true, LOOKDEV: true, 'COMP DEV': true,
 };
+const DEFAULT_ASSET_DEPT_RATES = {
+  modelling: 750,
+  texturing: 700,
+  rigging: 800,
+  cfx: 800,
+  fx: 850,
+  dmp: 750,
+  lookdev: 750,
+  comp_dev: 700,
+};
+const ASSET_DEPT_LABELS = {
+  modelling: 'Modelling',
+  texturing: 'Texturing',
+  rigging: 'Rigging',
+  cfx: 'CFX',
+  fx: 'FX Dev',
+  dmp: 'DMP',
+  lookdev: 'Lookdev',
+  comp_dev: 'Comp Dev',
+};
+const ASSET_VARIATION_FACTOR = 0.30;
+let _assetDeptRates = {};
 let _assetResults = [];
 let _assetInputs = [];
+let _batchAbortController = null;
+let _assetAbortController = null;
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -1037,7 +1100,7 @@ function downloadSampleShotCsv() {
     'CLIENT NOTES', 'NUMBER OF SHOTS', 'COST PER SHOT',
     'TOTAL SHOT COST', 'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM',
     'CFX', 'FX', 'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP',
-    'TOTAL MANDAYS',
+    'TOTAL PROD DAYS',
   ];
   const sampleRow = [
     '1', '', 'INT. ABANDONED WAREHOUSE - NIGHT', '14',
@@ -1056,7 +1119,7 @@ function downloadSampleAssetCsv() {
     'ITEM#', 'THUMBNAIL', 'ASSET DESCRIPTION', 'SHOT STATUS',
     'ASSET ASSUMPTIONS', 'CLIENT NOTES', 'NUMBER OF VARIATIONS',
     'TOTAL ASSET COST', 'MODELLING', 'TEXTURING', 'RIGGING',
-    'CFX', 'FX', 'LOOKDEV', 'COMP DEV', 'TOTAL MANDAYS',
+    'CFX', 'FX', 'LOOKDEV', 'COMP DEV', 'TOTAL PROD DAYS',
   ];
   const sampleRow = [
     '1', '',
@@ -1177,12 +1240,15 @@ function onDisplayCurrencyChange(code) {
   _displayCurrency = c;
   try { localStorage.setItem(DISPLAY_CURRENCY_STORAGE_KEY, c); } catch {}
   updateRatesCurrencyLabels();
+  buildAssetRatesPanel();
   refreshAllMoneyDisplays();
 }
 
 function updateRatesCurrencyLabels() {
   const lbl = document.getElementById('rates-currency-label');
   if (lbl) lbl.textContent = _displayCurrency;
+  const assetCur = document.getElementById('asset-rates-currency');
+  if (assetCur) assetCur.textContent = _displayCurrency;
 }
 
 function updateFxStatusNote() {
@@ -1223,6 +1289,7 @@ async function loadFxRates() {
 function refreshAllMoneyDisplays() {
   updateRatesSummary();
   renderDeptRatesPanel();
+  buildAssetRatesPanel();
   if (_batchResult) refreshBatchBidSummary();
   else updateCombinedSummary();
 }
@@ -1244,6 +1311,7 @@ function toggleRatesPanel() {
   const panel = document.getElementById('rates-panel');
   toggle.classList.toggle('open');
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  sizeTableWrappers();
 }
 
 function updateRatesSummary() {
@@ -1285,6 +1353,87 @@ function onDeptRateChange(dept, raw) {
 function assetDayRate() {
   const raw = parseFloat(document.getElementById('asset-day-rate')?.value);
   return Number.isFinite(raw) && raw > 0 ? raw : 500;
+}
+
+function loadAssetDeptRates() {
+  try {
+    const saved = localStorage.getItem(ASSET_DEPT_RATES_STORAGE_KEY);
+    _assetDeptRates = saved ? JSON.parse(saved) : {};
+  } catch { _assetDeptRates = {}; }
+}
+
+function getAssetDeptRateUsd(deptKey) {
+  return _assetDeptRates[deptKey]
+    ?? DEFAULT_ASSET_DEPT_RATES[deptKey]
+    ?? 750;
+}
+
+function getAssetDeptRate(deptKey) {
+  return rateDisplayValue(getAssetDeptRateUsd(deptKey));
+}
+
+function setAssetDeptRate(deptKey, valueInDisplayCurrency) {
+  const usd = displayToUsd(parseFloat(valueInDisplayCurrency));
+  if (!Number.isFinite(usd) || usd < 0) return;
+  _assetDeptRates[deptKey] = Math.round(usd * 100) / 100;
+  try {
+    localStorage.setItem(ASSET_DEPT_RATES_STORAGE_KEY, JSON.stringify(_assetDeptRates));
+  } catch {}
+}
+
+function buildAssetRatesPanel() {
+  const grid = document.getElementById('asset-rates-grid');
+  if (!grid) return;
+  const step = rateInputStep();
+  grid.innerHTML = Object.entries(ASSET_DEPT_LABELS).map(([key, label]) => `
+    <div class="rate-field">
+      <label>${label}</label>
+      <input type="number"
+             min="0" step="${step}"
+             value="${getAssetDeptRate(key)}"
+             data-asset-dept="${key}"
+             oninput="setAssetDeptRate('${key}', this.value); recalcAllAssetCosts()">
+    </div>`).join('');
+  const cur = document.getElementById('asset-rates-currency');
+  if (cur) cur.textContent = _displayCurrency;
+}
+
+function toggleAssetRatesPanel() {
+  const panel = document.getElementById('asset-rates-panel');
+  const arrow = document.getElementById('asset-rates-arrow');
+  const toggle = panel?.previousElementSibling;
+  const hidden = panel.classList.toggle('hidden');
+  if (arrow) arrow.textContent = hidden ? '▾' : '▴';
+  if (toggle) toggle.classList.toggle('open', !hidden);
+  if (!hidden) buildAssetRatesPanel();
+  sizeTableWrappers();
+}
+
+function calcVariationMandays(baseDays, variations) {
+  const base = parseFloat(baseDays) || 0;
+  const n = Math.max(1, parseInt(variations) || 1);
+  if (n <= 1) return base;
+  return base + (n - 1) * base * ASSET_VARIATION_FACTOR;
+}
+
+function calcAssetRowCostUsd(deptDays) {
+  return Object.entries(deptDays).reduce((total, [dept, days]) => {
+    const rate = getAssetDeptRateUsd(dept);
+    return total + (parseFloat(days) || 0) * rate;
+  }, 0);
+}
+
+function assetVariationMultiplier(baseDays, variations) {
+  const base = parseFloat(baseDays) || 0;
+  if (base <= 0) return 1;
+  const n = Math.max(1, parseInt(variations) || 1);
+  return calcVariationMandays(base, n) / base;
+}
+
+function recalcAllAssetCosts() {
+  document.querySelectorAll('#asset-tbody tr').forEach(tr => updateAssetRowTotals(tr));
+  updateAssetSummary();
+  updateCombinedSummary();
 }
 
 function getDeptRates() {
@@ -1394,6 +1543,7 @@ function toggleBatchPrequal() {
   const panel = document.getElementById('batch-prequal-panel');
   toggle.classList.toggle('open');
   panel.classList.toggle('open');
+  sizeTableWrappers();
 }
 
 function updateBatchCGRatio() {
@@ -1431,6 +1581,33 @@ function getPreQualData() {
   return buildBatchPreQual();
 }
 
+function setTableWrapperFallbacks() {
+  document.querySelectorAll('.batch-table-wrap').forEach(wrap => {
+    if (!wrap.style.maxHeight) wrap.style.maxHeight = '60vh';
+  });
+}
+
+function sizeTableWrappers() {
+  const shotWrap = document.querySelector('#tab-batch .batch-table-wrap')
+    || document.querySelector('#batch-table-card .batch-table-wrap');
+  if (shotWrap) {
+    const top = shotWrap.getBoundingClientRect().top;
+    const bar = document.querySelector('#batch-table-card .batch-bar')?.offsetHeight || 56;
+    const available = window.innerHeight - top - bar - 16;
+    shotWrap.style.maxHeight = Math.max(320, available) + 'px';
+  }
+
+  const assetWrap = document.querySelector('#asset-card .batch-table-wrap');
+  if (assetWrap) {
+    const top = assetWrap.getBoundingClientRect().top;
+    const available = window.innerHeight - top - 80;
+    assetWrap.style.maxHeight = Math.max(240, available) + 'px';
+  }
+}
+
+window.addEventListener('load', sizeTableWrappers);
+window.addEventListener('resize', sizeTableWrappers);
+
 // ── Batch / bid file mode ──────────────────────────────────────────────────
 
 let _batchResult = null;
@@ -1464,6 +1641,18 @@ const PRESET_DEPTS = [
   ['COMP ROTO', 'comp_roto'],
   ['COMP', 'compositing'],
 ];
+const ASSET_PRESET_DEPTS = [
+  ['MODEL', 'modelling'],
+  ['TEX', 'texturing'],
+  ['RIG', 'rigging'],
+  ['CFX', 'cfx'],
+  ['FX', 'fx'],
+  ['LKDV', 'lookdev'],
+  ['DMP', 'dmp'],
+  ['CDEV', 'comp_dev'],
+];
+const ASSET_PRESET_DEPT_KEYS = ASSET_PRESET_DEPTS.map(([, key]) => key);
+const ASSET_PRESET_DEPT_HEADERS = ASSET_PRESET_DEPTS.map(([header]) => header);
 
 const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
 const TOGGLE_COLS = ['METHODOLOGY', ...BID_DEPTS];
@@ -1486,6 +1675,7 @@ const COL_DEFAULTS = {
 };
 let _visibleCols = loadVisibleCols();
 let _presets = {};
+let _assetPresets = {};
 
 function onBatchFileSelected(input) {
   const file = input.files?.[0];
@@ -1503,7 +1693,10 @@ function togglePresetsPanel() {
   if (!panel) return;
   const opening = panel.style.display === 'none' || !panel.style.display;
   panel.style.display = opening ? 'block' : 'none';
-  if (opening) loadPresets();
+  if (opening) {
+    loadPresets();
+    loadAssetPresets();
+  }
 }
 
 function presetRowPayload(shotType) {
@@ -1612,6 +1805,137 @@ function addCustomPreset() {
   savePresetFromRow(key);
 }
 
+async function loadAssetPresets() {
+  const tbody = document.getElementById('asset-presets-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="12" style="color:var(--muted)">Loading asset presets...</td></tr>';
+  try {
+    const r = await fetch(`${API}/presets/assets`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const presets = data.presets || {};
+    _assetPresets = presets;
+    if (!Object.keys(presets).length) {
+      tbody.innerHTML = `<tr><td colspan="12" style="color:var(--muted);padding:12px">
+        No asset presets yet - click "+ Add Asset Preset"
+      </td></tr>`;
+      return;
+    }
+    tbody.innerHTML = Object.entries(presets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([type, p]) => renderAssetPresetRow(type, p))
+      .join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="12" style="color:var(--red)">Failed to load: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+function assetPresetRow(assetType) {
+  return [...document.querySelectorAll('tr[data-asset-preset]')]
+    .find(tr => tr.dataset.assetPreset === assetType);
+}
+
+function renderAssetPresetRow(assetType, p) {
+  const isStudio = p.source === 'studio';
+  const deptCells = ASSET_PRESET_DEPT_KEYS.map(key =>
+    `<td>${assetPresetInput(p[key] || 0, key, assetType)}</td>`
+  ).join('');
+
+  return `<tr class="${isStudio ? 'studio' : ''}" data-asset-preset="${escAttr(assetType)}">
+    <td>
+      <span style="font-weight:600">${escHtml(assetType)}</span>
+      ${isStudio ? '<span style="color:var(--accent);font-size:10px;font-weight:800;margin-left:6px">custom</span>' : ''}
+    </td>
+    <td>${assetPresetInput(p.description || '', 'description', assetType, 'preset-desc')}</td>
+    ${deptCells}
+    <td>${assetPresetInput(p.total || 0, 'total', assetType)}</td>
+    <td style="white-space:nowrap">
+      <button type="button" class="btn-history" onclick="saveAssetPresetRow('${escAttr(assetType)}')">Save</button>
+      ${isStudio ? `<button type="button" class="btn-history danger" onclick="resetAssetPreset('${escAttr(assetType)}')">Reset</button>` : ''}
+    </td>
+  </tr>`;
+}
+
+function assetPresetInput(value, field, assetType, extraClass='') {
+  const val = typeof value === 'number' ? value : (value || '');
+  const type = field === 'description' ? 'text' : 'number';
+  const numericAttrs = field === 'description' ? '' : ' step="0.5" min="0"';
+  return `<input type="${type}" class="${extraClass}" value="${escAttr(String(val))}"
+    data-field="${field}" data-asset-type="${escAttr(assetType)}"${numericAttrs}
+    oninput="onAssetPresetInputChange(this)">`;
+}
+
+function onAssetPresetInputChange(input) {
+  if (input.dataset.field === 'total') return;
+  const row = assetPresetRow(input.dataset.assetType);
+  if (!row) return;
+  let sum = 0;
+  ASSET_PRESET_DEPT_KEYS.forEach(key => {
+    const inp = row.querySelector(`input[data-field="${key}"]`);
+    sum += parseFloat(inp?.value || 0) || 0;
+  });
+  const totalInp = row.querySelector('input[data-field="total"]');
+  if (totalInp) totalInp.value = Math.round(sum * 2) / 2;
+}
+
+async function saveAssetPresetRow(assetType) {
+  const row = assetPresetRow(assetType);
+  if (!row) return;
+  const payload = { asset_type: assetType };
+  ASSET_PRESET_DEPT_KEYS.forEach(key => {
+    const inp = row.querySelector(`input[data-field="${key}"]`);
+    payload[key] = parseFloat(inp?.value || 0) || 0;
+  });
+  payload.description = row.querySelector('input[data-field="description"]')?.value.trim() || '';
+  payload.total = parseFloat(row.querySelector('input[data-field="total"]')?.value || 0) || 0;
+  try {
+    const r = await fetch(`${API}/presets/assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    toast(`Asset preset "${assetType}" saved`, 'info');
+    await loadAssetPresets();
+  } catch (e) {
+    toast(`Asset preset save failed: ${e.message}`, 'err');
+  }
+}
+
+async function saveAssetPresetFromRow(assetType) {
+  return saveAssetPresetRow(assetType);
+}
+
+async function resetAssetPreset(assetType) {
+  if (!confirm(`Reset "${assetType}" to system default?`)) return;
+  try {
+    const r = await fetch(`${API}/presets/assets/${encodeURIComponent(assetType)}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    toast(`"${assetType}" reset to default`);
+    await loadAssetPresets();
+  } catch (e) {
+    toast(`Asset preset reset failed: ${e.message}`, 'err');
+  }
+}
+
+async function addCustomAssetPreset() {
+  const assetType = prompt('New asset type key (e.g. cg_spaceship):');
+  const key = (assetType || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  if (!key) return;
+  try {
+    const r = await fetch(`${API}/presets/assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ asset_type: key, description: '' }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    toast(`Asset preset "${key}" created`, 'info');
+    await loadAssetPresets();
+  } catch (e) {
+    toast(`Failed to create asset preset: ${e.message}`, 'err');
+  }
+}
+
 function assignFileToInput(input, file) {
   if (!input || !file) return;
   const dt = new DataTransfer();
@@ -1693,13 +2017,24 @@ function methodologyCellHtml(idx, methodology) {
 
 function showBatchLoading(on) {
   const btn = document.getElementById('batch-est-btn');
+  const stopBtn = document.getElementById('batch-stop-btn');
   if (on) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spin"></span>Estimating batch…';
+    if (stopBtn) stopBtn.style.display = 'inline-block';
   } else {
     btn.disabled = false;
     btn.textContent = 'Run Batch Estimate';
+    if (stopBtn) stopBtn.style.display = 'none';
   }
+}
+
+function stopBatch() {
+  _batchAbortController?.abort();
+}
+
+function stopAssets() {
+  _assetAbortController?.abort();
 }
 
 function clearBatchResults() {
@@ -2143,17 +2478,13 @@ function renderBatchBidSummary(stats) {
   }
 
   panel.classList.remove('hidden');
-  const combined = updateCombinedSummary(stats);
+  updateCombinedSummary(stats);
   const statBlocks = [
-    { n: fmt(stats.totalDays) + 'd', l: 'Total Mandays' },
+    { n: fmt(stats.totalDays) + 'd', l: 'Production Days' },
+    { n: String(stats.shotCount), l: 'Shots' },
     { n: money(stats.totalCost), l: 'Total Cost' },
     { n: money(stats.avgCost), l: 'Avg Cost / Shot' },
-    { n: String(stats.shotCount), l: 'Shots' },
   ];
-  const netSummary = computeBidNetSummary(combined.grossCost);
-  if (_taxCreditPct > 0 || _adminFeePct > 0) {
-    statBlocks.push({ n: money(netSummary.net), l: `Net bid (${bidNetSummaryLabel()})` });
-  }
   statsEl.innerHTML = statBlocks
     .map(s => `<div class="stat-block"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`)
     .join('');
@@ -2214,19 +2545,13 @@ function refreshBatchBidSummary() {
   _batchResult.total_cost = stats.totalCost;
   _batchResult.avg_cost_per_shot = stats.avgCost;
   _batchResult.dept_totals = stats.deptRows;
-  const combinedForBar = updateCombinedSummary(stats);
+  updateCombinedSummary(stats);
 
   let bar =
     `<strong>${stats.shotCount}</strong> shots &nbsp;|&nbsp; ` +
-    `<strong>${fmt(stats.totalDays)}d</strong> total mandays &nbsp;|&nbsp; ` +
+    `<strong>${fmt(stats.totalDays)}d</strong> production days &nbsp;|&nbsp; ` +
     `<strong>${money(stats.totalCost)}</strong> total cost &nbsp;|&nbsp; ` +
     `<strong>${money(stats.avgCost)}</strong> avg / shot`;
-  const netSummary = computeBidNetSummary(combinedForBar.grossCost);
-  if (_taxCreditPct > 0 || _adminFeePct > 0) {
-    bar += ` &nbsp;|&nbsp; <strong>${money(netSummary.net)}</strong> net bid`;
-    const lbl = bidNetSummaryLabel();
-    if (lbl) bar += ` (${lbl})`;
-  }
   const totalRows = (_batchResult.shots || []).filter(Boolean).length;
   const includedRows = (_batchResult.shots || []).filter(isIncludedShot).length;
   if (totalRows && includedRows < totalRows) {
@@ -2920,7 +3245,7 @@ function mapRowsToShots(rows, headerIdx, colMap) {
 }
 
 function buildBatchExportCsvBase64() {
-  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES', ...BID_DEPTS, 'TOTAL MANDAYS', 'PER SHOT COST', 'SEQUENCE COST'];
+  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES', ...BID_DEPTS, 'TOTAL PROD DAYS', 'PER SHOT COST', 'SEQUENCE COST'];
   const esc = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
   const lines = [header.join(',')];
   (_batchResult?.shots || []).forEach(row => {
@@ -3003,6 +3328,10 @@ function assetInternalKey(bidDept) {
     'COMP DEV': 'comp_dev',
   };
   return map[bidDept] || String(bidDept || '').toLowerCase();
+}
+
+function bidDeptToAssetInternal(bidDept) {
+  return assetInternalKey(bidDept);
 }
 
 const ASSET_COLUMN_ALIASES = {
@@ -3192,14 +3521,38 @@ function setupAssetDropZone() {
 function toggleAssetContext() {
   document.getElementById('asset-pq-toggle')?.classList.toggle('open');
   document.getElementById('asset-context-panel')?.classList.toggle('hidden');
+  sizeTableWrappers();
 }
 
 function buildAssetTableHeader() {
   const thead = document.getElementById('asset-thead');
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const cols = ['#', 'ASSET', 'VARS', ...visibleDepts.map(d => ASSET_DEPT_SHORT[d]), 'DAYS', 'COST', 'CONF'];
-  thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+  const cols = ['#', 'ASSET', 'NOTES', 'VARS', ...visibleDepts.map(d => ASSET_DEPT_SHORT[d]), 'DAYS', 'COST', 'CONF'];
+  thead.innerHTML = `<tr>${cols.map(c =>
+    c === 'DAYS'
+      ? '<th title="Base build days × 30% per additional variation. For a completely different asset, add a new row instead.">DAYS</th>'
+      : `<th>${c}</th>`
+  ).join('')}</tr>`;
   document.getElementById('asset-tbody').innerHTML = '';
+}
+
+function readAssetRowDeptDays(tr) {
+  const deptDays = {};
+  tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+    const dept = bidDeptToAssetInternal(inp.dataset.assetDept);
+    const val = parseFloat(inp.value) || 0;
+    if (val > 0) deptDays[dept] = val;
+  });
+  return deptDays;
+}
+
+function renderAssetDaysCell(totalDays, baseDays, variations) {
+  const extraVars = Math.max(0, (parseInt(variations) || 1) - 1);
+  return `${fmt(totalDays)}` +
+    (extraVars > 0 && baseDays > 0
+      ? `<div style="font-size:10px;color:var(--muted);font-weight:400">
+           ${fmt(baseDays)}d base + ${extraVars} variation${extraVars > 1 ? 's' : ''} (×30%)</div>`
+      : '');
 }
 
 function appendAssetResultRow(idx, asset, result) {
@@ -3213,22 +3566,87 @@ function appendAssetResultRow(idx, asset, result) {
     return `<td><input type="number" class="bid-dept-inp" value="${days || ''}" min="0" step="0.5"
       data-asset-idx="${idx}" data-asset-dept="${escAttr(bidDept)}" oninput="updateAssetRowTotal(this)"></td>`;
   }).join('');
-  const totalDays = Number(result.total_days || 0);
-  const cost = Math.round(totalDays * assetDayRate() * 100) / 100;
+  const deptSum = visibleDepts.reduce((s, bidDept) => {
+    const key = assetInternalKey(bidDept);
+    const raw = depts[key];
+    const days = typeof raw === 'object' ? raw?.days : raw;
+    return s + (parseFloat(days) || 0);
+  }, 0);
+  const baseDays = Number(result.total_days || 0) || deptSum;
+  const variations = asset.variations || 1;
+  const totalDays = calcVariationMandays(baseDays, variations);
+  const deptDays = {};
+  visibleDepts.forEach(bidDept => {
+    const key = assetInternalKey(bidDept);
+    const raw = depts[key];
+    const days = typeof raw === 'object' ? raw?.days : raw;
+    if (parseFloat(days) > 0) deptDays[key] = parseFloat(days);
+  });
+  const costUsd = Math.round(
+    calcAssetRowCostUsd(deptDays) * assetVariationMultiplier(baseDays, variations) * 100
+  ) / 100;
   const conf = result.confidence || 0;
+  const extraVars = Math.max(0, variations - 1);
+  const varLabel = extraVars > 0 && baseDays > 0
+    ? `<div class="muted" style="font-size:10px;margin-top:2px">${fmt(baseDays)}d base + ${extraVars} variation${extraVars > 1 ? 's' : ''} (×30%)</div>`
+    : '';
   const tr = document.createElement('tr');
   tr.dataset.assetIdx = idx;
+  tr.dataset.aiTotalDays = baseDays;
   tr.innerHTML = `
     <td>${escHtml(asset.item_number)}</td>
-    <td class="col-desc" title="${escAttr(asset.asset_name)}">${escHtml(asset.asset_name)}
+    <td class="col-desc asset-name-cell" title="${escAttr(asset.asset_name)}">${escHtml(asset.asset_name)}
       ${result.reasoning ? `<div class="muted" style="font-size:10px;margin-top:2px">${escHtml(String(result.reasoning).slice(0, 90))}...</div>` : ''}
+      ${varLabel}
     </td>
-    <td>${asset.variations || 1}</td>
+    <td class="col-notes">
+      <textarea class="asset-notes-inp"
+                placeholder="Notes for this asset..."
+                rows="1"
+                data-asset-idx="${idx}"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    </td>
+    <td>
+      <input type="number"
+             class="asset-vars-inp"
+             value="${variations}"
+             min="1" step="1" style="width:50px"
+             data-base-days="${baseDays}"
+             data-asset-idx="${idx}"
+             oninput="updateAssetRowVariations(this)">
+      <div class="asset-vars-hint muted" style="font-size:10px;margin-top:2px">
+        ${extraVars > 0 && baseDays > 0 ? `${fmt(baseDays)}d base + ${extraVars} variation${extraVars > 1 ? 's' : ''} (×30%)` : ''}
+      </div>
+    </td>
     ${deptCells}
-    <td class="batch-row-days" style="font-weight:700">${fmt(totalDays)}</td>
-    <td class="asset-row-cost" style="font-weight:700;color:var(--green)">${money(cost)}</td>
+    <td class="batch-row-days" style="font-weight:700" data-total-days="${totalDays}">
+      ${renderAssetDaysCell(totalDays, baseDays, variations)}
+    </td>
+    <td class="asset-row-cost" style="font-weight:700;color:var(--green)">${money(costUsd)}</td>
     <td>${confBadge(conf)}</td>`;
   tbody.appendChild(tr);
+}
+
+function updateAssetRowVariations(input) {
+  const tr = input.closest('tr');
+  const baseDays = parseFloat(input.dataset.baseDays) || 0;
+  const vars = parseInt(input.value) || 1;
+  const totalDays = calcVariationMandays(baseDays, vars);
+  const daysCell = tr?.querySelector('.batch-row-days');
+  if (daysCell) {
+    daysCell.dataset.totalDays = totalDays;
+    daysCell.innerHTML = renderAssetDaysCell(totalDays, baseDays, vars);
+  }
+  const hint = tr?.querySelector('.asset-vars-hint');
+  if (hint) {
+    const extraVars = Math.max(0, vars - 1);
+    hint.textContent = extraVars > 0 && baseDays > 0
+      ? `${fmt(baseDays)}d base + ${extraVars} variation${extraVars > 1 ? 's' : ''} (×30%)`
+      : '';
+  }
+  if (tr) updateAssetRowTotals(tr);
+  updateAssetSummary();
+  updateCombinedSummary();
 }
 
 function updateAssetRowTotal(input) {
@@ -3240,21 +3658,34 @@ function updateAssetRowTotal(input) {
 
 function updateAssetRowTotals(tr) {
   if (!tr) return { days: 0, cost: 0 };
-  let total = 0;
-  tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
-    total += parseFloat(inp.value) || 0;
-  });
-  tr.querySelector('.batch-row-days').textContent = fmt(total);
-  const cost = Math.round(total * assetDayRate() * 100) / 100;
+  const deptDays = readAssetRowDeptDays(tr);
+  const baseDays = Object.values(deptDays).reduce((s, d) => s + d, 0);
+  const varsInp = tr.querySelector('input.asset-vars-inp');
+  const variations = varsInp ? (parseInt(varsInp.value) || 1) : 1;
+  if (varsInp) varsInp.dataset.baseDays = baseDays;
+  const totalDays = calcVariationMandays(baseDays, variations);
+  const costUsd = Math.round(
+    calcAssetRowCostUsd(deptDays) * assetVariationMultiplier(baseDays, variations) * 100
+  ) / 100;
+  const daysCell = tr.querySelector('.batch-row-days');
+  if (daysCell) {
+    daysCell.dataset.totalDays = totalDays;
+    daysCell.innerHTML = renderAssetDaysCell(totalDays, baseDays, variations);
+  }
+  const hint = tr.querySelector('.asset-vars-hint');
+  if (hint) {
+    const extraVars = Math.max(0, variations - 1);
+    hint.textContent = extraVars > 0 && baseDays > 0
+      ? `${fmt(baseDays)}d base + ${extraVars} variation${extraVars > 1 ? 's' : ''} (×30%)`
+      : '';
+  }
   const costEl = tr.querySelector('.asset-row-cost');
-  if (costEl) costEl.textContent = money(cost);
-  return { days: total, cost };
+  if (costEl) costEl.textContent = money(costUsd);
+  return { days: totalDays, cost: costUsd };
 }
 
 function refreshAssetCosts() {
-  document.querySelectorAll('#asset-tbody tr').forEach(tr => updateAssetRowTotals(tr));
-  updateAssetSummary();
-  updateCombinedSummary();
+  recalcAllAssetCosts();
 }
 
 function updateAssetSummary() {
@@ -3270,8 +3701,69 @@ function updateAssetSummary() {
   totalCost = Math.round(totalCost * 100) / 100;
   const avgCost = rows.length ? Math.round((totalCost / rows.length) * 100) / 100 : 0;
   document.getElementById('asset-summary').textContent =
-    `${rows.length} assets · ${fmt(totalDays)} total mandays · ${money(avgCost)} avg asset · ${money(totalCost)} total asset cost`;
+    `${rows.length} assets · ${fmt(totalDays)} production days · ${money(avgCost)} avg asset · ${money(totalCost)} total asset cost`;
+  renderAssetDeptSummary({ count: rows.length, totalDays, totalCost, avgCost });
   return { count: rows.length, totalDays, totalCost, avgCost };
+}
+
+function renderAssetDeptSummary(assetStats) {
+  const wrap = document.getElementById('asset-dept-summary');
+  if (!wrap) return;
+  const rows = [...document.querySelectorAll('#asset-tbody tr')];
+  if (!rows.length) {
+    wrap.innerHTML = '';
+    return;
+  }
+  const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
+  const deptRows = visibleDepts.map(bidDept => {
+    const key = assetInternalKey(bidDept);
+    const days = Math.round(rows.reduce((sum, tr) => {
+      const inp = tr.querySelector(`input.bid-dept-inp[data-asset-dept="${bidDept}"]`);
+      return sum + (parseFloat(inp?.value) || 0);
+    }, 0) * 2) / 2;
+    const rate = getAssetDeptRateUsd(key);
+    const cost = Math.round(days * rate * 100) / 100;
+    return { key, label: ASSET_DEPT_LABELS[key] || bidDept, days, rate, cost };
+  }).filter(r => r.days > 0);
+  const totalBaseDays = Math.round(deptRows.reduce((s, r) => s + r.days, 0) * 2) / 2;
+  const totalBaseCost = Math.round(deptRows.reduce((s, r) => s + r.cost, 0) * 100) / 100;
+  wrap.innerHTML = `
+    <div class="sec-label" style="margin:16px 0 10px">Asset Cost Summary</div>
+    <div class="batch-bid-summary-stats">
+      <div class="stat-block"><div class="n">${assetStats.count}</div><div class="l">Assets</div></div>
+      <div class="stat-block"><div class="n">${fmt(assetStats.totalDays)}d</div><div class="l">Total Prod Days</div></div>
+      <div class="stat-block"><div class="n">${money(assetStats.totalCost)}</div><div class="l">Total Cost</div></div>
+      <div class="stat-block"><div class="n">${money(assetStats.avgCost)}</div><div class="l">Avg Cost / Asset</div></div>
+    </div>
+    <div class="sec-label" style="margin:16px 0 10px">Department Totals (Assets)</div>
+    <div class="batch-dept-summary-wrap">
+      <table class="batch-dept-summary">
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th style="text-align:right">Prod Days</th>
+            <th style="text-align:right">Rate</th>
+            <th style="text-align:right">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${deptRows.length ? deptRows.map(r => `<tr>
+            <td>${escHtml(r.label)}</td>
+            <td class="num">${fmt(r.days)}</td>
+            <td class="num">${money(r.rate)}</td>
+            <td class="num cost">${money(r.cost)}</td>
+          </tr>`).join('') : `<tr><td colspan="4" style="color:var(--muted);font-style:italic">No department breakdown available.</td></tr>`}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>All depts</td>
+            <td class="num">${fmt(totalBaseDays)}</td>
+            <td class="num">—</td>
+            <td class="num cost">${money(totalBaseCost)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
 }
 
 function currentShotStats() {
@@ -3283,7 +3775,9 @@ function updateCombinedSummary(shotStats) {
   const assetStats = updateAssetSummary();
   const stats = shotStats || currentShotStats();
   const shotCount = stats?.shotCount || 0;
+  const shotDays = stats?.totalDays || 0;
   const shotCost = stats?.totalCost || 0;
+  const totalDays = Math.round((shotDays + assetStats.totalDays) * 2) / 2;
   const grossCost = Math.round((shotCost + assetStats.totalCost) * 100) / 100;
   const hasAnyCost = shotCount > 0 || assetStats.count > 0;
   document.getElementById('combined-summary')?.classList.toggle('hidden', !hasAnyCost);
@@ -3294,10 +3788,12 @@ function updateCombinedSummary(shotStats) {
     updateFxStatusNote();
     return { shotCost: 0, assetCost: 0, grossCost: 0, net: 0 };
   }
-  document.getElementById('cs-shots').textContent = shotCount;
+  document.getElementById('cs-shot-days').textContent = fmt(shotDays) + 'd';
+  document.getElementById('cs-asset-days').textContent = fmt(assetStats.totalDays) + 'd';
+  document.getElementById('cs-reference').textContent = `${shotCount} shots · ${assetStats.count} assets`;
   document.getElementById('cs-shot-cost').textContent = money(shotCost);
-  document.getElementById('cs-assets').textContent = assetStats.count;
   document.getElementById('cs-asset-cost').textContent = money(assetStats.totalCost);
+  document.getElementById('cs-total-days').textContent = fmt(totalDays) + 'd';
   document.getElementById('cs-gross-total').textContent = money(grossCost);
   const netSummary = computeBidNetSummary(grossCost);
   updateTaxCreditDisplay(grossCost);
@@ -3336,59 +3832,83 @@ async function runAssetEstimate() {
   _assetInputs = assets;
   _assetResults = [];
 
-  const response = await fetch(`${API}/estimate/assets/stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      assets: assets.map(a => ({ asset_name: a.asset_name, description: a.description, variations: a.variations })),
-      asset_context: { tier, notes, day_rate: dayRate },
-    }),
-  });
-  if (!response.ok) {
-    toast(`Asset estimate failed: HTTP ${response.status}`, 'err');
-    return;
-  }
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop();
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      let msg;
-      try { msg = JSON.parse(line.slice(6)); } catch { continue; }
-      if (msg.type === 'progress') {
-        const pct = Math.round((msg.current / msg.total) * 100);
-        document.getElementById('asset-progress-fill').style.width = pct + '%';
-        document.getElementById('asset-progress-label').textContent = `Estimating ${msg.asset_name}... (${msg.current}/${msg.total})`;
-      }
-      if (msg.type === 'result') {
-        _assetResults[msg.index] = { ...assets[msg.index], ...msg.data };
-        appendAssetResultRow(msg.index, assets[msg.index], msg.data);
-        document.getElementById('asset-results').classList.remove('hidden');
-      }
-      if (msg.type === 'complete') {
-        document.getElementById('asset-progress').classList.add('hidden');
-        updateAssetSummary();
-        updateCombinedSummary();
-        toast(`Assets complete — ${_assetResults.filter(Boolean).length} assets`, 'info');
+  const runBtn = document.getElementById('asset-est-btn');
+  const stopBtn = document.getElementById('asset-stop-btn');
+  if (runBtn) runBtn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  _assetAbortController = new AbortController();
+
+  try {
+    const response = await fetch(`${API}/estimate/assets/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        assets: assets.map(a => ({ asset_name: a.asset_name, description: a.description, variations: a.variations })),
+        asset_context: { tier, notes, day_rate: dayRate },
+      }),
+      signal: _assetAbortController.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let msg;
+        try { msg = JSON.parse(line.slice(6)); } catch { continue; }
+        if (msg.type === 'progress') {
+          const pct = Math.round((msg.current / msg.total) * 100);
+          document.getElementById('asset-progress-fill').style.width = pct + '%';
+          document.getElementById('asset-progress-label').textContent = `Estimating ${msg.asset_name}... (${msg.current}/${msg.total})`;
+        }
+        if (msg.type === 'result') {
+          _assetResults[msg.index] = { ...assets[msg.index], ...msg.data };
+          appendAssetResultRow(msg.index, assets[msg.index], msg.data);
+          document.getElementById('asset-results').classList.remove('hidden');
+          sizeTableWrappers();
+        }
+        if (msg.type === 'complete') {
+          document.getElementById('asset-progress').classList.add('hidden');
+          updateAssetSummary();
+          updateCombinedSummary();
+          sizeTableWrappers();
+          toast(`Assets complete — ${_assetResults.filter(Boolean).length} assets`, 'info');
+        }
       }
     }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      toast('Estimation stopped.', 'warn');
+    } else {
+      toast(`Asset estimate failed: ${e.message}`, 'err');
+    }
+  } finally {
+    _assetAbortController = null;
+    document.getElementById('asset-progress')?.classList.add('hidden');
+    if (runBtn) runBtn.disabled = false;
+    if (stopBtn) stopBtn.style.display = 'none';
   }
 }
 
 function exportAssetCsv() {
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const rows = [['ITEM#', 'ASSET DESCRIPTION', 'NUMBER OF VARIATIONS', ...visibleDepts, 'TOTAL MANDAYS']];
+  const rows = [['ITEM#', 'ASSET DESCRIPTION', 'NUMBER OF VARIATIONS', ...visibleDepts, 'TOTAL PROD DAYS', 'NOTES']];
   document.querySelectorAll('#asset-tbody tr').forEach((tr, i) => {
     const asset = _assetInputs[i] || {};
+    const vars = parseInt(tr.querySelector('input.asset-vars-inp')?.value) || asset.variations || 1;
     const days = [...tr.querySelectorAll('input.bid-dept-inp')].map(inp => parseFloat(inp.value) || 0);
-    const total = days.reduce((s, d) => s + d, 0);
-    rows.push([asset.item_number || String(i + 1), asset.asset_name || '', asset.variations || 1, ...days, fmt(total)]);
+    const total = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays)
+      || calcVariationMandays(days.reduce((s, d) => s + d, 0), vars);
+    const notes = tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '';
+    rows.push([asset.item_number || String(i + 1), asset.asset_name || '', vars, ...days, fmt(total), notes]);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -3397,6 +3917,81 @@ function exportAssetCsv() {
   a.download = `${getBatchProject()}_ASSETS_AI_ESTIMATE.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+function collectAssetRows() {
+  const rows = [];
+  document.querySelectorAll('#asset-tbody tr').forEach((tr, i) => {
+    const asset = _assetInputs[i] || {};
+    const deptDays = readAssetRowDeptDays(tr);
+    const vars = parseInt(tr.querySelector('input.asset-vars-inp')?.value) || asset.variations || 1;
+    const baseDays = Object.values(deptDays).reduce((s, d) => s + d, 0);
+    const totalDays = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays)
+      || calcVariationMandays(baseDays, vars);
+    rows.push({
+      item_number: asset.item_number || String(i + 1),
+      asset_name: asset.asset_name || '',
+      variations: vars,
+      dept_days: deptDays,
+      total_days: totalDays,
+      notes: tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '',
+    });
+  });
+  return rows;
+}
+
+async function saveAssetCorrections() {
+  const rows = document.querySelectorAll('#asset-tbody tr');
+  if (!rows.length) {
+    toast('Run an asset estimate first.', 'warn');
+    return;
+  }
+  const status = document.getElementById('asset-save-status');
+  if (status) status.textContent = 'Saving…';
+  let saved = 0;
+  for (const tr of rows) {
+    const idx = parseInt(tr.dataset.assetIdx, 10);
+    const asset = Number.isFinite(idx) ? (_assetInputs[idx] || {}) : {};
+    const assetName = asset.asset_name || '';
+    if (!assetName) continue;
+
+    const deptDays = {};
+    tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+      const dept = bidDeptToAssetInternal(inp.dataset.assetDept);
+      const val = parseFloat(inp.value) || 0;
+      if (val > 0) deptDays[dept] = val;
+    });
+
+    const totalDays = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays) || 0;
+    const notes = tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '';
+    const aiTotal = parseFloat(tr.dataset.aiTotalDays) || null;
+
+    if (Object.keys(deptDays).length === 0) continue;
+
+    try {
+      const r = await fetch(`${API}/corrections/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          asset_name: assetName,
+          final_dept_days: deptDays,
+          ai_total_days: aiTotal,
+          final_total_days: totalDays,
+          user_id: getUserId(),
+          notes,
+        }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      saved++;
+    } catch {}
+  }
+
+  if (status) status.textContent = saved > 0 ? `Saved ${saved}` : '';
+  if (saved > 0) {
+    toast(`${saved} asset correction${saved > 1 ? 's' : ''} saved`);
+  } else {
+    toast('No asset rows with dept days to save.', 'warn');
+  }
 }
 
 function getBatchProjectRaw() {
@@ -3416,10 +4011,12 @@ async function runBatchStream(shots, project, preQual) {
   const payload = { shots, dept_rates: getDeptRates(), project };
   if (preQual) payload.pre_qual = preQual;
 
+  _batchAbortController = new AbortController();
   const response = await fetch(`${API}/estimate/batch/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+    signal: _batchAbortController.signal,
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
@@ -3487,6 +4084,7 @@ async function runBatchStream(shots, project, preQual) {
         syncBatchPresentationOrder();
         updateProgress(msg.total_shots ?? totalShots, msg.total_shots ?? totalShots, 'Complete');
         updateBatchSummary(results);
+        sizeTableWrappers();
         checkServer();
         autoShowPopulatedCols(_batchResult.shots.filter(Boolean));
         applyColVisibility();
@@ -3557,9 +4155,14 @@ async function runBatchEstimate() {
     await runBatchStream(shots, project, preQual);
     document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
-    toast(`Batch failed: ${e.message}`, 'err');
-    document.getElementById('batch-results').classList.add('hidden');
+    if (e.name === 'AbortError') {
+      toast('Estimation stopped.', 'warn');
+    } else {
+      toast(`Batch estimate failed: ${e.message}`, 'err');
+      document.getElementById('batch-results').classList.add('hidden');
+    }
   } finally {
+    _batchAbortController = null;
     showBatchLoading(false);
     hideBatchProgress();
   }
@@ -3603,6 +4206,7 @@ function saveVisibleCols() {
 
 function toggleColPanel() {
   document.getElementById('col-toggle-panel')?.classList.toggle('hidden');
+  sizeTableWrappers();
 }
 
 function buildColCheckboxes() {
@@ -4064,7 +4668,6 @@ async function saveAllBatchCorrections() {
     const d = await r.json();
     status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved ${d.saved} corrections`;
     toast(`Saved ${d.saved} corrections — retrieval index updated.`);
-    loadStats();
     checkServer();
   } catch (e) {
     status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
@@ -4212,7 +4815,7 @@ async function loadBidHistoryList() {
       <div class="history-bid-card" data-bid-id="${b.id}">
         <div class="hb-title">${escHtml(b.project_name || 'Untitled')}</div>
         <div class="hb-meta">
-          ${b.shot_count ?? 0} shots · ${fmt(b.total_mandays ?? 0)} total days · ${formatBidDate(b.created_at)}
+          ${b.shot_count ?? 0} shots · ${fmt(b.total_mandays ?? 0)} production days · ${formatBidDate(b.created_at)}
           ${b.notes ? `<br>${escHtml(b.notes)}` : ''}
         </div>
         <div class="hb-actions">
@@ -4294,50 +4897,6 @@ async function deleteSavedBid(bidId) {
   }
 }
 
-// ── Stats ──────────────────────────────────────────────────────────────────
-
-async function loadStats() {
-  try {
-    const [cs, fs] = await Promise.all([
-      fetch(`${API}/corrections/stats`).then(r=>r.json()),
-      fetch(`${API}/flags/stats`).then(r=>r.json()),
-    ]);
-
-    document.getElementById('st-corr').textContent  = cs.count ?? 0;
-    document.getElementById('st-flags').textContent = fs.count ?? 0;
-    document.getElementById('st-ai').textContent    = cs.avg_ai_days    != null ? fmt(cs.avg_ai_days)+'d'    : '—';
-    document.getElementById('st-final').textContent = cs.avg_final_days != null ? fmt(cs.avg_final_days)+'d' : '—';
-    document.getElementById('st-delta').textContent = cs.avg_delta_days != null
-      ? (cs.avg_delta_days>=0?'+':'')+fmt(cs.avg_delta_days)+'d' : '—';
-
-    // Dept frequency bars
-    const freq = cs.dept_frequency || {};
-    const maxFreq = Math.max(...Object.values(freq), 1);
-    const barsEl = document.getElementById('dept-freq-bars');
-    if (Object.keys(freq).length) {
-      barsEl.innerHTML = '<div style="font-size:11px;color:var(--text);font-weight:800;margin-bottom:6px">Most corrected departments:</div>' +
-        Object.entries(freq).slice(0,6).map(([d,n])=>
-          `<div class="freq-bar">
-            <span class="name">${deptLabel(d)}</span>
-            <div style="flex:1;background:var(--border);border-radius:3px;height:6px">
-              <div class="bar" style="width:${Math.round(n/maxFreq*100)}%"></div>
-            </div>
-            <span class="count">${n}</span>
-          </div>`).join('');
-    }
-
-    // Flag type breakdown
-    const flagFreq = fs.by_type || {};
-    const flagEl = document.getElementById('flag-freq');
-    if (Object.keys(flagFreq).length) {
-      flagEl.innerHTML = '<span style="color:var(--text);font-weight:600">Flags by type: </span>' +
-        Object.entries(flagFreq).map(([t,n])=>
-          `<span style="margin-left:10px">${FLAG_LABELS[t]||t} <strong style="color:var(--orange)">${n}×</strong></span>`
-        ).join('');
-    }
-  } catch {}
-}
-
 // ── Init ────────────────────────────────────────────────────────────────────
 // Wake Render on load, keep alive every 10 min
 fetch(`${API}/ping`).catch(() => {});
@@ -4348,6 +4907,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 (async()=>{
+  setTableWrapperFallbacks();
   loadUserId();
   applyProjectContext();
   loadDisplayCurrency();
@@ -4360,9 +4920,10 @@ document.addEventListener('visibilitychange', () => {
     if (!e.target.closest('.method-cell')) closeMethodologySuggestions();
   });
   await loadDeptRates();
+  loadAssetDeptRates();
   await loadFxRates();
   await checkServer();
-  await loadStats();
+  sizeTableWrappers();
 })();
 </script>
 </body>

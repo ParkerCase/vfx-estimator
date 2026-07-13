@@ -38,9 +38,11 @@ from vfx_estimator.integrations.xata import (
     upsert_preset,
 )
 from vfx_estimator.learning.flags import FlagsStore
+from vfx_estimator.llm.asset_rag import ASSET_BASELINES
 from vfx_estimator.llm.mandays_rag import SHOT_BASELINES
 from vfx_estimator.rates import build_dept_rates
 from vfx_estimator.types import (
+    AssetPresetRequest,
     FLAG_TYPES,
     PresetRequest,
     SaveBidRequest,
@@ -128,6 +130,15 @@ class CorrectionRequest(BaseModel):
 
 class BatchCorrectionsRequest(BaseModel):
     corrections: List[CorrectionRequest]
+
+
+class AssetCorrectionRequest(BaseModel):
+    asset_name: str
+    final_dept_days: Dict[str, float] = Field(default_factory=dict)
+    ai_total_days: Optional[float] = None
+    final_total_days: float = 0
+    user_id: str = "supervisor"
+    notes: str = ""
 
 
 class FlagRequest(BaseModel):
@@ -218,6 +229,115 @@ def _merged_presets(pg_url: str = "") -> Dict[str, Dict[str, Any]]:
         for key, value in load_presets(pg_url).items():
             presets[key] = {**presets.get(key, {}), **value}
     return presets
+
+
+ASSET_PRESET_COLUMNS = (
+    "modelling",
+    "texturing",
+    "rigging",
+    "cfx",
+    "fx",
+    "lookdev",
+    "dmp",
+    "comp_dev",
+)
+ASSET_PRESET_FIELDS = [*ASSET_PRESET_COLUMNS, "total"]
+
+
+def _load_asset_presets(pg_url: str) -> Dict[str, Dict[str, Any]]:
+    if not pg_url:
+        return {}
+    try:
+        import psycopg2
+
+        with psycopg2.connect(pg_url, sslmode="require") as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables
+                        WHERE table_name = 'vfx_asset_presets'
+                    )
+                    """
+                )
+                if not cur.fetchone()[0]:
+                    return {}
+                cur.execute(
+                    """
+                    SELECT asset_type, description, modelling, texturing,
+                           rigging, cfx, fx, lookdev, dmp, comp_dev,
+                           total, created_by
+                    FROM vfx_asset_presets
+                    ORDER BY asset_type
+                    """
+                )
+                cols = [
+                    "description",
+                    *ASSET_PRESET_COLUMNS,
+                    "total",
+                    "created_by",
+                ]
+                presets = {}
+                for row in cur.fetchall():
+                    data = dict(zip(cols, row[1:]))
+                    data["source"] = (
+                        "studio" if data.pop("created_by", "system") != "system" else "system"
+                    )
+                    presets[str(row[0])] = data
+                return presets
+    except Exception:
+        return {}
+
+
+def _merged_asset_presets(pg_url: str = "") -> Dict[str, Dict[str, Any]]:
+    presets = {
+        key: {**value, "source": "system"}
+        for key, value in ASSET_BASELINES.items()
+    }
+    if pg_url:
+        for key, value in _load_asset_presets(pg_url).items():
+            presets[key] = {**presets.get(key, {}), **value}
+    return presets
+
+
+def _upsert_asset_preset(pg_url: str, preset: AssetPresetRequest) -> None:
+    if not pg_url:
+        raise RuntimeError("Postgres URL not configured")
+    import psycopg2
+
+    data = preset.model_dump()
+    data["created_by"] = "studio"
+    cols = ["asset_type", "description", *ASSET_PRESET_COLUMNS, "total", "created_by"]
+    values = [
+        data.get(col, "") if col in ("asset_type", "description", "created_by") else float(data.get(col) or 0)
+        for col in cols
+    ]
+    updates = ", ".join(f"{col} = EXCLUDED.{col}" for col in cols if col != "asset_type")
+    with psycopg2.connect(pg_url, sslmode="require", connect_timeout=20) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""
+                INSERT INTO vfx_asset_presets ({", ".join(cols)})
+                VALUES ({", ".join(["%s"] * len(cols))})
+                ON CONFLICT (asset_type) DO UPDATE SET {updates}
+                """,
+                values,
+            )
+        conn.commit()
+
+
+def _delete_asset_preset(pg_url: str, asset_type: str) -> None:
+    if not pg_url:
+        raise RuntimeError("Postgres URL not configured")
+    import psycopg2
+
+    with psycopg2.connect(pg_url, sslmode="require", connect_timeout=20) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM vfx_asset_presets WHERE asset_type = %s AND created_by = 'studio'",
+                (asset_type,),
+            )
+        conn.commit()
 
 
 def _iso_row(row: Dict[str, Any], keys: tuple[str, ...]) -> Dict[str, Any]:
@@ -864,6 +984,102 @@ Return JSON only:
             "avg_delta_days": round(avg_delta, 2) if avg_delta is not None else None,
         }
 
+    @app.post("/corrections/assets")
+    def save_asset_correction(req: AssetCorrectionRequest) -> Dict[str, Any]:
+        pg_url = get_service().settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Asset corrections require XATA_POSTGRES_URL")
+        try:
+            import psycopg2
+
+            conn = psycopg2.connect(pg_url, sslmode="require")
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS vfx_asset_corrections (
+                        id SERIAL PRIMARY KEY,
+                        asset_name TEXT NOT NULL,
+                        final_dept_days JSONB DEFAULT '{}',
+                        ai_total_days FLOAT,
+                        final_total_days FLOAT NOT NULL,
+                        user_id TEXT DEFAULT 'supervisor',
+                        notes TEXT DEFAULT '',
+                        timestamp TIMESTAMPTZ DEFAULT NOW()
+                    )
+                """)
+                cur.execute("""
+                    INSERT INTO vfx_asset_corrections
+                      (asset_name, final_dept_days, ai_total_days,
+                       final_total_days, user_id, notes)
+                    VALUES (%s, %s::jsonb, %s, %s, %s, %s)
+                """, (
+                    req.asset_name,
+                    json.dumps(req.final_dept_days),
+                    req.ai_total_days,
+                    req.final_total_days,
+                    req.user_id,
+                    req.notes,
+                ))
+                conn.commit()
+            conn.close()
+        except Exception as e:
+            raise HTTPException(500, str(e)) from e
+        return {"ok": True}
+
+    @app.get("/corrections/assets/stats")
+    def asset_correction_stats() -> Dict[str, Any]:
+        pg_url = get_service().settings.resolved_xata_postgres_url()
+        if not pg_url:
+            return {"count": 0, "dept_frequency": {}}
+        try:
+            import psycopg2
+
+            conn = psycopg2.connect(pg_url, sslmode="require")
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables
+                        WHERE table_name = 'vfx_asset_corrections'
+                    )
+                """)
+                if not cur.fetchone()[0]:
+                    return {"count": 0, "dept_frequency": {}}
+
+                cur.execute("""
+                    SELECT COUNT(*),
+                           AVG(ai_total_days),
+                           AVG(final_total_days),
+                           AVG(final_total_days - COALESCE(ai_total_days, final_total_days))
+                    FROM vfx_asset_corrections
+                """)
+                row = cur.fetchone()
+                count = row[0] or 0
+                avg_ai = float(row[1]) if row[1] else None
+                avg_final = float(row[2]) if row[2] else None
+                avg_delta = float(row[3]) if row[3] else None
+
+                cur.execute("""
+                    SELECT final_dept_days FROM vfx_asset_corrections
+                """)
+                dept_freq: Dict[str, int] = {}
+                for (dept_json,) in cur.fetchall():
+                    if dept_json:
+                        for dept, days in dept_json.items():
+                            if days and float(days) > 0:
+                                dept_freq[dept] = dept_freq.get(dept, 0) + 1
+
+            conn.close()
+            return {
+                "count": count,
+                "avg_ai_days": avg_ai,
+                "avg_final_days": avg_final,
+                "avg_delta_days": avg_delta,
+                "dept_frequency": dict(
+                    sorted(dept_freq.items(), key=lambda x: -x[1])[:6]
+                ),
+            }
+        except Exception as e:
+            return {"count": 0, "dept_frequency": {}, "error": str(e)}
+
     @app.post("/flags")
     def add_flag(req: FlagRequest) -> Dict[str, Any]:
         if req.flag_type not in FLAG_TYPES:
@@ -1014,6 +1230,36 @@ Return JSON only:
         if not pg_url:
             raise HTTPException(503, "Presets require XATA_POSTGRES_URL")
         delete_preset_from_db(pg_url, shot_type)
+        return {"ok": True}
+
+    @app.get("/presets/assets")
+    def list_asset_presets() -> Dict[str, Any]:
+        """List all asset type presets."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        presets = _merged_asset_presets(pg_url)
+        return {"presets": presets, "count": len(presets)}
+
+    @app.post("/presets/assets")
+    def save_asset_preset(req: AssetPresetRequest) -> Dict[str, Any]:
+        """Save or update an asset type preset."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Asset presets require XATA_POSTGRES_URL")
+        if not req.asset_type.strip():
+            raise HTTPException(400, "asset_type required")
+        _upsert_asset_preset(pg_url, req)
+        return {"ok": True, "asset_type": req.asset_type}
+
+    @app.delete("/presets/assets/{asset_type}")
+    def delete_asset_preset(asset_type: str) -> Dict[str, Any]:
+        """Reset an asset preset back to system default."""
+        svc = get_service()
+        pg_url = svc.settings.resolved_xata_postgres_url()
+        if not pg_url:
+            raise HTTPException(503, "Asset presets require XATA_POSTGRES_URL")
+        _delete_asset_preset(pg_url, asset_type)
         return {"ok": True}
 
     return app

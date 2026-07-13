@@ -116,7 +116,14 @@ COMPLEXITY MODIFIERS:
   hero / featured:     all x1.5
   secondary:           all x1.0 (baseline)
   background/distant:  all x0.5-0.7
-  multiple variations: first variation = 100%, each additional variation = +25-30%
+
+IMPORTANT — VARIATIONS:
+  This asset has {variations} variation(s).
+  Estimate the BASE BUILD days (for the first/hero version).
+  The system will automatically calculate additional variation
+  days at 25% of base per variation.
+  Do NOT multiply by variation count in your estimate.
+  Just return the single-asset base build days.
 
 ASSET: "{name}"
 DESCRIPTION: "{description}"

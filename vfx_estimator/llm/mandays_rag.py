@@ -32,21 +32,22 @@ SHOT_BASELINES: Dict[str, Dict[str, float | str]] = {
     "blood_gore": {"description": "Blood spray, wound enhancement", "fx": 0.5, "comp_roto": 0.3, "compositing": 0.75, "total": 1.8},
     "digital_makeup": {"description": "Beauty work, aging, de-aging, scar enhancement", "matchmove": 0.75, "compositing": 2.0, "comp_roto": 0.5, "total": 3.5},
     "sky_replacement": {"description": "Sky plate replacement only", "matchmove": 0.3, "dmp": 0.5, "comp_roto": 0.5, "compositing": 1.0, "total": 2.3},
-    "set_extension_simple": {"description": "Simple set extension, DMP-based", "matchmove": 0.5, "layout": 0.5, "dmp": 1.5, "comp_roto": 0.5, "compositing": 1.25, "total": 4.5},
-    "matte_painting": {"description": "Full matte painting / DMP environment", "matchmove": 0.5, "dmp": 2.0, "comp_roto": 0.5, "compositing": 1.25, "total": 4.2},
+    "set_extension_simple": {"description": "Simple set extension, DMP-based", "matchmove": 0.5, "layout": 0.5, "dmp": 1.5, "comp_roto": 1.5, "comp_paint": 0.5, "compositing": 1.25, "total": 5.8},
+    "matte_painting": {"description": "Full matte painting / DMP environment", "matchmove": 0.5, "dmp": 2.0, "comp_roto": 1.0, "comp_paint": 0.5, "compositing": 1.25, "total": 5.2},
     "smoke_atmosphere": {"description": "Smoke, fog, mist, atmospheric particles", "matchmove": 0.3, "fx": 1.0, "compositing": 1.25, "total": 3.0},
-    "fire_enhancement": {"description": "Fire added to practical plate", "matchmove": 0.5, "fx": 1.25, "lighting": 0.75, "compositing": 1.5, "total": 4.5},
-    "explosion": {"description": "Explosion, blast, detonation", "matchmove": 0.75, "fx": 2.5, "lighting": 1.25, "compositing": 2.0, "total": 7.1},
+    "fire_enhancement": {"description": "Fire added to practical plate", "matchmove": 0.5, "fx": 1.25, "lighting": 0.75, "comp_paint": 0.5, "compositing": 1.5, "total": 5.0},
+    "explosion": {"description": "Explosion, blast, detonation", "matchmove": 0.75, "fx": 2.5, "lighting": 1.25, "comp_paint": 0.5, "compositing": 2.0, "total": 7.6},
     "water_simulation": {"description": "Water FX, ocean, splash, rain simulation", "matchmove": 0.75, "fx": 3.0, "lighting": 1.5, "compositing": 2.0, "total": 7.9},
     "destruction": {"description": "Building collapse, debris, destruction FX", "matchmove": 0.75, "fx": 3.5, "lighting": 1.5, "compositing": 2.5, "total": 9.5},
-    "cg_vehicle": {"description": "CG car, truck, ship, aircraft integration", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 1.0, "lighting": 1.25, "compositing": 1.5, "total": 6.1},
-    "cg_creature": {"description": "CG creature, animal, monster (asset excluded)", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 3.0, "cfx": 0.75, "lighting": 1.75, "compositing": 2.0, "total": 10.1},
-    "cg_character": {"description": "Full CG digital double or character", "camera_track": 1.0, "matchmove": 1.25, "layout": 0.75, "animation": 3.5, "cfx": 1.0, "lighting": 2.0, "compositing": 2.5, "total": 12.0},
-    "face_replacement": {"description": "Face swap, digital double face, likeness replacement", "matchmove": 1.0, "animation": 1.25, "lighting": 0.75, "compositing": 2.5, "total": 6.1},
+    "cg_vehicle": {"description": "CG car, truck, ship, aircraft integration", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 1.0, "lighting": 1.25, "comp_roto": 1.0, "comp_paint": 0.5, "compositing": 1.5, "total": 7.6},
+    "cg_vehicle_integration": {"description": "CG vehicle integration into live-action plate", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 1.0, "lighting": 1.25, "comp_roto": 1.0, "comp_paint": 0.5, "compositing": 1.5, "total": 7.6},
+    "cg_creature": {"description": "CG creature, animal, monster (asset excluded)", "camera_track": 1.0, "matchmove": 1.0, "layout": 0.75, "animation": 3.0, "cfx": 0.75, "lighting": 1.75, "comp_roto": 1.5, "comp_paint": 1.0, "compositing": 2.0, "total": 12.6},
+    "cg_character": {"description": "Full CG digital double or character", "camera_track": 1.0, "matchmove": 1.25, "layout": 0.75, "animation": 3.5, "cfx": 1.0, "lighting": 2.0, "comp_roto": 2.0, "comp_paint": 1.0, "compositing": 2.5, "total": 15.0},
+    "face_replacement": {"description": "Face swap, digital double face, likeness replacement", "matchmove": 1.0, "animation": 1.25, "lighting": 0.75, "comp_roto": 2.0, "comp_paint": 1.5, "compositing": 2.5, "total": 9.6},
     "cg_environment": {"description": "Full CG environment build (3D, no DMP)", "camera_track": 0.75, "layout": 1.0, "lighting": 1.5, "dmp": 1.5, "compositing": 2.0, "total": 7.4},
     "cg_environment_hero": {"description": "Hero CG environment, establishing shot quality", "camera_track": 1.0, "layout": 2.0, "lighting": 5.0, "dmp": 2.0, "compositing": 5.0, "total": 16.0},
-    "crowd_replication_dozens": {"description": "Crowd multiplication, dozens of people", "camera_track": 0.5, "matchmove": 0.75, "layout": 0.5, "animation": 2.0, "lighting": 1.0, "compositing": 1.5, "total": 6.3},
-    "crowd_replication_hundreds": {"description": "Crowd multiplication, hundreds of people", "camera_track": 1.0, "matchmove": 0.75, "layout": 0.75, "animation": 4.0, "lighting": 1.5, "compositing": 2.0, "total": 10.5},
+    "crowd_replication_dozens": {"description": "Crowd multiplication, dozens of people", "camera_track": 0.5, "matchmove": 0.75, "layout": 0.5, "animation": 2.0, "lighting": 1.0, "comp_roto": 1.0, "comp_paint": 0.5, "compositing": 1.5, "total": 7.8},
+    "crowd_replication_hundreds": {"description": "Crowd multiplication, hundreds of people", "camera_track": 1.0, "matchmove": 0.75, "layout": 0.75, "animation": 4.0, "lighting": 1.5, "comp_roto": 1.5, "comp_paint": 1.0, "compositing": 2.0, "total": 13.0},
     "crowd_replication_thousands": {"description": "Massive crowd, thousands of people", "camera_track": 1.5, "matchmove": 1.0, "layout": 1.0, "animation": 8.0, "lighting": 2.5, "compositing": 3.0, "total": 17.5},
     "cloth_hair_sim": {"description": "CFX cloth or hair simulation only", "cfx": 2.0, "lighting": 0.5, "compositing": 1.0, "total": 3.5},
 }
@@ -94,6 +95,15 @@ CG LIGHTING IS MANDATORY — NO EXCEPTIONS:
 - Any CG element requires lighting. CG without lighting is physically impossible.
 - If layout, animation, CFX, FX, CGI, 3D, digital creature, or digital double applies,
   department "lighting" must be included with at least 3 days.
+
+COMP ROTO (comp_roto) guidelines:
+- Always include for any shot with a live-action plate AND CG elements that need isolation or extraction
+- Minimum 1.0d for any CG integration shot
+- 2.0d+ for complex hair, fine detail, or handheld camera
+
+COMP PAINT (comp_paint) guidelines:
+- Include for any cleanup, beauty work, or element extension needed in comp stage
+- Minimum 0.5d for any shot where background reconstruction is needed around CG elements.
 
 2. ANIMATION = 0 for any static object (buildings, castles, palaces, environments,
    vehicles parked, static props).
@@ -301,8 +311,16 @@ def _enforce_vfx_rules(
         _set_dept(data, "lighting", lit)
 
     dept = _dept_days(data)
-    total = max(float(data.get("total_days") or 0), sum(dept.values()))
     is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc))
+    if cg > 0 and _has_cg_element(description, dept) and not is_wire_cleanup:
+        if dept.get("comp_roto", 0) <= 0:
+            roto_floor = 2.0 if re.search(r"\b(hair|fur|feather|fine detail|handheld|face)\b", desc) else 1.0
+            _set_dept(data, "comp_roto", roto_floor)
+        if dept.get("comp_paint", 0) <= 0:
+            _set_dept(data, "comp_paint", 0.5)
+
+    dept = _dept_days(data)
+    total = max(float(data.get("total_days") or 0), sum(dept.values()))
     has_3d = any(dept.get(d, 0) > 0 for d in ("layout", "animation", "lighting", "fx", "dmp"))
     if has_3d and not is_wire_cleanup:
         min_comp = max(dept.get("compositing", 0), total * 0.25)

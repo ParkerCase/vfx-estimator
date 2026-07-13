@@ -64,6 +64,40 @@ CREATE INDEX IF NOT EXISTS idx_tasks_user ON vfx_tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_bid_history_project_id ON vfx_bid_history(project_id);
 """
 
+CREATE_ASSET_PRESETS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS vfx_asset_presets (
+    id SERIAL PRIMARY KEY,
+    asset_type TEXT NOT NULL UNIQUE,
+    description TEXT DEFAULT '',
+    modelling FLOAT DEFAULT 0,
+    texturing FLOAT DEFAULT 0,
+    rigging FLOAT DEFAULT 0,
+    cfx FLOAT DEFAULT 0,
+    fx FLOAT DEFAULT 0,
+    lookdev FLOAT DEFAULT 0,
+    dmp FLOAT DEFAULT 0,
+    comp_dev FLOAT DEFAULT 0,
+    total FLOAT DEFAULT 0,
+    created_by TEXT DEFAULT 'system',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO vfx_asset_presets
+  (asset_type, description, modelling, texturing, rigging,
+   cfx, fx, lookdev, dmp, comp_dev, total)
+VALUES
+  ('hero_creature','Hero creature, full pipeline',12,6,12,5,3,4,0,2,44),
+  ('background_creature','Background/distant creature',6,3,6,1,0,2,0,1,19),
+  ('cg_vehicle_hero','Hero CG vehicle (car, ship, aircraft)',10,5,3,0,1,4,0,2,25),
+  ('cg_vehicle_background','Background CG vehicle',4,2,1,0,0,1,0,1,9),
+  ('cg_environment_hero','Hero CG environment (castle, city)',14,6,0,0,0,5,2,2,29),
+  ('cg_environment_background','Background CG environment',7,3,0,0,0,3,1,1,15),
+  ('digital_double','Digital double of actor',10,6,14,6,0,5,0,3,44),
+  ('hero_prop','Hero CG prop (featured, close camera)',4,2,0,0,0,2,0,1,9),
+  ('background_prop','Background CG prop',2,1,0,0,0,1,0,1,4)
+ON CONFLICT (asset_type) DO NOTHING;
+"""
+
 
 def _load_jsonl(path: Path) -> list[UserCorrection]:
     if not path.is_file():
@@ -96,10 +130,12 @@ def main() -> None:
             with conn.cursor() as cur:
                 cur.execute(CREATE_CORRECTIONS_TABLE_SQL)
                 cur.execute(CREATE_PRESETS_TABLE_SQL)
+                cur.execute(CREATE_ASSET_PRESETS_TABLE_SQL)
                 cur.execute(CREATE_DASHBOARD_TABLES_SQL)
             conn.commit()
         print("OK    Table vfx_corrections ready (CREATE TABLE IF NOT EXISTS)")
         print("OK    Table vfx_presets ready (CREATE TABLE IF NOT EXISTS + seed presets)")
+        print("OK    Table vfx_asset_presets ready (CREATE TABLE IF NOT EXISTS + seed presets)")
         print("OK    Dashboard auth/project/task tables ready")
     except Exception as e:
         print(f"FAIL  Could not create table: {e}")
