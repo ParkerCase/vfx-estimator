@@ -23,9 +23,50 @@
       --muted-soft:#8793aa;
       --font:    'Inter', 'Segoe UI', system-ui, sans-serif;
       --r:       10px;
+      --scroll-size: 8px;
+      --scroll-track: transparent;
+      --scroll-thumb: rgba(174,184,204,.28);
+      --scroll-thumb-hover: rgba(106,166,255,.55);
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
+
+    /* ── Modern scrollbars ── */
+    *{
+      scrollbar-width:thin;
+      scrollbar-color:var(--scroll-thumb) var(--scroll-track);
+    }
+    *::-webkit-scrollbar{
+      width:var(--scroll-size);
+      height:var(--scroll-size);
+    }
+    *::-webkit-scrollbar-track{
+      background:var(--scroll-track);
+      border-radius:999px;
+    }
+    *::-webkit-scrollbar-thumb{
+      background:var(--scroll-thumb);
+      border-radius:999px;
+      border:2px solid transparent;
+      background-clip:padding-box;
+      min-height:40px;
+    }
+    *::-webkit-scrollbar-thumb:hover{
+      background:var(--scroll-thumb-hover);
+      background-clip:padding-box;
+    }
+    *::-webkit-scrollbar-corner{background:transparent}
+    .batch-table-wrap,
+    .presets-wrap,
+    .batch-dept-summary-wrap,
+    .history-drawer-body,
+    .csv-audit-details,
+    .modal-card,
+    .col-map-preview,
+    .method-readonly,
+    textarea{
+      scrollbar-gutter:stable;
+    }
 
     /* ── Header ── */
     .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;
@@ -133,8 +174,8 @@
 
     /* ── Stats ── */
     .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:14px}
-    .stat-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-    .stat-block .n{font-size:24px;font-weight:900;color:var(--accent)}
+    .stat-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+    .stat-block .n{font-size:24px;font-weight:900;color:var(--accent);white-space:nowrap;line-height:1.12;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
     .stat-block .l{font-size:11px;color:var(--text);font-weight:700;margin-top:2px}
 
     /* ── Toast ── */
@@ -306,8 +347,8 @@
     .dept-chip{font-size:10px;padding:2px 6px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text)}
     #batch-input{width:100%;min-height:120px;padding:12px 14px;resize:vertical}
     .batch-summary{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
-    .batch-bid-summary-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
-    .batch-bid-summary-stats .stat-block .n{font-size:clamp(16px,2.2vw,26px);word-break:break-all;line-height:1.2}
+    .batch-bid-summary-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+    .batch-bid-summary-stats .stat-block .n{font-size:clamp(14px,2vw,26px)}
     .batch-dept-summary-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
     table.batch-dept-summary{width:100%;border-collapse:collapse;font-size:12px}
     .batch-dept-summary th,.batch-dept-summary td{padding:8px 12px;border:1px solid var(--border);text-align:left}
@@ -419,8 +460,8 @@
       <strong id="project-context-name"></strong>
       <span class="muted" id="project-context-date"></span>
     </div>
-    <span id="srv-pill" class="pill">checking…</span>
-    <span id="training-pill" class="pill hidden"></span>
+    <!-- <span id="srv-pill" class="pill">checking…</span> -->
+    <!-- <span id="training-pill" class="pill hidden"></span> -->
   </div>
   <div class="hdr-right">
     <label class="hdr-currency" title="Display currency — estimates always calculated in USD">
@@ -433,13 +474,13 @@
         <option value="AUD">AUD</option>
       </select>
     </label>
-    <span id="fx-pill" class="pill hidden" title="Exchange rate source"></span>
+    <!-- <span id="fx-pill" class="pill hidden" title="Exchange rate source"></span> -->
     <label class="hdr-user" title="Saved with corrections">
       Your name
       <input type="text" id="user-id" value="" maxlength="64" autocomplete="nickname" placeholder="Your name"
              oninput="saveUserId()" onchange="saveUserId()">
     </label>
-    <span id="corr-pill" class="pill">0 corrections</span>
+    <!-- <span id="corr-pill" class="pill">0 corrections</span> -->
     <button type="button" class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="togglePresetsPanel()"
       title="Shot type baselines">Presets</button>
     <button type="button" class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="openHistoryDrawer()"
@@ -730,9 +771,13 @@
         <div class="sec-label">Asset Breakdown</div>
         <span class="muted" style="font-size:12px">Build days for CG assets — modelling, rigging, etc.</span>
       </div>
-      <div class="drop-zone" id="asset-drop-zone" onclick="document.getElementById('asset-file-input').click()">
-        <div>Drop asset CSV or Excel here</div>
-        <div class="muted" style="font-size:12px;margin-top:4px">or <span style="color:var(--accent)">browse</span> — expects ITEM#, ASSET DESCRIPTION, ASSET ASSUMPTIONS</div>
+      <div class="batch-drop-zone" id="asset-drop-zone" onclick="document.getElementById('asset-file-input').click()">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">
+          Drop asset CSV or Excel here, or click to upload
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:4px">
+          CSV, .xlsx, .xls — expects ITEM#, ASSET DESCRIPTION, ASSET ASSUMPTIONS
+        </div>
         <input type="file" id="asset-file-input" class="hidden" accept=".csv,.xlsx,.xls" onchange="onAssetFileSelected(this)">
         <div id="asset-file-name" class="upload-file-pill"></div>
       </div>
@@ -741,9 +786,10 @@
         <a href="#" onclick="downloadSampleAssetCsv(); return false;">Download a sample CSV</a>
       </div>
       <div style="margin:10px 0;color:var(--muted);font-size:12px;text-align:center">— or —</div>
+      <p style="font-size:12px;color:var(--muted);margin:14px 0 8px">Paste asset names (one per line):</p>
       <textarea id="asset-paste" rows="3"
         placeholder="Paste asset names (one per line):&#10;CG Dragon — Hero Creature&#10;CG Castle Environment&#10;CG Warship — Background"
-        style="width:100%;resize:vertical"></textarea>
+        style="width:100%;min-height:88px;padding:12px 14px;resize:vertical"></textarea>
       <div class="prequal-toggle" id="asset-pq-toggle" onclick="toggleAssetContext()" style="margin-top:12px">
         <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
         <span>Asset Context <span class="muted">(optional)</span></span>
@@ -781,28 +827,32 @@
         </div>
       </div>
       <div class="btn-row" style="margin-top:14px">
-        <button class="btn-blue" id="asset-est-btn" onclick="runAssetEstimate()" style="flex:1">Estimate Assets</button>
+        <button class="btn-blue" id="asset-est-btn" onclick="runAssetEstimate()">Estimate Assets</button>
         <button id="asset-stop-btn" style="display:none" class="btn-red" onclick="stopAssets()">⏹ Stop</button>
       </div>
       <div id="asset-progress" class="hidden" style="margin-top:12px">
         <div class="progress-track"><div class="progress-fill" id="asset-progress-fill" style="width:0%"></div></div>
         <div id="asset-progress-label" class="muted" style="font-size:12px;margin-top:4px">Starting...</div>
       </div>
-      <div id="asset-results" class="hidden" style="margin-top:16px">
-        <div class="batch-table-wrap">
-          <table class="batch-table" id="asset-table">
-            <thead id="asset-thead"></thead>
-            <tbody id="asset-tbody"></tbody>
-          </table>
-        </div>
-        <div id="asset-dept-summary" style="margin-top:16px"></div>
-        <div class="batch-bar" style="margin-top:0">
-          <span id="asset-summary" style="color:var(--muted);font-size:13px"></span>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn-green with-icon" onclick="saveAssetCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save Corrections</button>
-            <button class="btn-ghost" onclick="exportAssetCsv()">↓ Export CSV</button>
-            <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
-          </div>
+    </div>
+
+    <div id="asset-results" class="card hidden" style="padding-bottom:8px">
+      <div class="table-card-header">
+        <span class="sec-label" style="margin:0">Results</span>
+      </div>
+      <div class="batch-table-wrap">
+        <table class="batch-table" id="asset-table">
+          <thead id="asset-thead"></thead>
+          <tbody id="asset-tbody"></tbody>
+        </table>
+      </div>
+      <div id="asset-dept-summary" style="margin-top:16px"></div>
+      <div class="batch-bar">
+        <span id="asset-summary" style="font-size:13px;color:var(--text);font-weight:700">—</span>
+        <div class="btn-row" style="margin:0">
+          <button class="btn-green with-icon" onclick="saveAssetCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save Corrections</button>
+          <button class="btn-ghost with-icon" onclick="exportAssetCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
+          <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
         </div>
       </div>
     </div>
@@ -1050,7 +1100,7 @@ const DEFAULT_ASSET_DEPT_RATES = {
   rigging: 800,
   cfx: 800,
   fx: 850,
-  dmp: 750,
+  dmp: 800,
   lookdev: 750,
   comp_dev: 700,
 };
@@ -1176,6 +1226,21 @@ function toggleCsvAuditDetails() {
 
 function fmt(n, d=1) {
   return typeof n==='number' ? n.toFixed(d) : '—';
+}
+
+function fitStatNumbers(scope = document) {
+  requestAnimationFrame(() => {
+    scope.querySelectorAll?.('.stat-block .n')?.forEach(el => {
+      el.style.fontSize = '';
+      el.style.whiteSpace = 'nowrap';
+      let size = parseFloat(getComputedStyle(el).fontSize) || 24;
+      const minSize = 11;
+      while (el.scrollWidth > el.clientWidth && size > minSize) {
+        size -= 1;
+        el.style.fontSize = `${size}px`;
+      }
+    });
+  });
 }
 
 function deptLabel(k) { return DEPT_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
@@ -1521,18 +1586,22 @@ async function checkServer() {
   try {
     const r = await fetch(`${API}/health`);
     const d = await r.json();
-    pill.innerHTML = `${iconSvg('check', 'icon icon-sm')} ${d.gemini_configured ? 'API online · Gemini ready' : 'API online · no Gemini key'}`;
-    pill.className = 'pill ok';
-    cpill.textContent = `${d.corrections} corrections  ·  ${d.flags||0} flags`;
-    if (d.training_shots > 0) {
+    if (pill) {
+      pill.innerHTML = `${iconSvg('check', 'icon icon-sm')} ${d.gemini_configured ? 'API online · Gemini ready' : 'API online · no Gemini key'}`;
+      pill.className = 'pill ok';
+    }
+    if (cpill) cpill.textContent = `${d.corrections} corrections  ·  ${d.flags||0} flags`;
+    if (tpill && d.training_shots > 0) {
       const source = d.training_count_source === 'xata' ? 'live Xata' : 'local';
       tpill.textContent = `${d.training_shots.toLocaleString()} training shots · ${source}`;
       tpill.className = 'pill ok';
       tpill.classList.remove('hidden');
     }
   } catch {
-    pill.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} API offline — start with: python -m scripts.run_api`;
-    pill.className = 'pill err';
+    if (pill) {
+      pill.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} API offline — start with: python -m scripts.run_api`;
+      pill.className = 'pill err';
+    }
   }
 }
 
@@ -1597,7 +1666,7 @@ function sizeTableWrappers() {
     shotWrap.style.maxHeight = Math.max(320, available) + 'px';
   }
 
-  const assetWrap = document.querySelector('#asset-card .batch-table-wrap');
+  const assetWrap = document.querySelector('#asset-results .batch-table-wrap');
   if (assetWrap) {
     const top = assetWrap.getBoundingClientRect().top;
     const available = window.innerHeight - top - 80;
@@ -2488,6 +2557,7 @@ function renderBatchBidSummary(stats) {
   statsEl.innerHTML = statBlocks
     .map(s => `<div class="stat-block"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`)
     .join('');
+  fitStatNumbers(statsEl);
 
   if (!stats.deptRows.length) {
     body.innerHTML = `<tr><td colspan="4" style="color:var(--muted);font-style:italic">No department breakdown available.</td></tr>`;
@@ -3536,6 +3606,20 @@ function buildAssetTableHeader() {
   document.getElementById('asset-tbody').innerHTML = '';
 }
 
+function applyAssetColVisibility() {
+  buildAssetTableHeader();
+  if (_assetResults && _assetResults.length > 0) {
+    _assetResults.forEach((result, idx) => {
+      if (result && _assetInputs[idx]) {
+        appendAssetResultRow(idx, _assetInputs[idx], result);
+      }
+    });
+    updateAssetSummary();
+    updateCombinedSummary();
+    sizeTableWrappers();
+  }
+}
+
 function readAssetRowDeptDays(tr) {
   const deptDays = {};
   tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
@@ -3557,6 +3641,8 @@ function renderAssetDaysCell(totalDays, baseDays, variations) {
 
 function appendAssetResultRow(idx, asset, result) {
   const tbody = document.getElementById('asset-tbody');
+  _assetInputs[idx] = asset;
+  _assetResults[idx] = result;
   const depts = result.departments || {};
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
   const deptCells = visibleDepts.map(bidDept => {
@@ -3764,6 +3850,7 @@ function renderAssetDeptSummary(assetStats) {
         </tfoot>
       </table>
     </div>`;
+  fitStatNumbers(wrap);
 }
 
 function currentShotStats() {
@@ -3795,6 +3882,7 @@ function updateCombinedSummary(shotStats) {
   document.getElementById('cs-asset-cost').textContent = money(assetStats.totalCost);
   document.getElementById('cs-total-days').textContent = fmt(totalDays) + 'd';
   document.getElementById('cs-gross-total').textContent = money(grossCost);
+  fitStatNumbers(document.getElementById('combined-summary') || document);
   const netSummary = computeBidNetSummary(grossCost);
   updateTaxCreditDisplay(grossCost);
   renderFxMultiSummary(grossCost, netSummary.net);
