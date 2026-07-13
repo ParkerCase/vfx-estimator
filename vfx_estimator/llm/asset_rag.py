@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, Optional
 
 from vfx_estimator.config import Settings
@@ -121,7 +122,7 @@ IMPORTANT — VARIATIONS:
   This asset has {variations} variation(s).
   Estimate the BASE BUILD days (for the first/hero version).
   The system will automatically calculate additional variation
-  days at 25% of base per variation.
+  days at 30% of base per variation.
   Do NOT multiply by variation count in your estimate.
   Just return the single-asset base build days.
 
@@ -143,6 +144,7 @@ Return JSON only:
     "rigging": {{"days": 12}},
     "lookdev": {{"days": 4}},
     "cfx": {{"days": 5}},
+    "dmp": {{"days": 0}},
     "comp_dev": {{"days": 2}}
   }},
   "total_days": 41,
@@ -176,6 +178,42 @@ def _dept_days(data: Dict[str, Any]) -> Dict[str, float]:
         if days > 0:
             out[str(key)] = days
     return out
+
+
+def _set_dept(data: Dict[str, Any], key: str, days: float) -> None:
+    departments = data.setdefault("departments", {})
+    if not isinstance(departments, dict):
+        departments = {}
+        data["departments"] = departments
+    departments[key] = {"days": max(0.0, float(days))}
+
+
+def _enforce_asset_dmp(asset: Any, result: Dict[str, Any]) -> None:
+    text = " ".join(
+        str(part or "")
+        for part in (
+            getattr(asset, "asset_name", ""),
+            getattr(asset, "description", ""),
+            result.get("baseline_used", ""),
+            result.get("reasoning", ""),
+        )
+    ).lower()
+    needs_dmp = bool(
+        re.search(
+            r"\b(environment|castle|city|set extension|matte|dmp|background plate|vista|landscape|establishing)\b",
+            text,
+        )
+    )
+    creature_or_character = bool(
+        re.search(r"\b(creature|dragon|character|digital double|vehicle|prop)\b", text)
+    )
+    if not needs_dmp or creature_or_character and not re.search(r"\b(environment|castle|city|matte|dmp)\b", text):
+        return
+    dept = _dept_days(result)
+    if dept.get("dmp", 0) > 0:
+        return
+    days = 2.0 if re.search(r"\b(hero|establishing|castle|city|matte|dmp)\b", text) else 1.0
+    _set_dept(result, "dmp", days)
 
 
 def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Settings) -> Dict[str, Any]:
@@ -215,6 +253,7 @@ def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Se
             "reasoning": "Estimation failed -- no Gemini response",
         }
     print(f"[asset_estimate] SUCCESS — got keys: {list(result.keys())}", flush=True)
+    _enforce_asset_dmp(asset, result)
     dept = _dept_days(result)
     if dept:
         result["total_days"] = round(sum(dept.values()) * 2) / 2
