@@ -769,22 +769,24 @@
 
     <div class="section-divider"><div></div>VFX ASSET BREAKDOWN<div></div></div>
 
-    <div class="card" id="asset-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="sec-label">Asset Breakdown</div>
-        <span class="muted" style="font-size:12px">Build days for CG assets — modelling, rigging, etc.</span>
-      </div>
-      <div class="prequal-toggle" onclick="toggleAssetRatesPanel()" style="margin-bottom:12px">
-        <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
-        <span>Asset Dept Rates</span>
-        <span id="asset-rates-arrow" style="margin-left:auto;font-size:11px">▾</span>
-      </div>
-      <div id="asset-rates-panel" class="hidden" style="margin-top:-4px;margin-bottom:12px;padding:14px;background:var(--card2);border-radius:var(--r)">
+    <div class="prequal-toggle" id="asset-rates-toggle" onclick="toggleAssetRatesPanel()">
+      <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
+      <span>Asset Dept Rates (<span id="asset-rates-currency-label">USD</span>/day)</span>
+      <span id="asset-rates-summary" style="margin-left:auto;font-size:11px;font-weight:400">loading…</span>
+    </div>
+    <div id="asset-rates-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
+        <div class="sec-label" style="margin-bottom:10px">Asset build rates by department</div>
         <div class="rates-grid" id="asset-rates-grid"></div>
         <div class="rates-hint muted" style="font-size:11px;margin-top:6px">
           Rates shown in <span id="asset-rates-currency">USD</span>/day.
           Changes apply to all future asset cost calculations.
         </div>
+    </div>
+
+    <div class="card" id="asset-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="sec-label">Asset Breakdown</div>
+        <span class="muted" style="font-size:12px">Build days for CG assets — modelling, rigging, etc.</span>
       </div>
       <div class="batch-drop-zone" id="asset-drop-zone" onclick="document.getElementById('asset-file-input').click()">
         <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">
@@ -1315,6 +1317,8 @@ function onDisplayCurrencyChange(code) {
 function updateRatesCurrencyLabels() {
   const lbl = document.getElementById('rates-currency-label');
   if (lbl) lbl.textContent = _displayCurrency;
+  const assetLbl = document.getElementById('asset-rates-currency-label');
+  if (assetLbl) assetLbl.textContent = _displayCurrency;
   const assetCur = document.getElementById('asset-rates-currency');
   if (assetCur) assetCur.textContent = _displayCurrency;
 }
@@ -1447,6 +1451,13 @@ function setAssetDeptRate(deptKey, valueInDisplayCurrency) {
   try {
     localStorage.setItem(ASSET_DEPT_RATES_STORAGE_KEY, JSON.stringify(_assetDeptRates));
   } catch {}
+  updateAssetRatesSummary();
+}
+
+function updateAssetRatesSummary() {
+  const el = document.getElementById('asset-rates-summary');
+  if (!el) return;
+  el.textContent = `Model ${money(getAssetDeptRateUsd('modelling'))} · DMP ${money(getAssetDeptRateUsd('dmp'))} · CDev ${money(getAssetDeptRateUsd('comp_dev'))}`;
 }
 
 function buildAssetRatesPanel() {
@@ -1464,14 +1475,13 @@ function buildAssetRatesPanel() {
     </div>`).join('');
   const cur = document.getElementById('asset-rates-currency');
   if (cur) cur.textContent = _displayCurrency;
+  updateAssetRatesSummary();
 }
 
 function toggleAssetRatesPanel() {
   const panel = document.getElementById('asset-rates-panel');
-  const arrow = document.getElementById('asset-rates-arrow');
-  const toggle = panel?.previousElementSibling;
+  const toggle = document.getElementById('asset-rates-toggle');
   const hidden = panel.classList.toggle('hidden');
-  if (arrow) arrow.textContent = hidden ? '▾' : '▴';
   if (toggle) toggle.classList.toggle('open', !hidden);
   if (!hidden) buildAssetRatesPanel();
   sizeTableWrappers();
@@ -3412,6 +3422,52 @@ function bidDeptToAssetInternal(bidDept) {
   return assetInternalKey(bidDept);
 }
 
+function readAssetDeptDaysValue(raw) {
+  const value = typeof raw === 'object' ? raw?.days : raw;
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function assetShouldUseDmp(asset, result) {
+  const text = [
+    asset?.asset_name,
+    asset?.description,
+    asset?.asset_assumptions,
+    asset?.notes,
+    result?.asset_type,
+    result?.reasoning,
+  ].filter(Boolean).join(' ').toLowerCase();
+  const dmpSignals = /\b(environment|enviro|matte|dmp|set extension|vista|landscape|city|castle|terrain|sky|mountain|establishing|background plate)\b/;
+  const nonDmpSignals = /\b(creature|character|dragon|monster|animal|person|face|prop|weapon|vehicle|ship|car|rig|cloth|groom)\b/;
+  return dmpSignals.test(text) && !nonDmpSignals.test(text);
+}
+
+function suggestedAssetDmpDays(asset, result) {
+  const text = [
+    asset?.asset_name,
+    asset?.description,
+    asset?.asset_assumptions,
+    result?.asset_type,
+  ].filter(Boolean).join(' ').toLowerCase();
+  if (/\b(hero|establishing|matte|set extension|full cg|vista|castle|city)\b/.test(text)) return 4;
+  return 2;
+}
+
+function normalizeAssetDmp(asset, result) {
+  if (!result || !assetShouldUseDmp(asset, result)) return result;
+  const departments = result.departments || {};
+  const existing = readAssetDeptDaysValue(departments.dmp);
+  const dmpDays = Math.max(existing, suggestedAssetDmpDays(asset, result));
+  departments.dmp = { days: dmpDays };
+  result.departments = departments;
+
+  const deptTotal = Object.values(departments).reduce((sum, raw) => sum + readAssetDeptDaysValue(raw), 0);
+  if (deptTotal > (parseFloat(result.total_days) || 0)) {
+    result.total_days = Math.round(deptTotal * 10) / 10;
+  }
+  return result;
+}
+
 const ASSET_COLUMN_ALIASES = {
   item_number: [
     'item#', 'item', 'item no', 'item number', '#', 'no', 'number',
@@ -3650,6 +3706,7 @@ function renderAssetDaysCell(totalDays, baseDays, variations) {
 function appendAssetResultRow(idx, asset, result) {
   const tbody = document.getElementById('asset-tbody');
   _assetInputs[idx] = asset;
+  result = normalizeAssetDmp(asset, result);
   _assetResults[idx] = result;
   const depts = result.departments || {};
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
@@ -3657,7 +3714,8 @@ function appendAssetResultRow(idx, asset, result) {
     const key = assetInternalKey(bidDept);
     const raw = depts[key];
     const days = typeof raw === 'object' ? raw?.days : raw;
-    return `<td><input type="number" class="bid-dept-inp" value="${days || ''}" min="0" step="0.5"
+    const value = Number.isFinite(parseFloat(days)) ? parseFloat(days) : '';
+    return `<td><input type="number" class="bid-dept-inp" value="${value}" placeholder="0" min="0" step="0.5"
       data-asset-idx="${idx}" data-asset-dept="${escAttr(bidDept)}" oninput="updateAssetRowTotal(this)"></td>`;
   }).join('');
   const deptSum = visibleDepts.reduce((s, bidDept) => {
