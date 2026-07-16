@@ -25,7 +25,13 @@ BID_DEPT_MAP: Dict[str, str] = {
 
 INTERNAL_TO_BID: Dict[str, str] = {v: k for k, v in BID_DEPT_MAP.items()}
 
-BID_OUTPUT_COLUMNS: List[str] = list(BID_DEPT_MAP.keys()) + ["TOTAL MANDAYS"]
+BID_OUTPUT_COLUMNS: List[str] = list(BID_DEPT_MAP.keys()) + ["TOTAL PRODUCTION DAYS"]
+# Legacy CSV / LVL UP templates may still use this header name.
+BID_TOTAL_DAYS_ALIASES: List[str] = [
+    "TOTAL PRODUCTION DAYS",
+    "TOTAL PROD DAYS",
+    "TOTAL MANDAYS",
+]
 
 
 def bid_departments_to_internal(dept_days: Dict[str, float]) -> Dict[str, float]:

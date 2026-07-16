@@ -2,10 +2,25 @@
   "version": 2,
   "framework": null,
   "installCommand": "",
-  "buildCommand": "cp frontend/dashboard.html frontend/index.html && cp frontend/estimate_ui.html frontend/estimate.html",
+  "buildCommand": "cp frontend/landing.html frontend/index.html && cp frontend/dashboard.html frontend/dashboard-page.html && cp frontend/estimate_ui.html frontend/estimate.html",
   "outputDirectory": "frontend",
   "rewrites": [
-    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard-page.html" },
     { "source": "/estimate", "destination": "/estimate.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        }
+      ]
+    }
   ]
 }

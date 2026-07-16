@@ -643,9 +643,10 @@ def save_bid_history(
 def list_bid_history(
     pg_url: str,
     user_id: Optional[str] = None,
+    project_id: Optional[int] = None,
     limit: int = 20,
 ) -> List[Dict[str, Any]]:
-    """List recent bids, optionally filtered by user."""
+    """List recent bids, optionally filtered by user and project."""
     if not pg_url:
         return []
     try:
@@ -656,32 +657,31 @@ def list_bid_history(
     conn = psycopg2.connect(pg_url, connect_timeout=20)
     try:
         with conn.cursor() as cur:
+            where = []
+            params: List[Any] = []
             if user_id:
-                cur.execute(
-                    """
-                    SELECT id, project_name, user_id, shot_count,
-                           total_mandays, created_at, notes
-                    FROM vfx_bid_history
-                    WHERE user_id = %s
-                    ORDER BY created_at DESC LIMIT %s
-                    """,
-                    (user_id, limit),
-                )
-            else:
-                cur.execute(
-                    """
-                    SELECT id, project_name, user_id, shot_count,
-                           total_mandays, created_at, notes
-                    FROM vfx_bid_history
-                    ORDER BY created_at DESC LIMIT %s
-                    """,
-                    (limit,),
-                )
+                where.append("user_id = %s")
+                params.append(user_id)
+            if project_id is not None:
+                where.append("project_id = %s")
+                params.append(project_id)
+            where_sql = f"WHERE {' AND '.join(where)}" if where else ""
+            cur.execute(
+                f"""
+                SELECT id, project_name, user_id, project_id, shot_count,
+                       total_mandays, created_at, notes
+                FROM vfx_bid_history
+                {where_sql}
+                ORDER BY created_at DESC LIMIT %s
+                """,
+                (*params, limit),
+            )
 
             cols = [
                 "id",
                 "project_name",
                 "user_id",
+                "project_id",
                 "shot_count",
                 "total_mandays",
                 "created_at",
@@ -710,7 +710,7 @@ def get_bid_history(pg_url: str, bid_id: int) -> Optional[Dict[str, Any]]:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
                 """
-                SELECT id, project_name, user_id, shot_count,
+                SELECT id, project_name, user_id, project_id, shot_count,
                        total_mandays, shots, pre_qual,
                        created_at, notes
                 FROM vfx_bid_history WHERE id = %s

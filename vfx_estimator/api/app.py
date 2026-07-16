@@ -619,6 +619,7 @@ def create_app() -> FastAPI:
                     (user["id"],),
                 )
                 bid_count, total_mandays, avg_shots = cur.fetchone()
+                print(f"[dashboard_stats] user_id={user['id']} bids={bid_count}", flush=True)
                 cur.execute(
                     "SELECT COUNT(*) FROM vfx_corrections WHERE user_id = %s",
                     (user["id"],),
@@ -824,6 +825,41 @@ def create_app() -> FastAPI:
             compute_ranges=_compute_adjustment_ranges,
         )
         return attach_csv_export(payload, artifact=artifact, project=proj, day_rate=rate)
+
+    @app.post("/extract-text")
+    async def extract_text(file: UploadFile = File(...)) -> Dict[str, Any]:
+        """Extract plain text from PDF, Word, or text uploads."""
+        content = await file.read()
+        filename = (file.filename or "").lower()
+        if not content:
+            return {"text": "", "chars": 0, "error": "uploaded file is empty"}
+
+        try:
+            if filename.endswith(".pdf"):
+                import io
+                try:
+                    import pypdf
+
+                    reader = pypdf.PdfReader(io.BytesIO(content))
+                    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+                except ImportError:
+                    import pdfplumber
+
+                    with pdfplumber.open(io.BytesIO(content)) as pdf:
+                        text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            elif filename.endswith(".docx"):
+                import io
+                from docx import Document
+
+                doc = Document(io.BytesIO(content))
+                text = "\n".join(p.text for p in doc.paragraphs)
+            else:
+                text = content.decode("utf-8", errors="ignore")
+
+            text = text.strip()
+            return {"text": text, "chars": len(text)}
+        except Exception as exc:
+            return {"text": "", "chars": 0, "error": str(exc)}
 
     @app.post("/suggest-methodology")
     def suggest_methodology(req: SuggestMethodologyRequest) -> Dict[str, Any]:
@@ -1163,13 +1199,17 @@ Return JSON only:
         return {"ok": True, "bid_id": bid_id}
 
     @app.get("/bid-history")
-    def list_bids(user_id: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+    def list_bids(
+        user_id: Optional[str] = None,
+        project_id: Optional[int] = None,
+        limit: int = 20,
+    ) -> Dict[str, Any]:
         """List saved bids."""
         svc = get_service()
         pg_url = svc.settings.resolved_xata_postgres_url()
         if not pg_url:
             return {"bids": [], "count": 0}
-        bids = list_bid_history(pg_url, user_id=user_id, limit=limit)
+        bids = list_bid_history(pg_url, user_id=user_id, project_id=project_id, limit=limit)
         for b in bids:
             created = b.get("created_at")
             if created is not None and hasattr(created, "isoformat"):

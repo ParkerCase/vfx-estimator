@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bid IQ — Price VFX like a formula</title>
+  <meta name="description" content="Bid IQ turns complex VFX breakdowns into department days and cost in minutes — so anyone on the bid desk can price a show with confidence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --ink: #07080b;
+      --panel: #10131a;
+      --line: rgba(232, 236, 244, 0.12);
+      --text: #e8ecf4;
+      --mute: #8b93a7;
+      --amber: #e2a53a;
+      --amber-soft: rgba(226, 165, 58, 0.16);
+      --mint: #6fd9a8;
+      --danger: #ff7a6e;
+      --font-display: "Syne", "Avenir Next", sans-serif;
+      --font-body: "Public Sans", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--font-body);
+      background:
+        radial-gradient(1200px 700px at 78% -10%, rgba(226, 165, 58, 0.14), transparent 55%),
+        radial-gradient(900px 500px at 8% 18%, rgba(111, 217, 168, 0.07), transparent 50%),
+        linear-gradient(180deg, #0b0d12 0%, var(--ink) 42%, #090b10 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0 10px;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+    .brand span { color: var(--amber); }
+    .top-link {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .top-link:hover { border-color: rgba(226, 165, 58, 0.55); color: var(--amber); }
+
+    .hero {
+      min-height: calc(100vh - 84px);
+      display: grid;
+      align-content: center;
+      padding: 36px 0 72px;
+      position: relative;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 8% -8% auto auto;
+      width: min(52vw, 620px);
+      height: min(58vh, 520px);
+      pointer-events: none;
+      opacity: 0.55;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 48px 48px,
+        linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 48px 48px;
+      mask-image: radial-gradient(ellipse at 60% 40%, #000 20%, transparent 72%);
+      animation: gridDrift 18s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-24px, 18px, 0); }
+    }
+
+    .hero-brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(56px, 11vw, 118px);
+      line-height: 0.9;
+      letter-spacing: -0.055em;
+      margin: 0 0 22px;
+      max-width: 10ch;
+    }
+    .hero-brand em {
+      font-style: normal;
+      color: var(--amber);
+    }
+
+    .hero h2 {
+      margin: 0 0 14px;
+      max-width: 16ch;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(26px, 4.2vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p.lead {
+      margin: 0 0 28px;
+      max-width: 42ch;
+      color: var(--mute);
+      font-size: clamp(16px, 1.7vw, 18px);
+      line-height: 1.55;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px 18px;
+    }
+
+    #google-btn {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .signin-error {
+      margin-top: 14px;
+      color: var(--danger);
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 42ch;
+      display: none;
+    }
+    .signin-error.show { display: block; }
+
+    .ticker {
+      margin-top: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 28px;
+      color: var(--mute);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .ticker strong {
+      color: var(--mint);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 88px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      max-width: 18ch;
+    }
+    .section > p {
+      margin: 0 0 36px;
+      color: var(--mute);
+      max-width: 48ch;
+      line-height: 1.55;
+      font-size: 16px;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+    .compare-col {
+      padding: 8px 0;
+    }
+    .compare-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin-bottom: 14px;
+    }
+    .compare-col h4 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+    .compare-col p {
+      margin: 0;
+      color: var(--mute);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+    .compare-arrow {
+      align-self: center;
+      color: var(--amber);
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 28px;
+      counter-reset: step;
+    }
+    .step {
+      padding-top: 8px;
+      border-top: 2px solid rgba(226, 165, 58, 0.55);
+    }
+    .step::before {
+      counter-increment: step;
+      content: "0" counter(step);
+      display: block;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+    .step h4 {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+    .step p {
+      margin: 0;
+      color: var(--mute);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .close {
+      padding: 72px 0 96px;
+      border-top: 1px solid var(--line);
+    }
+    .close-inner {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 28px;
+      align-items: end;
+    }
+    .close h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4.5vw, 48px);
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+      max-width: 14ch;
+    }
+    .close p {
+      margin: 0;
+      color: var(--mute);
+      max-width: 40ch;
+      line-height: 1.55;
+    }
+    .close-panel {
+      background: linear-gradient(160deg, rgba(226, 165, 58, 0.12), transparent 60%), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+    }
+    .close-panel .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin-bottom: 14px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 22px 0 36px;
+      color: var(--mute);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid { opacity: 0.28; width: 80vw; }
+      .compare { grid-template-columns: 1fr; }
+      .compare-arrow { transform: rotate(90deg); justify-self: start; }
+      .steps { grid-template-columns: 1fr; }
+      .close-inner { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">Bid <span>IQ</span></div>
+      <a class="top-link" href="#signin">Sign in</a>
+    </header>
+
+    <section class="hero" id="signin">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <p class="hero-brand">Bid <em>IQ</em></p>
+      <h2>Price a VFX show like a formula — not a week of tribal math.</h2>
+      <p class="lead">
+        Upload the breakdown. Bid IQ turns shot scope into department days and cost
+        in minutes, so anyone on the desk can defend a number with confidence.
+      </p>
+      <div class="cta-row">
+        <div id="google-btn"></div>
+      </div>
+      <div id="signin-error" class="signin-error" role="alert"></div>
+      <div class="ticker" aria-hidden="true">
+        <span>Typical bid desk: <strong id="t-old">5–10 days</strong></span>
+        <span>With Bid IQ: <strong id="t-new">under an hour</strong></span>
+        <span>Output: <strong>days · cost · methodology</strong></span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>The hard part was never the spreadsheet.</h3>
+      <p>
+        It was translating messy notes into department reality — then arguing
+        whether the number would hold. Bid IQ makes that judgment repeatable.
+      </p>
+      <div class="compare">
+        <div class="compare-col">
+          <div class="compare-label">Before</div>
+          <h4>Guesswork dressed as experience</h4>
+          <p>
+            Senior estimators carry the model in their heads. Juniors wait.
+            Methodology gets lost between versions. Pricing a mid-size show
+            stretches into days of back-and-forth.
+          </p>
+        </div>
+        <div class="compare-arrow" aria-hidden="true">→</div>
+        <div class="compare-col">
+          <div class="compare-label">With Bid IQ</div>
+          <h4>A clean appraisal anyone can run</h4>
+          <p>
+            Descriptions become department allocations. Rates apply instantly.
+            Corrections teach the next bid. The same science — faster, clearer,
+            and ready to show the client.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>Three moves. Then you have a bid.</h3>
+      <p>No dashboard theatre — just the path from CSV to a number you can stand behind.</p>
+      <div class="steps">
+        <div class="step">
+          <h4>Drop the breakdown</h4>
+          <p>Shot lists, asset sheets, even rough notes. Bid IQ maps columns and reads scope the way a supervisor would.</p>
+        </div>
+        <div class="step">
+          <h4>Watch days land</h4>
+          <p>Production and asset departments fill in with confidence scores. Adjust rates, toggles, and methodology in place.</p>
+        </div>
+        <div class="step">
+          <h4>Export the defense</h4>
+          <p>Save history under a project, pull scene totals, and walk into the room with cost that is already explained.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="close">
+      <div class="close-inner">
+        <div>
+          <h3>Open the desk. Price the show.</h3>
+          <p>Sign in with Google to enter your projects, estimator, and bid history.</p>
+        </div>
+        <div class="close-panel">
+          <div class="label">Continue</div>
+          <div id="google-btn-secondary"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Bid IQ · VFX appraisal for the bid desk</span>
+      <span>Already signed in? <a href="/dashboard" style="color:var(--amber)">Go to dashboard</a></span>
+    </footer>
+  </div>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:8090'
+  : 'https://vfx-estimator.onrender.com';
+
+let GOOGLE_CLIENT_ID = '';
+
+function loadSession() {
+  try {
+    const token = localStorage.getItem('vfx_auth_token');
+    const user = JSON.parse(localStorage.getItem('vfx_user') || 'null');
+    return token && user ? { token, user } : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(user, token) {
+  localStorage.setItem('vfx_auth_token', token);
+  localStorage.setItem('vfx_user', JSON.stringify(user));
+}
+
+function showError(msg) {
+  const el = document.getElementById('signin-error');
+  el.textContent = msg || 'Sign-in failed';
+  el.classList.add('show');
+}
+
+async function loadAuthConfig() {
+  try {
+    const r = await fetch(`${API}/auth/config`);
+    const d = await r.json();
+    GOOGLE_CLIENT_ID = d.google_client_id || '';
+  } catch {
+    GOOGLE_CLIENT_ID = '';
+  }
+}
+
+function waitForGoogle() {
+  return new Promise((resolve, reject) => {
+    let n = 0;
+    const t = setInterval(() => {
+      if (window.google?.accounts?.id) {
+        clearInterval(t);
+        resolve();
+      } else if (++n > 100) {
+        clearInterval(t);
+        reject(new Error('Google Identity script did not load. Check network / ad blockers.'));
+      }
+    }, 100);
+  });
+}
+
+async function handleGoogleCredential(response) {
+  try {
+    if (!response?.credential) {
+      throw new Error('Google did not return a credential. Try again, or check that this site is listed under Authorized JavaScript origins.');
+    }
+    const r = await fetch(`${API}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
+    });
+    let data = {};
+    try { data = await r.json(); } catch {
+      throw new Error(r.ok ? 'Invalid server response' : 'Sign-in failed — API unreachable');
+    }
+    if (!r.ok || !data.ok) {
+      const detail = data.detail;
+      throw new Error(
+        typeof detail === 'string' ? detail
+          : Array.isArray(detail) ? detail.map(d => d.msg || d).join(', ')
+          : 'Sign-in failed'
+      );
+    }
+    saveSession(data.user, response.credential);
+    window.location.href = '/dashboard';
+  } catch (e) {
+    showError(e.message || 'Sign-in failed');
+  }
+}
+
+function renderGoogleButtons() {
+  const opts = {
+    theme: 'filled_black',
+    size: 'large',
+    text: 'signin_with',
+    shape: 'pill',
+    width: 280,
+  };
+  const primary = document.getElementById('google-btn');
+  const secondary = document.getElementById('google-btn-secondary');
+  if (primary) {
+    primary.innerHTML = '';
+    google.accounts.id.renderButton(primary, opts);
+  }
+  if (secondary) {
+    secondary.innerHTML = '';
+    google.accounts.id.renderButton(secondary, { ...opts, width: 240 });
+  }
+}
+
+async function initGoogleSignIn() {
+  if (!GOOGLE_CLIENT_ID) {
+    showError('GOOGLE_CLIENT_ID is not configured on the API. Set it on Render, then reload.');
+    return;
+  }
+  try {
+    await waitForGoogle();
+    // FedCM + popup-friendly COOP avoids the postMessage blocker on Chromium.
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential,
+      ux_mode: 'popup',
+      use_fedcm_for_prompt: true,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+    });
+    renderGoogleButtons();
+  } catch (e) {
+    showError(e.message || 'Could not start Google Sign-In');
+  }
+}
+
+(async () => {
+  const session = loadSession();
+  if (session) {
+    window.location.replace('/dashboard');
+    return;
+  }
+  await loadAuthConfig();
+  await initGoogleSignIn();
+})();
+</script>
+</body>
+</html>

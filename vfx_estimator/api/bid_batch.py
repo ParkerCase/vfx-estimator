@@ -18,6 +18,7 @@ from vfx_estimator.rates import build_dept_rates, compute_shot_cost
 from vfx_estimator.types import (
     BID_DEPT_MAP,
     BID_OUTPUT_COLUMNS,
+    BID_TOTAL_DAYS_ALIASES,
     BidPreQual,
     ShotEstimate,
     bid_departments_to_internal,
@@ -590,10 +591,27 @@ def _ensure_output_columns(artifact: LvlupCsvArtifact) -> None:
     header = artifact.all_rows[artifact.header_idx]
     existing = {_norm_header(c) for c in header}
     for col in BID_OUTPUT_COLUMNS:
-        if col not in existing:
+        # Prefer existing TOTAL MANDAYS / TOTAL PROD DAYS columns on studio templates.
+        if col == "TOTAL PRODUCTION DAYS":
+            if any(_norm_header(a) in existing for a in BID_TOTAL_DAYS_ALIASES):
+                continue
+        if _norm_header(col) not in existing:
             header.append(col)
             artifact.col_map[col] = len(header) - 1
     artifact.all_rows[artifact.header_idx] = header
+
+
+def _set_total_production_days(set_cell, col_map: Dict[str, int], row: List[str], value: Any) -> None:
+    """Write total days into whatever total-days header the sheet already uses."""
+    for alias in BID_TOTAL_DAYS_ALIASES:
+        if alias in col_map:
+            set_cell(row, alias, value)
+            return
+    for key in col_map:
+        if _norm_header(key) in {_norm_header(a) for a in BID_TOTAL_DAYS_ALIASES}:
+            set_cell(row, key, value)
+            return
+    set_cell(row, "TOTAL PRODUCTION DAYS", value)
 
 
 def build_filled_bid_csv(
@@ -621,7 +639,7 @@ def build_filled_bid_csv(
         bid_dept = result.get("dept_days") or {}
         for dept_col in BID_DEPT_MAP:
             set_cell(row, dept_col, bid_dept.get(dept_col, 0))
-        set_cell(row, "TOTAL MANDAYS", result.get("total_mandays", 0))
+        _set_total_production_days(set_cell, col, row, result.get("total_mandays", 0))
 
     buf = io.StringIO()
     writer = csv.writer(buf)
@@ -634,7 +652,7 @@ def build_simple_export_csv(results: List[Dict[str, Any]], project: str) -> byte
     header = (
         ["ITEM#", "VFX SHOT CODE", "DESCRIPTION", "VFX NOTES"]
         + list(BID_DEPT_MAP.keys())
-        + ["TOTAL MANDAYS"]
+        + ["TOTAL PRODUCTION DAYS"]
     )
     buf = io.StringIO()
     writer = csv.writer(buf)

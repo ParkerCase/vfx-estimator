@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VFX Estimator AI Dashboard</title>
+  <title>Bid IQ — Dashboard</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root{
@@ -20,11 +20,7 @@
     .btn-ghost:hover{border-color:var(--accent)}
     .btn-accent,.qa-btn{background:linear-gradient(135deg,#4f8ef7,#6ea8ff);border:none;color:#fff;border-radius:10px;padding:10px 15px;font-weight:900}
     .btn-accent-sm{background:var(--accent);border:none;color:#fff;border-radius:8px;width:34px;font-weight:900}
-    #sign-in-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .signin-card{width:min(460px,100%);background:var(--card);border:1px solid var(--border);border-radius:22px;padding:42px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-    .logo,.dash-logo{font-weight:950;letter-spacing:1.1px;color:var(--text-strong)}
-    .signin-card .logo{font-size:24px;margin-bottom:14px}.tagline{color:var(--muted);margin-bottom:28px}
-    #google-btn{display:flex;justify-content:center}.signin-error{margin-top:14px;color:var(--orange);font-size:13px;line-height:1.45}
+    .dash-logo{font-weight:950;letter-spacing:1.1px;color:var(--text-strong)}
     .dash-header{height:68px;border-bottom:1px solid var(--border);background:rgba(18,24,38,.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
     .dash-user{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card2)}
     .dash-main{max-width:1180px;margin:0 auto;padding:28px}
@@ -50,18 +46,9 @@
   </style>
 </head>
 <body>
-  <div id="sign-in-screen">
-    <div class="signin-card">
-      <div class="logo">VFX ESTIMATOR AI</div>
-      <div class="tagline">AI-powered bid estimation for film &amp; TV</div>
-      <div id="google-btn"></div>
-      <div id="signin-error" class="signin-error hidden"></div>
-    </div>
-  </div>
-
-  <div id="dashboard-screen" style="display:none">
+  <div id="dashboard-screen">
     <header class="dash-header">
-      <div class="dash-logo">VFX ESTIMATOR AI</div>
+      <div class="dash-logo">Bid IQ</div>
       <input class="dash-search" style="max-width:320px" placeholder="Search projects..." oninput="filterProjects(this.value)">
       <div class="dash-user">
         <img id="user-avatar" src="" class="avatar" alt="">
@@ -87,7 +74,7 @@
       <div class="kpi-grid">
         <div class="kpi-card"><div class="kpi-value" id="kpi-projects">-</div><div class="kpi-label">Active Projects</div></div>
         <div class="kpi-card"><div class="kpi-value" id="kpi-bids">-</div><div class="kpi-label">Total Bids</div></div>
-        <div class="kpi-card"><div class="kpi-value" id="kpi-mandays">-</div><div class="kpi-label">Mandays Estimated</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="kpi-mandays">-</div><div class="kpi-label">Production Days</div></div>
         <div class="kpi-card"><div class="kpi-value" id="kpi-corrections">-</div><div class="kpi-label">AI Corrections Made</div></div>
       </div>
 
@@ -146,7 +133,6 @@
 const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
-let GOOGLE_CLIENT_ID = '';
 let _user = null;
 let _token = null;
 let _projects = [];
@@ -154,40 +140,10 @@ let _projects = [];
 function esc(s){return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function escJs(s){return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
 function loadSession(){try{_token=localStorage.getItem('vfx_auth_token');const saved=localStorage.getItem('vfx_user');_user=saved?JSON.parse(saved):null}catch{}}
-function saveSession(user, token){_user=user;_token=token;localStorage.setItem('vfx_auth_token',token);localStorage.setItem('vfx_user',JSON.stringify(user))}
 function clearSession(){_user=null;_token=null;localStorage.removeItem('vfx_auth_token');localStorage.removeItem('vfx_user');try{google.accounts.id.disableAutoSelect()}catch{}}
 function authHeaders(){return {Authorization:`Bearer ${_token}`}}
-async function loadAuthConfig(){try{const r=await fetch(`${API}/auth/config`);const d=await r.json();GOOGLE_CLIENT_ID=d.google_client_id||''}catch{}}
-function waitForGoogle(){return new Promise((resolve,reject)=>{let n=0;const t=setInterval(()=>{if(window.google?.accounts?.id){clearInterval(t);resolve()}else if(++n>80){clearInterval(t);reject(new Error('Google Identity script did not load'))}},100)})}
-
-async function handleGoogleCredential(response){
-  const errEl=document.getElementById('signin-error');
-  try{
-    const r=await fetch(`${API}/auth/google`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})});
-    let data={};
-    try{data=await r.json()}catch{throw new Error(r.ok?'Invalid server response':'Sign-in failed — server unreachable')}
-    if(!r.ok || !data.ok){
-      const detail=data.detail;
-      throw new Error(typeof detail==='string'?detail:Array.isArray(detail)?detail.map(d=>d.msg||d).join(', '):'Sign-in failed');
-    }
-    saveSession(data.user,response.credential);
-    showDashboard();
-  }catch(e){errEl.textContent=e.message||'Sign-in failed';errEl.classList.remove('hidden')}
-}
-function signOut(){clearSession();showSignIn()}
-async function showSignIn(){
-  document.getElementById('sign-in-screen').style.display='flex';
-  document.getElementById('dashboard-screen').style.display='none';
-  if(!GOOGLE_CLIENT_ID){document.getElementById('signin-error').textContent='GOOGLE_CLIENT_ID is not configured.';document.getElementById('signin-error').classList.remove('hidden');return}
-  try{
-    await waitForGoogle();
-    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
-    google.accounts.id.renderButton(document.getElementById('google-btn'),{theme:'outline',size:'large',text:'sign_in_with',shape:'rectangular',width:300});
-  }catch(e){document.getElementById('signin-error').textContent=e.message;document.getElementById('signin-error').classList.remove('hidden')}
-}
+function signOut(){clearSession();window.location.href='/'}
 async function showDashboard(){
-  document.getElementById('sign-in-screen').style.display='none';
-  document.getElementById('dashboard-screen').style.display='block';
   document.getElementById('user-avatar').src=_user?.picture||'';
   document.getElementById('user-name-display').textContent=_user?.name||_user?.email||'';
   updateGreeting();
@@ -254,13 +210,17 @@ async function loadAiRecommendations(){
   try{
     const q=_user?.id?`?user_id=${encodeURIComponent(_user.id)}&limit=10`:'?limit=10';
     const r=await fetch(`${API}/bid-history${q}`,{headers:authHeaders()});const data=await r.json();const bids=data.bids||[];
-    if(bids[0]) recs.push({icon:'💡',text:`Your last bid (${bids[0].project_name}) had ${bids[0].shot_count} shots and ${Math.round(Number(bids[0].total_mandays||0)*10)/10} mandays.`});
+    if(bids[0]) recs.push({icon:'💡',text:`Your last bid (${bids[0].project_name}) had ${bids[0].shot_count} shots and ${Math.round(Number(bids[0].total_mandays||0)*10)/10} production days.`});
     recs.push({icon:'🏷️',text:'Tip: Add a methodology column to your CSV for more accurate department estimates.'});
     recs.push({icon:'📋',text:'Corrections improve accuracy - reviewed bids make the AI smarter for your workflow.'});
   }catch{}
   container.innerHTML=recs.slice(0,4).map(r=>`<div class="rec-item"><span class="rec-icon">${r.icon}</span><span class="rec-text">${esc(r.text)}</span></div>`).join('') || '<div class="muted" style="padding:8px">Run some bids to see recommendations</div>';
 }
-(async()=>{await loadAuthConfig();loadSession();if(_user&&_token) showDashboard();else showSignIn()})();
+(async()=>{
+  loadSession();
+  if(!_user||!_token){window.location.replace('/');return}
+  await showDashboard();
+})();
 </script>
 </body>
 </html>

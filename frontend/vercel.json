@@ -2,6 +2,19 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "",
-  "buildCommand": "cp estimate_ui.html index.html",
-  "outputDirectory": "."
+  "buildCommand": "cp landing.html index.html && cp dashboard.html dashboard-page.html && cp estimate_ui.html estimate.html",
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/dashboard-page.html" },
+    { "source": "/estimate", "destination": "/estimate.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "unsafe-none" }
+      ]
+    }
+  ]
 }
