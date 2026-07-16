@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
       --ink: #07080b;
@@ -286,19 +285,17 @@
       color: var(--mute);
       margin-bottom: 14px;
     }
-    #google-btn {
-      min-height: 44px;
-      display: flex;
-      align-items: center;
+    .close-panel .top-link {
+      display: inline-flex;
+      background: var(--amber);
+      color: #12100a;
+      border-color: transparent;
     }
-    .signin-error {
-      margin-top: 12px;
-      color: var(--danger);
-      font-size: 13px;
-      line-height: 1.45;
-      display: none;
+    .close-panel .top-link:hover {
+      filter: brightness(1.05);
+      color: #12100a;
+      border-color: transparent;
     }
-    .signin-error.show { display: block; }
 
     footer {
       border-top: 1px solid var(--line);
@@ -324,7 +321,7 @@
   <div class="wrap">
     <header class="top">
       <div class="brand">Bid <span>IQ</span></div>
-      <a class="top-link" href="#signin">Sign in</a>
+      <a class="top-link" href="/signin">Sign in</a>
     </header>
 
     <section class="hero">
@@ -337,7 +334,7 @@
       </p>
       <div class="ticker" aria-hidden="true">
         <span>Typical bid desk: <strong id="t-old">5–10 days</strong></span>
-        <span>With Bid IQ: <strong id="t-new">under an hour</strong></span>
+        <span>With Bid IQ: <strong id="t-new">minutes</strong></span>
         <span>Output: <strong>days · cost · methodology</strong></span>
       </div>
     </section>
@@ -390,7 +387,7 @@
       </div>
     </section>
 
-    <section class="close" id="signin">
+    <section class="close">
       <div class="close-inner">
         <div>
           <h3>Open the desk. Price the show.</h3>
@@ -398,8 +395,7 @@
         </div>
         <div class="close-panel">
           <div class="label">Continue</div>
-          <div id="google-btn"></div>
-          <div id="signin-error" class="signin-error" role="alert"></div>
+          <a class="top-link" href="/signin">Sign in with Google</a>
         </div>
       </div>
     </section>
@@ -411,12 +407,6 @@
   </div>
 
 <script>
-const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'http://127.0.0.1:8090'
-  : 'https://vfx-estimator.onrender.com';
-
-let GOOGLE_CLIENT_ID = '';
-
 function loadSession() {
   try {
     const token = localStorage.getItem('vfx_auth_token');
@@ -427,114 +417,8 @@ function loadSession() {
   }
 }
 
-function saveSession(user, token) {
-  localStorage.setItem('vfx_auth_token', token);
-  localStorage.setItem('vfx_user', JSON.stringify(user));
-}
-
-function showError(msg) {
-  const el = document.getElementById('signin-error');
-  el.textContent = msg || 'Sign-in failed';
-  el.classList.add('show');
-}
-
-async function loadAuthConfig() {
-  try {
-    const r = await fetch(`${API}/auth/config`);
-    const d = await r.json();
-    GOOGLE_CLIENT_ID = d.google_client_id || '';
-  } catch {
-    GOOGLE_CLIENT_ID = '';
-  }
-}
-
-function waitForGoogle() {
-  return new Promise((resolve, reject) => {
-    let n = 0;
-    const t = setInterval(() => {
-      if (window.google?.accounts?.id) {
-        clearInterval(t);
-        resolve();
-      } else if (++n > 100) {
-        clearInterval(t);
-        reject(new Error('Google Identity script did not load. Check network / ad blockers.'));
-      }
-    }, 100);
-  });
-}
-
-async function handleGoogleCredential(response) {
-  try {
-    if (!response?.credential) {
-      throw new Error('Google did not return a credential. Try again, or check that this site is listed under Authorized JavaScript origins.');
-    }
-    const r = await fetch(`${API}/auth/google`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: response.credential }),
-    });
-    let data = {};
-    try { data = await r.json(); } catch {
-      throw new Error(r.ok ? 'Invalid server response' : 'Sign-in failed — API unreachable');
-    }
-    if (!r.ok || !data.ok) {
-      const detail = data.detail;
-      throw new Error(
-        typeof detail === 'string' ? detail
-          : Array.isArray(detail) ? detail.map(d => d.msg || d).join(', ')
-          : 'Sign-in failed'
-      );
-    }
-    saveSession(data.user, response.credential);
-    window.location.href = '/dashboard';
-  } catch (e) {
-    showError(e.message || 'Sign-in failed');
-  }
-}
-
-function renderGoogleButtons() {
-  const primary = document.getElementById('google-btn');
-  if (!primary) return;
-  primary.innerHTML = '';
-  google.accounts.id.renderButton(primary, {
-    theme: 'filled_black',
-    size: 'large',
-    text: 'signin_with',
-    shape: 'pill',
-    width: 280,
-  });
-}
-
-async function initGoogleSignIn() {
-  if (!GOOGLE_CLIENT_ID) {
-    showError('GOOGLE_CLIENT_ID is not configured on the API. Set it on Render, then reload.');
-    return;
-  }
-  try {
-    await waitForGoogle();
-    // FedCM + popup-friendly COOP avoids the postMessage blocker on Chromium.
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredential,
-      ux_mode: 'popup',
-      use_fedcm_for_prompt: true,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-    });
-    renderGoogleButtons();
-  } catch (e) {
-    showError(e.message || 'Could not start Google Sign-In');
-  }
-}
-
-(async () => {
-  const session = loadSession();
-  if (session) {
-    window.location.replace('/dashboard');
-    return;
-  }
-  await loadAuthConfig();
-  await initGoogleSignIn();
+(() => {
+  if (loadSession()) window.location.replace('/dashboard');
 })();
 </script>
 </body>
