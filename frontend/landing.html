@@ -133,38 +133,15 @@
     }
 
     .hero p.lead {
-      margin: 0 0 28px;
+      margin: 0 0 36px;
       max-width: 42ch;
       color: var(--mute);
       font-size: clamp(16px, 1.7vw, 18px);
       line-height: 1.55;
     }
 
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px 18px;
-    }
-
-    #google-btn {
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-    }
-
-    .signin-error {
-      margin-top: 14px;
-      color: var(--danger);
-      font-size: 13px;
-      line-height: 1.45;
-      max-width: 42ch;
-      display: none;
-    }
-    .signin-error.show { display: block; }
-
     .ticker {
-      margin-top: 48px;
+      margin-top: 8px;
       display: flex;
       flex-wrap: wrap;
       gap: 10px 28px;
@@ -309,6 +286,19 @@
       color: var(--mute);
       margin-bottom: 14px;
     }
+    #google-btn {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .signin-error {
+      margin-top: 12px;
+      color: var(--danger);
+      font-size: 13px;
+      line-height: 1.45;
+      display: none;
+    }
+    .signin-error.show { display: block; }
 
     footer {
       border-top: 1px solid var(--line);
@@ -337,7 +327,7 @@
       <a class="top-link" href="#signin">Sign in</a>
     </header>
 
-    <section class="hero" id="signin">
+    <section class="hero">
       <div class="hero-grid" aria-hidden="true"></div>
       <p class="hero-brand">Bid <em>IQ</em></p>
       <h2>Price a VFX show like a formula — not a week of tribal math.</h2>
@@ -345,10 +335,6 @@
         Upload the breakdown. Bid IQ turns shot scope into department days and cost
         in minutes, so anyone on the desk can defend a number with confidence.
       </p>
-      <div class="cta-row">
-        <div id="google-btn"></div>
-      </div>
-      <div id="signin-error" class="signin-error" role="alert"></div>
       <div class="ticker" aria-hidden="true">
         <span>Typical bid desk: <strong id="t-old">5–10 days</strong></span>
         <span>With Bid IQ: <strong id="t-new">under an hour</strong></span>
@@ -404,7 +390,7 @@
       </div>
     </section>
 
-    <section class="close">
+    <section class="close" id="signin">
       <div class="close-inner">
         <div>
           <h3>Open the desk. Price the show.</h3>
@@ -412,7 +398,8 @@
         </div>
         <div class="close-panel">
           <div class="label">Continue</div>
-          <div id="google-btn-secondary"></div>
+          <div id="google-btn"></div>
+          <div id="signin-error" class="signin-error" role="alert"></div>
         </div>
       </div>
     </section>
@@ -506,23 +493,16 @@ async function handleGoogleCredential(response) {
 }
 
 function renderGoogleButtons() {
-  const opts = {
+  const primary = document.getElementById('google-btn');
+  if (!primary) return;
+  primary.innerHTML = '';
+  google.accounts.id.renderButton(primary, {
     theme: 'filled_black',
     size: 'large',
     text: 'signin_with',
     shape: 'pill',
     width: 280,
-  };
-  const primary = document.getElementById('google-btn');
-  const secondary = document.getElementById('google-btn-secondary');
-  if (primary) {
-    primary.innerHTML = '';
-    google.accounts.id.renderButton(primary, opts);
-  }
-  if (secondary) {
-    secondary.innerHTML = '';
-    google.accounts.id.renderButton(secondary, { ...opts, width: 240 });
-  }
+  });
 }
 
 async function initGoogleSignIn() {
