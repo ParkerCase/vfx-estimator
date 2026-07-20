@@ -3,24 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bid IQ — Price VFX like a formula</title>
-  <meta name="description" content="Bid IQ turns complex VFX breakdowns into department days and cost in minutes — so anyone on the bid desk can price a show with confidence.">
+  <title>Bid IQ — Bid every shot before a single frame renders</title>
+  <meta name="description" content="Bid IQ turns scripts, shot lists and asset breakdowns into defensible VFX bids — every shot and every asset priced in minutes, not weeks.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #07080b;
-      --panel: #10131a;
-      --line: rgba(232, 236, 244, 0.12);
-      --text: #e8ecf4;
-      --mute: #8b93a7;
-      --amber: #e2a53a;
-      --amber-soft: rgba(226, 165, 58, 0.16);
-      --mint: #6fd9a8;
-      --danger: #ff7a6e;
-      --font-display: "Syne", "Avenir Next", sans-serif;
-      --font-body: "Public Sans", "Helvetica Neue", sans-serif;
+      --bg: #050506;
+      --text: #f7f7f7;
+      --mute: #8a8b94;
+      --mute2: #5c5d66;
+      --line: rgba(247, 247, 247, 0.1);
+      --accent: #456aed;
+      --accent-soft: rgba(69, 106, 237, 0.18);
+      --panel: #0c0c0e;
+      --font-display: "Outfit", "Avenir Next", sans-serif;
+      --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -30,379 +29,730 @@
       min-height: 100vh;
       color: var(--text);
       font-family: var(--font-body);
-      background:
-        radial-gradient(1200px 700px at 78% -10%, rgba(226, 165, 58, 0.14), transparent 55%),
-        radial-gradient(900px 500px at 8% 18%, rgba(111, 217, 168, 0.07), transparent 50%),
-        linear-gradient(180deg, #0b0d12 0%, var(--ink) 42%, #090b10 100%);
+      background: var(--bg);
       overflow-x: hidden;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.045;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      z-index: 0;
-    }
-
     a { color: inherit; text-decoration: none; }
-    button { font: inherit; cursor: pointer; }
+    button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+
     .wrap {
-      width: min(1120px, calc(100% - 40px));
+      width: min(1120px, calc(100% - 48px));
       margin: 0 auto;
       position: relative;
-      z-index: 1;
     }
 
+    /* ── Nav ── */
     .top {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 40;
+      padding: 18px 0;
+      background: linear-gradient(180deg, rgba(5,5,6,0.92), rgba(5,5,6,0));
+    }
+    .top-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 22px 0 10px;
     }
     .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: -0.03em;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
-    .brand span { color: var(--amber); }
-    .top-link {
-      border: 1px solid var(--line);
-      background: transparent;
-      color: var(--text);
-      border-radius: 999px;
-      padding: 9px 16px;
-      font-size: 13px;
-      font-weight: 600;
+    .brand-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+      transition: transform 0.35s ease;
     }
-    .top-link:hover { border-color: rgba(226, 165, 58, 0.55); color: var(--amber); }
+    .brand:hover .brand-mark { transform: rotate(45deg); }
 
+    .btn-demo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 22px;
+      border-radius: 999px;
+      background: #fff;
+      color: #0a0a0b;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .btn-demo:hover { transform: translateY(-1px); opacity: 0.92; }
+
+    .btn-portal {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 26px;
+      border-radius: 999px;
+      background: #cfcfd4;
+      color: #0a0a0b;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .btn-portal:hover { background: #fff; transform: translateY(-1px); }
+    .btn-portal .arrow { font-size: 14px; line-height: 1; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(247, 247, 247, 0.35);
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(247, 247, 247, 0.7);
+      background: rgba(247, 247, 247, 0.04);
+    }
+
+    /* ── Hero ── */
     .hero {
-      min-height: calc(100vh - 84px);
-      display: grid;
-      align-content: center;
-      padding: 36px 0 72px;
       position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 110px 0 72px;
+      overflow: hidden;
+    }
+
+    .hero-media {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 70% 40%;
+      opacity: 0.55;
+      transform: scale(1.04);
+      animation: heroDrift 28s ease-in-out infinite alternate;
+    }
+    .hero-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(5,5,6,0.72) 0%, rgba(5,5,6,0.25) 38%, rgba(5,5,6,0.88) 100%),
+        linear-gradient(90deg, rgba(5,5,6,0.78) 0%, rgba(5,5,6,0.2) 55%, transparent 75%);
     }
 
     .hero-grid {
       position: absolute;
-      inset: 8% -8% auto auto;
-      width: min(52vw, 620px);
-      height: min(58vh, 520px);
+      inset: 0;
+      z-index: 1;
       pointer-events: none;
-      opacity: 0.55;
+      opacity: 0.22;
       background:
-        linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 48px 48px,
-        linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 48px 48px;
-      mask-image: radial-gradient(ellipse at 60% 40%, #000 20%, transparent 72%);
-      animation: gridDrift 18s linear infinite;
+        linear-gradient(rgba(247,247,247,0.09) 1px, transparent 1px) 0 0 / 56px 56px,
+        linear-gradient(90deg, rgba(247,247,247,0.09) 1px, transparent 1px) 0 0 / 56px 56px;
+      mask-image: radial-gradient(ellipse at 70% 35%, #000 15%, transparent 68%);
+      animation: gridDrift 22s linear infinite;
+      perspective: 800px;
+      transform: rotateX(58deg) scale(1.6);
+      transform-origin: 50% 0%;
     }
 
+    .crosshair {
+      position: absolute;
+      z-index: 1;
+      width: 14px;
+      height: 14px;
+      color: rgba(247, 247, 247, 0.28);
+      font-size: 12px;
+      line-height: 14px;
+      text-align: center;
+      pointer-events: none;
+      animation: crossPulse 5s ease-in-out infinite;
+    }
+    .crosshair:nth-child(1) { top: 22%; left: 12%; animation-delay: 0s; }
+    .crosshair:nth-child(2) { top: 38%; right: 18%; animation-delay: 1.2s; }
+    .crosshair:nth-child(3) { top: 58%; left: 28%; animation-delay: 2.1s; }
+    .crosshair:nth-child(4) { bottom: 28%; right: 12%; animation-delay: 0.6s; }
+
+    @keyframes heroDrift {
+      from { transform: scale(1.04) translate3d(0, 0, 0); }
+      to { transform: scale(1.08) translate3d(-1.5%, 1%, 0); }
+    }
     @keyframes gridDrift {
-      from { transform: translate3d(0, 0, 0); }
-      to { transform: translate3d(-24px, 18px, 0); }
+      from { background-position: 0 0, 0 0; }
+      to { background-position: 56px 40px, 56px 40px; }
+    }
+    @keyframes crossPulse {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 0.55; }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 22px;
+      color: var(--mute);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
     }
 
     .hero-brand {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: clamp(56px, 11vw, 118px);
-      line-height: 0.9;
-      letter-spacing: -0.055em;
-      margin: 0 0 22px;
-      max-width: 10ch;
-    }
-    .hero-brand em {
-      font-style: normal;
-      color: var(--amber);
-    }
-
-    .hero h2 {
-      margin: 0 0 14px;
-      max-width: 16ch;
+      margin: 0 0 18px;
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: clamp(26px, 4.2vw, 42px);
-      line-height: 1.08;
-      letter-spacing: -0.03em;
+      font-size: clamp(48px, 9vw, 92px);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
     }
+    .hero-brand span { color: var(--accent); }
 
-    .hero p.lead {
+    .hero h1 {
+      margin: 0 0 22px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(34px, 5.6vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      max-width: 14ch;
+    }
+    .hero h1 .dim { color: var(--mute); }
+
+    .hero .lead {
       margin: 0 0 36px;
-      max-width: 42ch;
+      max-width: 46ch;
       color: var(--mute);
-      font-size: clamp(16px, 1.7vw, 18px);
-      line-height: 1.55;
+      font-size: clamp(15px, 1.5vw, 17px);
+      line-height: 1.6;
     }
 
-    .ticker {
-      margin-top: 8px;
+    .hero-ctas {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 28px;
-      color: var(--mute);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-    .ticker strong {
-      color: var(--mint);
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
+      gap: 12px;
     }
 
+    .scroll-hint {
+      margin-top: 48px;
+      color: var(--mute2);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    /* ── Marquee ── */
+    .marquee-wrap {
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 5, 6, 0.7);
+      overflow: hidden;
+      padding: 16px 0;
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      gap: 10px;
+      animation: marquee 40s linear infinite;
+    }
+    .marquee-track span {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--mute);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    /* ── Sections ── */
     .section {
-      padding: 88px 0;
+      padding: 108px 0;
       border-top: 1px solid var(--line);
     }
 
-    .section h3 {
-      margin: 0 0 12px;
+    .sec-label {
+      margin: 0 0 18px;
+      color: var(--mute);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
       font-family: var(--font-display);
-      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      font-size: clamp(30px, 4.4vw, 48px);
       letter-spacing: -0.035em;
       line-height: 1.05;
       max-width: 18ch;
     }
-    .section > p {
-      margin: 0 0 36px;
+
+    .section > .lede {
+      margin: 0 0 48px;
       color: var(--mute);
       max-width: 48ch;
-      line-height: 1.55;
+      line-height: 1.6;
       font-size: 16px;
     }
 
-    .compare {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 22px;
-      align-items: stretch;
-    }
-    .compare-col {
-      padding: 8px 0;
-    }
-    .compare-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--mute);
-      margin-bottom: 14px;
-    }
-    .compare-col h4 {
-      margin: 0 0 10px;
-      font-family: var(--font-display);
-      font-size: 24px;
-      letter-spacing: -0.03em;
-    }
-    .compare-col p {
-      margin: 0;
-      color: var(--mute);
-      line-height: 1.55;
-      font-size: 15px;
-    }
-    .compare-arrow {
-      align-self: center;
-      color: var(--amber);
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .steps {
+    .process {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 28px;
-      counter-reset: step;
+      gap: 36px;
     }
-    .step {
-      padding-top: 8px;
-      border-top: 2px solid rgba(226, 165, 58, 0.55);
+    .process-item {
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
     }
-    .step::before {
-      counter-increment: step;
-      content: "0" counter(step);
-      display: block;
+    .process-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 18px;
+      color: var(--mute2);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .process-meta strong {
+      color: var(--accent);
+      font-weight: 600;
       font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--amber);
-      letter-spacing: 0.08em;
-      margin-bottom: 14px;
     }
-    .step h4 {
-      margin: 0 0 8px;
+    .process-item h3 {
+      margin: 0 0 12px;
       font-family: var(--font-display);
-      font-size: 22px;
+      font-weight: 600;
+      font-size: 28px;
       letter-spacing: -0.03em;
     }
-    .step p {
+    .process-item p {
       margin: 0;
       color: var(--mute);
-      line-height: 1.55;
+      line-height: 1.6;
       font-size: 15px;
     }
 
-    .close {
-      padding: 72px 0 96px;
-      border-top: 1px solid var(--line);
-    }
-    .close-inner {
+    .audience {
       display: grid;
-      grid-template-columns: 1.3fr 0.7fr;
-      gap: 28px;
-      align-items: end;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
     }
-    .close h3 {
-      margin: 0 0 12px;
+    .audience article {
+      background: var(--bg);
+      padding: 28px 24px;
+      min-height: 160px;
+    }
+    .audience .n {
+      display: block;
+      margin-bottom: 18px;
+      color: var(--accent);
       font-family: var(--font-display);
-      font-size: clamp(30px, 4.5vw, 48px);
-      letter-spacing: -0.04em;
-      line-height: 1.02;
-      max-width: 14ch;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
     }
-    .close p {
+    .audience h3 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+    .audience p {
       margin: 0;
       color: var(--mute);
-      max-width: 40ch;
+      font-size: 14px;
       line-height: 1.55;
     }
-    .close-panel {
-      background: linear-gradient(160deg, rgba(226, 165, 58, 0.12), transparent 60%), var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 22px;
+
+    .caps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 28px 32px;
     }
-    .close-panel .label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+    .cap {
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    .cap h3 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .cap p {
+      margin: 0;
       color: var(--mute);
-      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.55;
     }
-    .close-panel .top-link {
-      display: inline-flex;
-      background: var(--amber);
-      color: #12100a;
-      border-color: transparent;
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 24px;
+      margin-top: 56px;
+      padding-top: 36px;
+      border-top: 1px solid var(--line);
     }
-    .close-panel .top-link:hover {
-      filter: brightness(1.05);
-      color: #12100a;
-      border-color: transparent;
+    .stat .n {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .stat .l {
+      color: var(--mute);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* ── Close ── */
+    .close {
+      position: relative;
+      padding: 120px 0 100px;
+      border-top: 1px solid var(--line);
+      overflow: hidden;
+    }
+    .close-media {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .close-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.22;
+    }
+    .close-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, var(--bg) 0%, rgba(5,5,6,0.55) 40%, var(--bg) 100%);
+    }
+    .close-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+    }
+    .close h2 {
+      margin: 0 0 16px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(36px, 5.5vw, 56px);
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+      max-width: 12ch;
+    }
+    .close p {
+      margin: 0 0 32px;
+      color: var(--mute);
+      max-width: 42ch;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+    .close-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     footer {
       border-top: 1px solid var(--line);
-      padding: 22px 0 36px;
-      color: var(--mute);
+      padding: 28px 0 40px;
+      color: var(--mute2);
       font-size: 13px;
       display: flex;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
     }
+    footer a { color: var(--mute); }
+    footer a:hover { color: var(--text); }
 
-    @media (max-width: 860px) {
-      .hero-grid { opacity: 0.28; width: 80vw; }
-      .compare { grid-template-columns: 1fr; }
-      .compare-arrow { transform: rotate(90deg); justify-self: start; }
-      .steps { grid-template-columns: 1fr; }
-      .close-inner { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .process, .caps, .stats { grid-template-columns: 1fr 1fr; }
+      .audience { grid-template-columns: 1fr 1fr; }
+      .scroll-hint { display: none; }
+    }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 32px, 1120px); }
+      .hero { padding: 108px 0 40px; min-height: 92vh; }
+      .hero h1 { max-width: none; }
+      .process, .caps, .stats, .audience { grid-template-columns: 1fr; }
+      .section { padding: 72px 0; }
+      .close { padding: 80px 0 72px; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <div class="brand">Bid <span>IQ</span></div>
-      <a class="top-link" href="/signin">Sign in</a>
-    </header>
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"></span>
+        Bid IQ
+      </a>
+      <a class="btn-demo" href="/signin">Sign in</a>
+    </div>
+  </header>
 
-    <section class="hero">
-      <div class="hero-grid" aria-hidden="true"></div>
-      <p class="hero-brand">Bid <em>IQ</em></p>
-      <h2>Price a VFX show like a formula — not a week of tribal math.</h2>
+  <section class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <img
+        src="https://images.unsplash.com/photo-1533134755454-9549758f0e06?auto=format&fit=crop&w=2400&q=80"
+        alt=""
+        decoding="async"
+      >
+    </div>
+    <div class="hero-grid" aria-hidden="true"></div>
+    <span class="crosshair" aria-hidden="true">+</span>
+    <span class="crosshair" aria-hidden="true">×</span>
+    <span class="crosshair" aria-hidden="true">+</span>
+    <span class="crosshair" aria-hidden="true">×</span>
+
+    <div class="wrap hero-content">
+      <p class="eyebrow">AI bidding for visual effects</p>
+      <p class="hero-brand">Bid <span>IQ</span></p>
+      <h1>Bid every shot <span class="dim">before a single</span> frame renders.</h1>
       <p class="lead">
-        Upload the breakdown. Bid IQ turns shot scope into department days and cost
-        in minutes, so anyone on the desk can defend a number with confidence.
+        Bid IQ turns scripts, shot lists and asset breakdowns into defensible bids —
+        every shot and every asset priced for comp, roto, FX and builds in minutes, not weeks.
       </p>
-      <div class="ticker" aria-hidden="true">
-        <span>Typical bid desk: <strong id="t-old">5–10 days</strong></span>
-        <span>With Bid IQ: <strong id="t-new">minutes</strong></span>
-        <span>Output: <strong>days · cost · methodology</strong></span>
+      <div class="hero-ctas">
+        <a class="btn-portal" href="/signin">Enter the portal <span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="btn-ghost" href="/signin">Log in</a>
       </div>
-    </section>
+      <div class="scroll-hint">Scroll to explore</div>
+    </div>
+  </section>
 
-    <section class="section">
-      <h3>The hard part was never the spreadsheet.</h3>
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Shot-level bids</span>
+      <span>Asset-level bids</span>
+      <span>Predictive AI</span>
+      <span>Department day rates</span>
+      <span>Margin intelligence</span>
+      <span>Script breakdown</span>
+      <span>Version history</span>
+      <span>Studio-ready exports</span>
+      <span>Shot-level bids</span>
+      <span>Asset-level bids</span>
+      <span>Predictive AI</span>
+      <span>Department day rates</span>
+      <span>Margin intelligence</span>
+      <span>Script breakdown</span>
+      <span>Version history</span>
+      <span>Studio-ready exports</span>
+    </div>
+  </div>
+
+  <section class="section" id="process">
+    <div class="wrap">
+      <p class="sec-label">/ The Process</p>
+      <h2>From breakdown to bid, in three moves.</h2>
+      <p class="lede">No dashboard theatre — just the path from CSV to a number you can stand behind.</p>
+      <div class="process">
+        <article class="process-item">
+          <div class="process-meta"><strong>01</strong><span>Input</span></div>
+          <h3>Ingest</h3>
+          <p>
+            Drop in a shot list, asset sheet or rough notes. Bid IQ maps columns and reads scope
+            the way a seasoned VFX supervisor would — every shot, every asset build, every hidden complexity.
+          </p>
+        </article>
+        <article class="process-item">
+          <div class="process-meta"><strong>02</strong><span>Intelligence</span></div>
+          <h3>Estimate</h3>
+          <p>
+            Every shot and every asset returns a defensible number: compositing, roto, FX, lighting
+            and builds — with confidence scores you can adjust in place before the quote leaves the desk.
+          </p>
+        </article>
+        <article class="process-item">
+          <div class="process-meta"><strong>03</strong><span>Output</span></div>
+          <h3>Win</h3>
+          <p>
+            Export a studio-ready bid in minutes, complete with methodology and scene totals.
+            Quote faster, protect your margin, and walk into the room with cost that is already explained.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="audience">
+    <div class="wrap">
+      <p class="sec-label">/ Who it's for</p>
+      <h2>Made for everyone with skin in the bid.</h2>
+      <p class="lede">One appraisal language for the people who price the show — and the people who defend it.</p>
+      <div class="audience">
+        <article>
+          <span class="n">01</span>
+          <h3>Producers</h3>
+          <p>Quote projects faster and defend every line item with data, not gut feel.</p>
+        </article>
+        <article>
+          <span class="n">02</span>
+          <h3>VFX producers</h3>
+          <p>Turn breakdowns into shot and asset bids in minutes and protect your margin.</p>
+        </article>
+        <article>
+          <span class="n">03</span>
+          <h3>VFX supervisors</h3>
+          <p>Sanity-check complexity and department days before you commit to a figure.</p>
+        </article>
+        <article>
+          <span class="n">04</span>
+          <h3>Bid desk leads</h3>
+          <p>Standardise appraisal across juniors and seniors so tribal math becomes shared method.</p>
+        </article>
+        <article>
+          <span class="n">05</span>
+          <h3>Production companies</h3>
+          <p>Win more work with tighter numbers that hold up when the show actually starts.</p>
+        </article>
+        <article>
+          <span class="n">06</span>
+          <h3>Studio leadership</h3>
+          <p>See bid history, corrections and learning land in one place — not lost Slack threads.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="capabilities">
+    <div class="wrap">
+      <p class="sec-label">/ Capabilities</p>
+      <h2>Built for the people who sign the bid.</h2>
+      <p class="lede">A quiet, precise toolkit for producers, bid supervisors and studio leadership.</p>
+      <div class="caps">
+        <article class="cap">
+          <h3>Shot &amp; asset bids</h3>
+          <p>Every shot and every asset — models, textures, environments, FX setups — priced individually, never guessed as a lump sum.</p>
+        </article>
+        <article class="cap">
+          <h3>Predictive AI</h3>
+          <p>Trained on production judgment to map messy notes into department days with confidence you can audit.</p>
+        </article>
+        <article class="cap">
+          <h3>Department day rates</h3>
+          <p>Per-department rates for shots and assets, in the currency your desk actually quotes.</p>
+        </article>
+        <article class="cap">
+          <h3>Active learning</h3>
+          <p>Supervisor corrections teach the next bid — so tribal knowledge compounds instead of walking out the door.</p>
+        </article>
+        <article class="cap">
+          <h3>Version history</h3>
+          <p>Every revision tracked under a project, ready to reopen when the brief changes again.</p>
+        </article>
+        <article class="cap">
+          <h3>Studio exports</h3>
+          <p>One-click CSV bids formatted for producers, with methodology still attached to the number.</p>
+        </article>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="n">Minutes</div>
+          <div class="l">From breakdown to first bid</div>
+        </div>
+        <div class="stat">
+          <div class="n">Shots + assets</div>
+          <div class="l">Priced in one pass</div>
+        </div>
+        <div class="stat">
+          <div class="n">Per-dept</div>
+          <div class="l">Rates you control</div>
+        </div>
+        <div class="stat">
+          <div class="n">Live</div>
+          <div class="l">Corrections that teach the next quote</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="close" id="access">
+    <div class="close-media" aria-hidden="true">
+      <img
+        src="https://images.unsplash.com/photo-1533134755454-9549758f0e06?auto=format&fit=crop&w=2400&q=80"
+        alt=""
+        decoding="async"
+      >
+    </div>
+    <div class="wrap close-inner">
+      <p class="sec-label">/ Get access</p>
+      <h2>Your next bid is already late.</h2>
       <p>
-        It was translating messy notes into department reality — then arguing
-        whether the number would hold. Bid IQ makes that judgment repeatable.
+        Sign in with Google to enter the Bid IQ portal and start pricing shots
+        the moment the brief lands.
       </p>
-      <div class="compare">
-        <div class="compare-col">
-          <div class="compare-label">Before</div>
-          <h4>Guesswork dressed as experience</h4>
-          <p>
-            Senior estimators carry the model in their heads. Juniors wait.
-            Methodology gets lost between versions. Pricing a mid-size show
-            stretches into days of back-and-forth.
-          </p>
-        </div>
-        <div class="compare-arrow" aria-hidden="true">→</div>
-        <div class="compare-col">
-          <div class="compare-label">With Bid IQ</div>
-          <h4>A clean appraisal anyone can run</h4>
-          <p>
-            Descriptions become department allocations. Rates apply instantly.
-            Corrections teach the next bid. The same science — faster, clearer,
-            and ready to show the client.
-          </p>
-        </div>
+      <div class="close-ctas">
+        <a class="btn-portal" href="/signin">Enter the portal <span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="btn-ghost" href="/signin">Log in</a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section">
-      <h3>Three moves. Then you have a bid.</h3>
-      <p>No dashboard theatre — just the path from CSV to a number you can stand behind.</p>
-      <div class="steps">
-        <div class="step">
-          <h4>Drop the breakdown</h4>
-          <p>Shot lists, asset sheets, even rough notes. Bid IQ maps columns and reads scope the way a supervisor would.</p>
-        </div>
-        <div class="step">
-          <h4>Watch days land</h4>
-          <p>Production and asset departments fill in with confidence scores. Adjust rates, toggles, and methodology in place.</p>
-        </div>
-        <div class="step">
-          <h4>Export the defense</h4>
-          <p>Save history under a project, pull scene totals, and walk into the room with cost that is already explained.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="close">
-      <div class="close-inner">
-        <div>
-          <h3>Open the desk. Price the show.</h3>
-          <p>Sign in with Google to enter your projects, estimator, and bid history.</p>
-        </div>
-        <div class="close-panel">
-          <div class="label">Continue</div>
-          <a class="top-link" href="/signin">Sign in with Google</a>
-        </div>
-      </div>
-    </section>
-
+  <div class="wrap">
     <footer>
-      <span>Bid IQ · VFX appraisal for the bid desk</span>
-      <span>Already signed in? <a href="/dashboard" style="color:var(--amber)">Go to dashboard</a></span>
+      <span>Bid IQ · AI bidding for visual effects</span>
+      <span>Already signed in? <a href="/dashboard">Go to dashboard</a></span>
     </footer>
   </div>
 
