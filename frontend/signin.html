@@ -3,23 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in — Bid IQ</title>
+  <title>Sign in — FrameBid</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
-      --ink: #07080b;
-      --panel: #10131a;
-      --line: rgba(232, 236, 244, 0.12);
-      --text: #e8ecf4;
-      --mute: #8b93a7;
-      --amber: #e2a53a;
+      --ink: #050506;
+      --panel: #0c0c0e;
+      --line: rgba(247, 247, 247, 0.1);
+      --text: #f7f7f7;
+      --mute: #8a8b94;
+      --accent: #456aed;
       --mint: #6fd9a8;
       --danger: #ff7a6e;
-      --font-display: "Syne", "Avenir Next", sans-serif;
-      --font-body: "Public Sans", "Helvetica Neue", sans-serif;
+      --font-display: "Outfit", "Avenir Next", sans-serif;
+      --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,9 +28,9 @@
       color: var(--text);
       font-family: var(--font-body);
       background:
-        radial-gradient(1000px 560px at 80% -10%, rgba(226, 165, 58, 0.14), transparent 55%),
-        radial-gradient(780px 420px at 10% 20%, rgba(111, 217, 168, 0.07), transparent 50%),
-        linear-gradient(180deg, #0b0d12 0%, var(--ink) 50%, #090b10 100%);
+        radial-gradient(1000px 560px at 80% -10%, rgba(69, 106, 237, 0.16), transparent 55%),
+        radial-gradient(780px 420px at 10% 20%, rgba(111, 217, 168, 0.06), transparent 50%),
+        linear-gradient(180deg, #0a0a0c 0%, var(--ink) 50%, #050506 100%);
       display: flex;
       flex-direction: column;
     }
@@ -55,12 +55,24 @@
       padding: 22px 0;
     }
     .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: -0.03em;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
-    .brand span { color: var(--amber); }
+    .brand-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+      transition: transform 0.35s ease;
+    }
+    .brand:hover .brand-mark { transform: rotate(45deg); }
     .top-link {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -69,7 +81,7 @@
       font-weight: 600;
       color: var(--mute);
     }
-    .top-link:hover { color: var(--text); border-color: rgba(226, 165, 58, 0.45); }
+    .top-link:hover { color: var(--text); border-color: rgba(69, 106, 237, 0.45); }
     .main {
       position: relative;
       z-index: 1;
@@ -81,7 +93,7 @@
     }
     .card {
       width: min(420px, 100%);
-      background: linear-gradient(160deg, rgba(226, 165, 58, 0.1), transparent 55%), var(--panel);
+      background: linear-gradient(160deg, rgba(69, 106, 237, 0.12), transparent 55%), var(--panel);
       border: 1px solid var(--line);
       border-radius: 20px;
       padding: 36px 32px 32px;
@@ -90,6 +102,7 @@
       margin: 0 0 10px;
       font-family: var(--font-display);
       font-size: 32px;
+      font-weight: 600;
       letter-spacing: -0.04em;
       line-height: 1.05;
     }
@@ -128,12 +141,12 @@
       color: var(--mute);
       text-align: center;
     }
-    .hint a { color: var(--amber); font-weight: 600; }
+    .hint a { color: var(--accent); font-weight: 600; }
   </style>
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="/">Bid <span>IQ</span></a>
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--mute)">BID</span></a>
     <a class="top-link" href="/">← Back</a>
   </header>
 
@@ -144,7 +157,7 @@
       <div id="google-btn"></div>
       <div id="signin-status" class="signin-status" aria-live="polite">Signing you in…</div>
       <div id="signin-error" class="signin-error" role="alert"></div>
-      <div class="hint">New here? <a href="/">See how Bid IQ works</a></div>
+      <div class="hint">New here? <a href="/">See how FrameBid works</a></div>
     </div>
   </main>
 

@@ -3,61 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bid IQ — Dashboard</title>
+  <title>FrameBid — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root{
-      --bg:#07080b;--surface:#0b0d12;--card:#10131a;--card2:#161a24;
-      --accent:#e2a53a;--green:#6fd9a8;--red:#ff7a6e;--orange:#e2a53a;
-      --text:#e8ecf4;--text-strong:#fff;--muted:#8b93a7;
-      --border:rgba(232,236,244,.12);--r:14px;
-      --font-display:"Syne","Avenir Next",sans-serif;
-      --font-body:"Public Sans","Helvetica Neue",sans-serif;
+      --bg:#050506;--surface:#0a0a0c;--card:#0c0c0e;--card2:#121216;
+      --accent:#456aed;--accent2:#7b8cff;--green:#6fd9a8;--mint:#6fd9a8;--red:#ff7a6e;--orange:#e2a53a;
+      --text:#f7f7f7;--text-strong:#fff;--muted:#8a8b94;
+      --border:rgba(247,247,247,.10);--r:14px;
+      --font-display:"Outfit","Avenir Next",sans-serif;
+      --font-body:"IBM Plex Sans","Helvetica Neue",sans-serif;
     }
     *{box-sizing:border-box}
     body{
       margin:0;color:var(--text);font-family:var(--font-body);
       background:
-        radial-gradient(1000px 560px at 88% -12%, rgba(226,165,58,.12), transparent 55%),
+        radial-gradient(1000px 560px at 88% -12%, rgba(69,106,237,.14), transparent 55%),
         radial-gradient(780px 420px at 6% 12%, rgba(111,217,168,.06), transparent 50%),
-        linear-gradient(180deg,#0b0d12 0%, var(--bg) 45%, #090b10 100%);
+        linear-gradient(180deg,#0a0a0c 0%, var(--bg) 45%, #050506 100%);
       min-height:100vh;
     }
     button,input,select{font:inherit} button{cursor:pointer}
     .hidden{display:none!important}.muted{color:var(--muted)}
     .sec-label{font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-family:var(--font-display)}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-weight:700}
-    .btn-ghost:hover{border-color:rgba(226,165,58,.55);color:var(--accent)}
-    .btn-accent,.qa-btn{background:var(--accent);border:1px solid transparent;color:#12100a;border-radius:10px;padding:10px 15px;font-weight:800}
-    .btn-accent:hover,.qa-btn:hover{filter:brightness(1.05)}
-    .btn-accent-sm{background:var(--accent);border:none;color:#12100a;border-radius:8px;width:34px;font-weight:900}
-    .dash-logo{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;color:var(--text-strong);font-size:20px}
-    .dash-logo span{color:var(--accent)}
-    .dash-header{height:68px;border-bottom:1px solid var(--border);background:rgba(7,8,11,.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+    .btn-ghost:hover{border-color:rgba(69,106,237,.55);color:var(--accent)}
+    .btn-accent,.qa-btn{background:var(--accent);border:1px solid transparent;color:#fff;border-radius:10px;padding:10px 15px;font-weight:800}
+    .btn-accent:hover,.qa-btn:hover{filter:brightness(1.08)}
+    .btn-accent-sm{background:var(--accent);border:none;color:#fff;border-radius:8px;width:34px;font-weight:900}
+    .dash-logo{
+      display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+      font-family:var(--font-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--text-strong);font-size:14px
+    }
+    .dash-logo .brand-mark{
+      width:10px;height:10px;border-radius:2px;background:var(--accent);flex-shrink:0;
+      transition:transform .35s ease
+    }
+    .dash-logo:hover .brand-mark{transform:rotate(45deg)}
+    .dash-header{height:68px;border-bottom:1px solid var(--border);background:rgba(5,5,6,.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
     .dash-user{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card2)}
     .dash-main{max-width:1180px;margin:0 auto;padding:28px;position:relative;z-index:1}
     .dash-greeting{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
-    .dash-greeting h1{margin:0;font-size:30px;font-family:var(--font-display);font-weight:800;letter-spacing:-.03em}
+    .dash-greeting h1{margin:0;font-size:30px;font-family:var(--font-display);font-weight:700;letter-spacing:-.03em}
     .quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
     .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
     .kpi-card,.dash-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r)}
     .kpi-card{padding:18px}.kpi-value{font-size:28px;font-weight:700;color:var(--mint);font-family:var(--font-body);letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.15}.kpi-label{font-size:12px;font-weight:700;color:var(--muted);margin-top:6px}
     .dash-section{padding:16px;margin-bottom:18px}.section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
     .dash-table{width:100%;border-collapse:collapse;font-size:13px}.dash-table th,.dash-table td{padding:12px;border-bottom:1px solid var(--border);text-align:left}
-    .dash-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}.project-row:hover td{background:rgba(226,165,58,.05)}
+    .dash-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}.project-row:hover td{background:rgba(69,106,237,.05)}
     .stage-badge{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700}
-    .stage-estimating{color:var(--amber, var(--accent));border-color:rgba(226,165,58,.45)}.stage-submitted,.stage-negotiating{color:var(--mint);border-color:rgba(111,217,168,.4)}.stage-awarded{color:var(--green);border-color:rgba(111,217,168,.45)}
+    .stage-estimating{color:var(--accent);border-color:rgba(69,106,237,.45)}.stage-submitted,.stage-negotiating{color:var(--mint);border-color:rgba(111,217,168,.4)}.stage-awarded{color:var(--green);border-color:rgba(111,217,168,.45)}
     .dash-two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}.task-list{list-style:none;padding:0;margin:12px 0}.task-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer}
     .task-item:hover{background:var(--card2)}.task-title.done{text-decoration:line-through;color:var(--muted)}.task-project{margin-left:auto;color:var(--muted);font-size:11px}
     .task-add{display:flex;gap:8px}.task-add input,.modal-card input,.modal-card select,.dash-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px}
-    .dash-search:focus,.task-add input:focus,.modal-card input:focus,.modal-card select:focus{outline:none;border-color:rgba(226,165,58,.55)}
+    .dash-search:focus,.task-add input:focus,.modal-card input:focus,.modal-card select:focus{outline:none;border-color:rgba(69,106,237,.55)}
     .recs-list{display:grid;gap:10px;margin-top:12px}.rec-item{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:11px}.rec-text{font-size:13px;line-height:1.45}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
     .modal-card{width:min(440px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px}
-    .modal-title{font-size:18px;font-weight:800;margin-bottom:14px;font-family:var(--font-display);letter-spacing:-.02em}.modal-card input,.modal-card select{margin-bottom:10px}
+    .modal-title{font-size:18px;font-weight:700;margin-bottom:14px;font-family:var(--font-display);letter-spacing:-.02em}.modal-card input,.modal-card select{margin-bottom:10px}
     @keyframes doneOut{to{opacity:0;transform:translateX(20px)}}.task-done-anim{animation:doneOut .35s ease forwards}
     @media (max-width:800px){.kpi-grid,.dash-two-col{grid-template-columns:1fr}.dash-header{padding:0 16px}.dash-main{padding:18px}.dash-greeting{display:block}.dash-table{font-size:12px}}
   </style>
@@ -65,7 +73,7 @@
 <body>
   <div id="dashboard-screen">
     <header class="dash-header">
-      <div class="dash-logo">Bid <span>IQ</span></div>
+      <a class="dash-logo" href="/dashboard"><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--muted)">BID</span></a>
       <input class="dash-search" style="max-width:320px" placeholder="Search projects..." oninput="filterProjects(this.value)">
       <div class="dash-user">
         <img id="user-avatar" src="" class="avatar" alt="">
@@ -195,14 +203,18 @@ function renderProjectsTable(projects){
   if(!projects.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No projects yet - create one to get started.</td></tr>';return}
   const dots={active:'🟡',awarded:'🟢',lost:'🔴',archived:'⚫',submitted:'🔵'};
   const labels={lead:'Lead',estimating:'Estimating',submitted:'Submitted',negotiating:'Negotiating',awarded:'Awarded'};
-  tbody.innerHTML=projects.map(p=>{const due=p.due_date?new Date(p.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'-';return `
-    <tr onclick="openProject(${p.id},'${escJs(p.name)}')" class="project-row" style="cursor:pointer">
+  tbody.innerHTML=projects.map(p=>{const due=p.due_date?new Date(p.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'-';const bidId=p.latest_bid_id!=null?Number(p.latest_bid_id):'null';return `
+    <tr onclick="openProject(${p.id},'${escJs(p.name)}',${bidId})" class="project-row" style="cursor:pointer">
       <td style="font-weight:800">${esc(p.name)}</td><td>${esc(p.client||'-')}</td>
       <td><span class="stage-badge stage-${esc(p.stage)}">${esc(labels[p.stage]||p.stage)}</span></td>
       <td class="muted">${p.bid_count} bid${p.bid_count!==1?'s':''}</td><td class="muted">${due}</td><td>${dots[p.status]||'⚪'}</td>
     </tr>`}).join('');
 }
-function openProject(projectId, projectName){window.location.href=`/estimate?project_id=${projectId}&project_name=${encodeURIComponent(projectName)}`}
+function openProject(projectId, projectName, latestBidId){
+  const params=new URLSearchParams({project_id:String(projectId),project_name:projectName||''});
+  if(latestBidId!=null&&Number.isFinite(Number(latestBidId))) params.set('bid_id',String(latestBidId));
+  window.location.href=`/estimate?${params.toString()}`;
+}
 function showNewProjectModal(){document.getElementById('new-project-modal').classList.remove('hidden');document.getElementById('new-project-name').focus()}
 async function createProject(){
   const name=document.getElementById('new-project-name').value.trim();
@@ -213,7 +225,7 @@ async function createProject(){
   const r=await fetch(`${API}/projects`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({name,client,stage,due_date:due||null})});
   const proj=await r.json();
   document.getElementById('new-project-modal').classList.add('hidden');
-  openProject(proj.id,proj.name);
+  openProject(proj.id,proj.name,null);
 }
 async function loadTasks(){try{const r=await fetch(`${API}/tasks`,{headers:authHeaders()});const data=await r.json();renderTasks(data.tasks||[])}catch{}}
 function renderTasks(tasks){

@@ -548,7 +548,14 @@ def create_app() -> FastAPI:
                     SELECT p.id, p.name, p.client, p.status, p.stage,
                            p.due_date, p.created_at, p.updated_at,
                            COUNT(b.id) AS bid_count,
-                           COALESCE(SUM(b.total_mandays), 0) AS total_mandays
+                           COALESCE(SUM(b.total_mandays), 0) AS total_mandays,
+                           (
+                             SELECT b2.id
+                             FROM vfx_bid_history b2
+                             WHERE b2.project_id = p.id
+                             ORDER BY b2.created_at DESC
+                             LIMIT 1
+                           ) AS latest_bid_id
                     FROM vfx_projects p
                     LEFT JOIN vfx_bid_history b ON b.project_id = p.id
                     WHERE p.owner_id = %s AND p.status = %s
@@ -568,12 +575,15 @@ def create_app() -> FastAPI:
                     "updated_at",
                     "bid_count",
                     "total_mandays",
+                    "latest_bid_id",
                 ]
                 projects = [dict(zip(cols, row)) for row in cur.fetchall()]
         for project in projects:
             _iso_row(project, ("due_date", "created_at", "updated_at"))
             project["bid_count"] = int(project.get("bid_count") or 0)
             project["total_mandays"] = float(project.get("total_mandays") or 0)
+            latest = project.get("latest_bid_id")
+            project["latest_bid_id"] = int(latest) if latest is not None else None
         return {"projects": projects, "count": len(projects)}
 
     @app.put("/projects/{project_id}")

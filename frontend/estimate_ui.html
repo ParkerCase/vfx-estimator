@@ -3,37 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bid IQ — Estimator</title>
+  <title>FrameBid — Estimator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
-      --bg:      #07080b;
-      --surface: #0b0d12;
-      --card:    #10131a;
-      --card2:   #161a24;
-      --border:  rgba(232,236,244,.12);
-      --accent:  #e2a53a;
-      --accent2: #6fd9a8;
+      --bg:      #050506;
+      --surface: #0a0a0c;
+      --card:    #0c0c0e;
+      --card2:   #121216;
+      --border:  rgba(247,247,247,.10);
+      --accent:  #456aed;
+      --accent2: #7b8cff;
       --green:   #6fd9a8;
       --orange:  #e2a53a;
       --red:     #ff7a6e;
-      --text:    #e8ecf4;
+      --text:    #f7f7f7;
       --text-strong:#ffffff;
-      --muted:   #8b93a7;
-      --muted-soft:#6f778c;
-      --font:    'Inter', 'Segoe UI', system-ui, sans-serif;
+      --muted:   #8a8b94;
+      --muted-soft:#5c5d66;
+      --font:    "IBM Plex Sans", "Helvetica Neue", sans-serif;
+      --font-display: "Outfit", "Avenir Next", sans-serif;
       --r:       10px;
       --scroll-size: 8px;
       --scroll-track: transparent;
       --scroll-thumb: rgba(174,184,204,.28);
-      --scroll-thumb-hover: rgba(226,165,58,.55);
+      --scroll-thumb-hover: rgba(69,106,237,.55);
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       background:
-        radial-gradient(1000px 560px at 88% -12%, rgba(226,165,58,.10), transparent 55%),
+        radial-gradient(1000px 560px at 88% -12%, rgba(69,106,237,.14), transparent 55%),
         radial-gradient(780px 420px at 6% 12%, rgba(111,217,168,.05), transparent 50%),
-        linear-gradient(180deg,#0b0d12 0%, var(--bg) 45%, #090b10 100%);
+        linear-gradient(180deg,#0a0a0c 0%, var(--bg) 45%, #050506 100%);
       color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh
     }
 
@@ -84,9 +88,17 @@
     .hdr-user input{width:88px;padding:5px 8px;font-size:12px;border-radius:8px}
     .hdr-currency{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
     .hdr-currency select{padding:5px 8px;font-size:12px;border-radius:8px;min-width:72px}
-    .hdr h1{font-size:15px;font-weight:800;letter-spacing:.2px;color:var(--text-strong)}
-    .hdr h1 span{color:var(--accent)}
-    .page-progress{border-bottom:1px solid var(--border);background:rgba(7,8,11,.92);backdrop-filter:blur(10px);
+    .hdr h1{
+      display:inline-flex;align-items:center;gap:10px;margin:0;
+      font-family:var(--font-display);font-size:14px;font-weight:700;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--text-strong)
+    }
+    .hdr h1 .brand-mark{
+      width:10px;height:10px;border-radius:2px;background:var(--accent);flex-shrink:0;
+      transition:transform .35s ease
+    }
+    .hdr h1:hover .brand-mark{transform:rotate(45deg)}
+    .page-progress{border-bottom:1px solid var(--border);background:rgba(5,5,6,.92);backdrop-filter:blur(10px);
       padding:10px 24px 12px}
     .page-progress-inner{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1600px;margin:0 auto}
     .page-progress-track-block{min-width:0}
@@ -97,7 +109,7 @@
       color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
     .page-progress .progress-track{height:7px}
     .page-progress-track-block[data-kind="shots"] .progress-fill{
-      background:linear-gradient(90deg,var(--accent),#f0c56a)}
+      background:linear-gradient(90deg,var(--accent),#7b8cff)}
     .page-progress-track-block[data-kind="assets"] .progress-fill{
       background:linear-gradient(90deg,var(--green),#9aecc4)}
     @media (max-width:720px){
@@ -125,7 +137,7 @@
 
     /* ── Section labels ── */
     .sec-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;
-               color:var(--text);margin-bottom:8px}
+               color:var(--text);margin-bottom:8px;font-family:var(--font-display)}
 
     /* ── Inputs ── */
     textarea,input,select{
@@ -133,7 +145,7 @@
       color:var(--text);font-family:var(--font);font-size:13px;outline:none;
       transition:border-color .2s
     }
-    textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(226,165,58,.22)}
+    textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(69,106,237,.22)}
     textarea::placeholder,input::placeholder{color:var(--muted-soft)}
     select option{background:var(--card)}
 
@@ -178,12 +190,12 @@
     /* ── Buttons ── */
     button{border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);
            font-weight:600;transition:all .15s}
-    .btn-blue{background:var(--accent);color:#12100a;padding:11px 22px;font-size:14px}
+    .btn-blue{background:var(--accent);color:#fff;padding:11px 22px;font-size:14px}
     .btn-blue:hover{filter:brightness(1.06)}
     .btn-blue:disabled{opacity:.45;cursor:default;filter:none}
     .btn-green{background:var(--green);color:#0a1410;padding:10px 18px;font-size:13px}
     .btn-green:hover{filter:brightness(1.06)}
-    .btn-purple{background:var(--accent2);color:#0a1410;padding:10px 18px;font-size:13px}
+    .btn-purple{background:var(--accent2);color:#0a0a12;padding:10px 18px;font-size:13px}
     .btn-purple:hover{filter:brightness(1.06)}
     .btn-red{background:transparent;color:var(--red);border:1px solid var(--red);
              padding:9px 16px;font-size:13px}
@@ -271,7 +283,7 @@
                    box-shadow:0 1px 0 var(--border)}
     .batch-table td{color:var(--text)}
     .batch-table tbody tr.batch-data-row:nth-child(4n+1) td{background:rgba(255,255,255,0.02)}
-    .batch-table tr.batch-data-row:hover td{background:rgba(226,165,58,.04)}
+    .batch-table tr.batch-data-row:hover td{background:rgba(69,106,237,.04)}
     .batch-table tr.row-excluded{opacity:.45;border-left:3px solid var(--red)}
     .batch-table tr.row-toggled-off{opacity:.4;border-left:3px solid var(--red)}
     .batch-table tr.row-excluded td{color:var(--muted)}
@@ -313,7 +325,7 @@
     .col-toggle-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
     .col-check-item{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);
       border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
-    .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(226,165,58,0.08)}
+    .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(69,106,237,0.08)}
     .col-check-item input{display:none}
     .col-toggle-actions{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
@@ -427,12 +439,12 @@
     .presets-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:980px}
     .presets-table th,.presets-table td{padding:8px 10px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
     .presets-table th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;background:var(--surface);color:var(--text)}
-    .presets-table tr.studio td{background:rgba(226,165,58,.06)}
+    .presets-table tr.studio td{background:rgba(69,106,237,.06)}
     .presets-table input{width:58px;padding:5px 6px;font-size:12px}
     .presets-table input.preset-desc{width:240px}
     .presets-note{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}
-    .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(226,165,58,.35);
-      border-radius:8px;background:rgba(226,165,58,.07);font-size:12px;color:var(--text);line-height:1.5}
+    .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(69,106,237,.35);
+      border-radius:8px;background:rgba(69,106,237,.07);font-size:12px;color:var(--text);line-height:1.5}
     .method-cell{min-width:180px;max-width:260px;font-size:11px;color:var(--muted);position:relative}
     .method-readonly{max-height:70px;overflow:auto;white-space:pre-wrap}
     .method-empty{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -492,7 +504,7 @@
 <div class="hdr">
   <div class="hdr-left">
     <a href="/dashboard" class="back-to-dash">← Dashboard</a>
-    <h1>Bid <span>IQ</span></h1>
+    <h1><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--muted)">BID</span></h1>
     <div class="project-context" id="project-context-display" style="display:none">
       <strong id="project-context-name"></strong>
       <span class="muted" id="project-context-date"></span>
@@ -1057,6 +1069,7 @@ const API = (window.location.hostname === 'localhost' ||
 const urlParams = new URLSearchParams(location.search);
 const PROJECT_ID = urlParams.get('project_id');
 const PROJECT_NAME = urlParams.get('project_name');
+const BID_ID = urlParams.get('bid_id');
 const USER_ID_STORAGE_KEY = 'vfx_estimator_user_id';
 const DEPT_RATES_STORAGE_KEY = 'vfx_estimator_dept_rates';
 const ASSET_DEPT_RATES_STORAGE_KEY = 'vfx_estimator_asset_dept_rates';
@@ -5420,8 +5433,54 @@ async function loadSavedBid(bidId) {
     closeHistoryDrawer();
     document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     toast(`Loaded: ${bid.project_name} (${shots.length} shots)`);
+    return true;
   } catch (e) {
     toast('Could not load bid: ' + e.message, 'err');
+    return false;
+  }
+}
+
+async function loadProjectBidFromContext() {
+  const explicitBidId = parseInt(BID_ID || '', 10);
+  if (Number.isFinite(explicitBidId)) {
+    await loadSavedBid(explicitBidId);
+    return;
+  }
+
+  const projectId = projectIdForSave();
+  const projectName = (PROJECT_NAME || '').trim().toLowerCase();
+  if (!projectId && !projectName) return;
+
+  try {
+    // Prefer bids linked to this project_id
+    if (projectId) {
+      const params = new URLSearchParams({
+        limit: '1',
+        project_id: String(projectId),
+      });
+      const r = await fetch(`${API}/bid-history?${params}`);
+      if (r.ok) {
+        const data = await r.json();
+        const bid = (data.bids || [])[0];
+        if (bid?.id) {
+          await loadSavedBid(bid.id);
+          return;
+        }
+      }
+    }
+
+    // Fallback: older bids may lack project_id — match by project name
+    if (projectName) {
+      const r = await fetch(`${API}/bid-history?limit=40`);
+      if (!r.ok) return;
+      const data = await r.json();
+      const bid = (data.bids || []).find(b =>
+        String(b.project_name || '').trim().toLowerCase() === projectName
+      );
+      if (bid?.id) await loadSavedBid(bid.id);
+    }
+  } catch {
+    // leave blank estimator if history unavailable
   }
 }
 
@@ -5485,6 +5544,7 @@ document.addEventListener('visibilitychange', () => {
   await loadFxRates();
   await checkServer();
   sizeTableWrappers();
+  await loadProjectBidFromContext();
 })();
 </script>
 </body>
