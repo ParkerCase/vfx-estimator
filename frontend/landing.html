@@ -43,9 +43,35 @@
     .text-muted { color: var(--muted-foreground); }
 
     /* ── Header ── */
-    .site-header {
+    .coming-soon-banner {
       position: fixed;
       inset: 0 0 auto;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.55rem 1.25rem;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      text-align: center;
+    }
+    .coming-soon-banner .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0.85;
+      flex-shrink: 0;
+    }
+    .site-header {
+      position: fixed;
+      inset: 2.2rem 0 auto;
       z-index: 50;
       transition: background .4s, border-color .4s, backdrop-filter .4s;
       border-bottom: 1px solid transparent;
@@ -71,24 +97,67 @@
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0;
+      text-decoration: none;
+      color: inherit;
     }
-    .brand-mark {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      background: var(--accent);
-      transition: transform .5s;
+    .brand-logo {
+      height: 40px;
+      width: auto;
+      display: block;
       flex-shrink: 0;
+      position: relative;
+      z-index: 2;
     }
-    .brand:hover .brand-mark { transform: rotate(45deg); }
-    .brand-text {
+    .brand-word-clip {
+      display: block;
+      overflow: hidden;
+      height: 1.15em;
+      width: 0;
+      margin-left: -10px;
+      margin-top: 3px;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-word {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
       font-family: var(--font-display);
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      letter-spacing: -0.02em;
+      letter-spacing: 0.04em;
+      color: #7a91a3;
+      line-height: 1;
     }
-    .brand-text .dim { color: var(--muted-foreground); }
+    .brand.brand-animate .brand-logo {
+      opacity: 0;
+      transform: scale(0.92);
+      animation: brandLogoIn 0.45s ease forwards;
+    }
+    .brand.brand-animate .brand-word-clip {
+      animation: brandWordReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.38s forwards;
+    }
+    .brand:not(.brand-animate) .brand-word-clip {
+      width: 7.85em;
+    }
+    @keyframes brandLogoIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes brandWordReveal {
+      to { width: 7.85em; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brand.brand-animate .brand-logo,
+      .brand.brand-animate .brand-word-clip {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        width: 7.85em;
+      }
+    }
 
     .header-nav {
       display: none;
@@ -130,6 +199,50 @@
     }
     .btn-demo:hover { opacity: 0.92; }
     .btn-demo:active { transform: scale(0.97); }
+    .btn-soon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--foreground);
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      cursor: default;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .btn-soon.solid {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+    .btn-cart {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #fff;
+      color: #050506;
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      cursor: pointer;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-cart:hover { opacity: 0.92; }
+    .btn-cart:active { transform: scale(0.97); }
+    .link-soon {
+      color: var(--muted-foreground);
+      cursor: default;
+      pointer-events: none;
+    }
 
     .header-actions {
       display: flex;
@@ -801,6 +914,340 @@
       align-items: center;
     }
 
+    /* ── Pricing ── */
+    #pricing {
+      border-top: 1px solid var(--border);
+      padding: 7rem 0;
+      background: #08080a;
+    }
+    @media (min-width: 768px) {
+      #pricing { padding: 9rem 0; }
+    }
+    .pricing-intro {
+      max-width: 42rem;
+      margin-bottom: 3.5rem;
+    }
+    .pricing-intro .lede {
+      margin-top: 1.25rem;
+      max-width: 32rem;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--muted-foreground);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 900px) {
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .price-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 2rem;
+      min-height: 100%;
+      transition: border-color .4s, background .4s;
+    }
+    .price-card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .price-card.featured {
+      border-color: rgba(69, 106, 237, 0.55);
+      background: linear-gradient(165deg, rgba(69, 106, 237, 0.14), transparent 55%), rgba(255, 255, 255, 0.02);
+    }
+    .price-card .tier {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+    }
+    .price-card h3 {
+      margin-top: 0.85rem;
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .price-card .price {
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      min-height: 3.25rem;
+    }
+    .price-card .price .amount {
+      font-family: var(--font-display);
+      font-size: 2.75rem;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--muted-foreground);
+    }
+    .price-card .price .period {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted-foreground);
+    }
+    .price-card .blurb {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--muted-foreground);
+      flex: 1;
+    }
+    .price-card ul {
+      list-style: none;
+      margin: 1.75rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.7rem;
+    }
+    .price-card li {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: rgba(247, 247, 247, 0.88);
+    }
+    .price-card li::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      margin-top: 0.45rem;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .price-card .card-cta {
+      margin-top: 2rem;
+    }
+    .price-card .card-cta .btn-soon {
+      width: 100%;
+    }
+
+    /* ── Purchase / cart ── */
+    #purchase {
+      border-top: 1px solid var(--border);
+      padding: 7rem 0;
+    }
+    @media (min-width: 768px) {
+      #purchase { padding: 9rem 0; }
+    }
+    .purchase-layout {
+      display: grid;
+      gap: 2rem;
+    }
+    @media (min-width: 900px) {
+      .purchase-layout {
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 2.5rem;
+        align-items: start;
+      }
+    }
+    .purchase-panel,
+    .cart-panel {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 2rem;
+    }
+    .purchase-panel h3,
+    .cart-panel h3 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .purchase-panel .hint,
+    .cart-panel .hint {
+      margin-top: 0.65rem;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--muted-foreground);
+    }
+    .plan-options {
+      margin-top: 1.75rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .plan-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(5, 5, 6, 0.45);
+      cursor: pointer;
+      transition: border-color .3s, background .3s;
+    }
+    .plan-option:hover,
+    .plan-option.is-selected {
+      border-color: rgba(69, 106, 237, 0.6);
+      background: rgba(69, 106, 237, 0.08);
+    }
+    .plan-option .plan-name {
+      font-family: var(--font-display);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .plan-option .plan-meta {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted-foreground);
+      margin-top: 0.25rem;
+    }
+    .plan-option .plan-price {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      letter-spacing: -0.02em;
+    }
+    .qty-row {
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .qty-row label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted-foreground);
+    }
+    .qty-controls {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    .qty-controls button {
+      width: 2.5rem;
+      height: 2.5rem;
+      color: var(--foreground);
+      background: transparent;
+    }
+    .qty-controls button:hover { background: rgba(255, 255, 255, 0.05); }
+    .qty-controls span {
+      min-width: 2.5rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    .purchase-actions {
+      margin-top: 1.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .cart-lines {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .cart-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .cart-line .muted { color: var(--muted-foreground); }
+    .cart-empty {
+      margin-top: 1.5rem;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted-foreground);
+      font-size: 0.9rem;
+    }
+    .cart-total {
+      margin-top: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .cart-total .amount { color: var(--muted-foreground); }
+    .cart-panel .btn-soon {
+      width: 100%;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Second opinion ── */
+    #second-opinion {
+      border-top: 1px solid var(--border);
+      background: #08080a;
+      padding: 7rem 0;
+    }
+    @media (min-width: 768px) {
+      #second-opinion { padding: 9rem 0; }
+    }
+    .opinion-grid {
+      display: grid;
+      gap: 2.5rem;
+    }
+    @media (min-width: 900px) {
+      .opinion-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: end;
+      }
+    }
+    .opinion-copy p {
+      margin-top: 1.25rem;
+      max-width: 36rem;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--muted-foreground);
+    }
+    .opinion-copy p.lead {
+      color: rgba(247, 247, 247, 0.9);
+      font-size: 1.05rem;
+    }
+    .opinion-aside {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 2rem;
+    }
+    .opinion-aside .cities {
+      margin-top: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .opinion-aside .city {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-foreground);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.4rem 0.75rem;
+    }
+    .opinion-aside .cta-wrap {
+      margin-top: 1.75rem;
+    }
+
     /* ── Footer ── */
     footer {
       border-top: 1px solid var(--border);
@@ -886,20 +1333,28 @@
   </style>
 </head>
 <body>
+  <div class="coming-soon-banner" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    Coming soon — FrameBid is in private preview
+    <span class="dot" aria-hidden="true"></span>
+  </div>
   <header class="site-header" id="site-header">
     <div class="header-inner">
-      <a class="brand" href="/" data-testid="brand-logo">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">FRAME<span class="dim">BID</span></span>
+      <a class="brand brand-animate" href="/" data-testid="brand-logo" aria-label="FrameBid">
+        <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+        <span class="brand-word-clip" aria-hidden="true">
+          <span class="brand-word">FRAMEBID</span>
+        </span>
       </a>
       <nav class="header-nav" aria-label="Primary">
         <a href="#overview">Overview</a>
         <a href="#process">Process</a>
-        <a href="#who">Who it's for</a>
+        <a href="#pricing">Pricing</a>
         <a href="#capabilities">Capabilities</a>
+        <a href="#second-opinion">Second opinion</a>
       </nav>
       <div class="header-actions">
-        <a class="btn-demo" href="/signin">Access portal</a>
+        <span class="btn-soon" aria-disabled="true">Coming soon</span>
       </div>
     </div>
   </header>
@@ -931,10 +1386,7 @@
           in minutes, not weeks.
         </p>
         <div class="hero-ctas">
-          <a class="btn-portal" href="/signin">
-            Access portal
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-          </a>
+          <span class="btn-soon solid" aria-disabled="true">Coming soon</span>
         </div>
       </div>
     </div>
@@ -1322,6 +1774,187 @@
     </div>
   </section>
 
+  <section id="pricing">
+    <div class="shell">
+      <div class="pricing-intro reveal">
+        <p class="sec-label">/ Pricing</p>
+        <h2 class="sec-title">Plans for every bidding desk.</h2>
+        <p class="lede">
+          Choose the footprint that matches your pipeline. Pricing will be published
+          at launch — seats, volumes, and studio options are already mapped.
+        </p>
+      </div>
+      <div class="pricing-grid">
+        <article class="price-card reveal">
+          <p class="tier">Starter</p>
+          <h3>Solo</h3>
+          <div class="price">
+            <span class="amount" aria-label="Price coming soon">&nbsp;</span>
+            <span class="period">/ month</span>
+          </div>
+          <p class="blurb">For freelance estimators and supervisors running a handful of bids.</p>
+          <ul>
+            <li>Shot &amp; asset estimates</li>
+            <li>CSV / Excel import</li>
+            <li>Single-user workspace</li>
+            <li>Standard exports</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+        <article class="price-card featured reveal">
+          <p class="tier">Most popular</p>
+          <h3>Studio</h3>
+          <div class="price">
+            <span class="amount" aria-label="Price coming soon">&nbsp;</span>
+            <span class="period">/ month</span>
+          </div>
+          <p class="blurb">For production teams bidding across shows with shared rates and history.</p>
+          <ul>
+            <li>Everything in Solo</li>
+            <li>Shared rate cards</li>
+            <li>Project &amp; bid history</li>
+            <li>Team seats</li>
+            <li>Priority support</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon solid" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+        <article class="price-card reveal">
+          <p class="tier">Enterprise</p>
+          <h3>Network</h3>
+          <div class="price">
+            <span class="amount" aria-label="Price coming soon">&nbsp;</span>
+            <span class="period">custom</span>
+          </div>
+          <p class="blurb">For multi-site facilities that need governance, SSO, and dedicated onboarding.</p>
+          <ul>
+            <li>Everything in Studio</li>
+            <li>SSO &amp; admin controls</li>
+            <li>Custom methodology packs</li>
+            <li>Dedicated success partner</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="purchase">
+    <div class="shell">
+      <div class="pricing-intro reveal">
+        <p class="sec-label">/ Purchase</p>
+        <h2 class="sec-title">Build your order.</h2>
+        <p class="lede">
+          Select a plan and add seats to your cart. Checkout opens when FrameBid launches.
+        </p>
+      </div>
+      <div class="purchase-layout">
+        <div class="purchase-panel reveal">
+          <h3>Choose a plan</h3>
+          <p class="hint">Prices are withheld until launch. Your selection is saved for when checkout goes live.</p>
+          <div class="plan-options" id="plan-options" role="radiogroup" aria-label="Plan">
+            <button type="button" class="plan-option is-selected" data-plan="Solo" data-meta="Starter · monthly" aria-pressed="true">
+              <span>
+                <span class="plan-name">Solo</span>
+                <div class="plan-meta">Starter · monthly</div>
+              </span>
+              <span class="plan-price" aria-label="Price coming soon">&nbsp;&nbsp;&nbsp;</span>
+            </button>
+            <button type="button" class="plan-option" data-plan="Studio" data-meta="Most popular · monthly" aria-pressed="false">
+              <span>
+                <span class="plan-name">Studio</span>
+                <div class="plan-meta">Most popular · monthly</div>
+              </span>
+              <span class="plan-price" aria-label="Price coming soon">&nbsp;&nbsp;&nbsp;</span>
+            </button>
+            <button type="button" class="plan-option" data-plan="Network" data-meta="Enterprise · custom" aria-pressed="false">
+              <span>
+                <span class="plan-name">Network</span>
+                <div class="plan-meta">Enterprise · custom</div>
+              </span>
+              <span class="plan-price" aria-label="Price coming soon">&nbsp;&nbsp;&nbsp;</span>
+            </button>
+          </div>
+          <div class="qty-row">
+            <label for="seat-qty">Seats</label>
+            <div class="qty-controls">
+              <button type="button" id="qty-minus" aria-label="Decrease seats">−</button>
+              <span id="seat-qty" aria-live="polite">1</span>
+              <button type="button" id="qty-plus" aria-label="Increase seats">+</button>
+            </div>
+          </div>
+          <div class="purchase-actions">
+            <button type="button" class="btn-cart" id="add-to-cart">Add to cart</button>
+          </div>
+        </div>
+        <aside class="cart-panel reveal" aria-label="Cart">
+          <h3>Your cart</h3>
+          <p class="hint">Review your selection. Payment will be available at launch.</p>
+          <div class="cart-empty" id="cart-empty">Cart is empty — select a plan to preview your order.</div>
+          <div class="cart-lines" id="cart-lines" hidden></div>
+          <div class="cart-total" id="cart-total" hidden>
+            <span>Total</span>
+            <span class="amount" aria-label="Price coming soon">&nbsp;</span>
+          </div>
+          <span class="btn-soon" aria-disabled="true">Checkout — Coming soon</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="second-opinion">
+    <div class="shell">
+      <div class="opinion-grid">
+        <div class="opinion-copy reveal">
+          <p class="sec-label">/ Network</p>
+          <h2 class="sec-title">Need a Second Opinion?</h2>
+          <p class="lead">
+            A great estimate is just the beginning. If you'd like to validate your bid,
+            discuss methodology, or explore the best approach for your project,
+            FRAMEBID's global network of experienced VFX producers, supervisors, and
+            studios is here to help.
+          </p>
+          <p>
+            With industry professionals across New York, Atlanta, Los Angeles, Toronto,
+            Vancouver, Australia, and the UK, we can review your estimate, provide expert
+            guidance, and, if needed, connect you with trusted VFX teams capable of
+            executing the work.
+          </p>
+          <p>
+            Whether you need advice, additional production support, or a world-class VFX
+            partner, we're only a conversation away.
+          </p>
+          <p class="lead">Get in touch today and let's bring your project to life.</p>
+        </div>
+        <aside class="opinion-aside reveal">
+          <p class="sec-label" style="margin-bottom:0">/ Reach the team</p>
+          <h3 style="margin-top:1rem;font-family:var(--font-display);font-size:1.5rem;font-weight:600;letter-spacing:-0.03em">
+            Talk with FrameBid
+          </h3>
+          <p style="margin-top:0.85rem;color:var(--muted-foreground);font-size:0.9rem;line-height:1.6">
+            Estimator users can request a review from producers and supervisors in our network.
+          </p>
+          <div class="cities" aria-label="Cities">
+            <span class="city">New York</span>
+            <span class="city">Atlanta</span>
+            <span class="city">Los Angeles</span>
+            <span class="city">Toronto</span>
+            <span class="city">Vancouver</span>
+            <span class="city">Australia</span>
+            <span class="city">UK</span>
+          </div>
+          <div class="cta-wrap">
+            <span class="btn-soon solid" aria-disabled="true">Coming soon</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
   <section class="access" id="access">
     <div class="access-bg" aria-hidden="true">
       <img alt="" src="https://images.unsplash.com/photo-1533134755454-9549758f0e06?auto=format&fit=crop&w=2400&q=80">
@@ -1332,14 +1965,11 @@
         <p class="sec-label">/ Get access</p>
         <h2>Your next bid awaits.</h2>
         <p class="lede">
-          Create an account to enter the FrameBid portal and start pricing shots
-          the moment the brief lands.
+          FrameBid is launching soon. Portal access, pricing, and checkout will open
+          when we go live.
         </p>
         <div class="access-ctas">
-          <a class="btn-portal" href="/signin">
-            Access portal
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-          </a>
+          <span class="btn-soon solid" aria-disabled="true">Coming soon</span>
         </div>
       </div>
     </div>
@@ -1349,9 +1979,11 @@
     <div class="shell footer-inner">
       <div class="footer-top">
         <div class="footer-brand">
-          <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <span class="brand-text">FRAME<span class="dim">BID</span></span>
+          <div class="brand" aria-label="FrameBid">
+            <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+            <span class="brand-word-clip" aria-hidden="true">
+              <span class="brand-word">FRAMEBID</span>
+            </span>
           </div>
           <p>AI bidding for visual effects. Price every shot with the confidence of a supervisor.</p>
         </div>
@@ -1360,37 +1992,26 @@
             <span class="label">Product</span>
             <a href="#overview">Overview</a>
             <a href="#process">Process</a>
-            <a href="#who">Who it's for</a>
+            <a href="#pricing">Pricing</a>
             <a href="#capabilities">Capabilities</a>
+            <a href="#second-opinion">Second opinion</a>
           </div>
           <div class="footer-col">
             <span class="label">Company</span>
-            <a href="/signin">Access portal</a>
-            <a href="/dashboard">Dashboard</a>
+            <span class="link-soon">Coming soon</span>
+            <span class="link-soon">Coming soon</span>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
         <span>© FrameBid · AI bidding for visual effects</span>
-        <span>Already signed in? <a href="/dashboard">Go to dashboard</a></span>
+        <span class="link-soon">Coming soon</span>
       </div>
     </div>
   </footer>
 
 <script>
-function loadSession() {
-  try {
-    const token = localStorage.getItem('vfx_auth_token');
-    const user = JSON.parse(localStorage.getItem('vfx_user') || 'null');
-    return token && user ? { token, user } : null;
-  } catch {
-    return null;
-  }
-}
-
 (() => {
-  if (loadSession()) window.location.replace('/dashboard');
-
   const header = document.getElementById('site-header');
   const onScroll = () => {
     header.classList.toggle('scrolled', window.scrollY > 24);
@@ -1404,6 +2025,57 @@ function loadSession() {
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // Purchase preview (checkout disabled — coming soon)
+  let selectedPlan = 'Solo';
+  let seats = 1;
+  const qtyEl = document.getElementById('seat-qty');
+  const cartEmpty = document.getElementById('cart-empty');
+  const cartLines = document.getElementById('cart-lines');
+  const cartTotal = document.getElementById('cart-total');
+
+  function renderCart() {
+    if (!cartLines) return;
+    cartEmpty.hidden = true;
+    cartLines.hidden = false;
+    cartTotal.hidden = false;
+    cartLines.innerHTML = `
+      <div class="cart-line">
+        <div>
+          <div>${selectedPlan}</div>
+          <div class="muted">${seats} seat${seats === 1 ? '' : 's'} · monthly</div>
+        </div>
+        <div class="muted" aria-label="Price coming soon">&nbsp;</div>
+      </div>`;
+  }
+
+  document.querySelectorAll('.plan-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.plan-option').forEach((b) => {
+        b.classList.remove('is-selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('is-selected');
+      btn.setAttribute('aria-pressed', 'true');
+      selectedPlan = btn.dataset.plan;
+      renderCart();
+    });
+  });
+
+  document.getElementById('qty-minus')?.addEventListener('click', () => {
+    seats = Math.max(1, seats - 1);
+    qtyEl.textContent = String(seats);
+    if (!cartLines.hidden) renderCart();
+  });
+  document.getElementById('qty-plus')?.addEventListener('click', () => {
+    seats = Math.min(99, seats + 1);
+    qtyEl.textContent = String(seats);
+    if (!cartLines.hidden) renderCart();
+  });
+  document.getElementById('add-to-cart')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    renderCart();
+  });
 })();
 </script>
 </body>

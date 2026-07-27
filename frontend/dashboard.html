@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FrameBid — Dashboard</title>
+  <script src="/assets/site-gate.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -35,15 +36,22 @@
     .btn-accent:hover,.qa-btn:hover{filter:brightness(1.08)}
     .btn-accent-sm{background:var(--accent);border:none;color:#fff;border-radius:8px;width:34px;font-weight:900}
     .dash-logo{
-      display:inline-flex;align-items:center;gap:10px;text-decoration:none;
-      font-family:var(--font-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-      color:var(--text-strong);font-size:14px
+      display:inline-flex;align-items:center;gap:0;text-decoration:none;
+      font-family:var(--font-display);color:#7a91a3
     }
-    .dash-logo .brand-mark{
-      width:10px;height:10px;border-radius:2px;background:var(--accent);flex-shrink:0;
-      transition:transform .35s ease
+    .dash-logo .brand-logo{height:40px;width:auto;display:block;flex-shrink:0;position:relative;z-index:2}
+    .dash-logo .brand-word-clip{display:block;overflow:hidden;height:1.15em;width:0;margin-left:-10px;margin-top:3px;position:relative;z-index:1}
+    .dash-logo .brand-word{
+      position:absolute;right:0;top:50%;transform:translateY(-50%);white-space:nowrap;line-height:1;color:#7a91a3;
+      font-size:1.25rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase
     }
-    .dash-logo:hover .brand-mark{transform:rotate(45deg)}
+    .dash-logo.brand-animate .brand-logo{opacity:0;transform:scale(.92);animation:brandLogoIn .45s ease forwards}
+    .dash-logo.brand-animate .brand-word-clip{animation:brandWordReveal .9s cubic-bezier(.22,1,.36,1) .38s forwards}
+    @keyframes brandLogoIn{to{opacity:1;transform:scale(1)}}
+    @keyframes brandWordReveal{to{width:7.85em}}
+    @media (prefers-reduced-motion:reduce){
+      .dash-logo.brand-animate .brand-logo,.dash-logo.brand-animate .brand-word-clip{animation:none;opacity:1;transform:none;width:7.85em}
+    }
     .dash-header{height:68px;border-bottom:1px solid var(--border);background:rgba(5,5,6,.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
     .dash-user{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card2)}
     .dash-main{max-width:1180px;margin:0 auto;padding:28px;position:relative;z-index:1}
@@ -73,7 +81,10 @@
 <body>
   <div id="dashboard-screen">
     <header class="dash-header">
-      <a class="dash-logo" href="/dashboard"><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--muted)">BID</span></a>
+      <a class="dash-logo brand-animate" href="/dashboard" aria-label="FrameBid">
+        <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+        <span class="brand-word-clip" aria-hidden="true"><span class="brand-word">FRAMEBID</span></span>
+      </a>
       <input class="dash-search" style="max-width:320px" placeholder="Search projects..." oninput="filterProjects(this.value)">
       <div class="dash-user">
         <img id="user-avatar" src="" class="avatar" alt="">

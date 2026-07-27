@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FrameBid — Estimator</title>
+  <script src="/assets/site-gate.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -80,24 +81,43 @@
 
     /* ── Header ── */
     .top-chrome{position:sticky;top:0;z-index:20;background:var(--surface)}
-    .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;
-         display:flex;align-items:center;justify-content:space-between}
+    .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;
+         display:flex;align-items:center;justify-content:space-between;min-height:68px;box-sizing:border-box}
     .hdr-left{display:flex;align-items:center;gap:16px}
     .hdr-right{display:flex;align-items:center;gap:12px}
     .hdr-user{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
     .hdr-user input{width:88px;padding:5px 8px;font-size:12px;border-radius:8px}
     .hdr-currency{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
     .hdr-currency select{padding:5px 8px;font-size:12px;border-radius:8px;min-width:72px}
-    .hdr h1{
-      display:inline-flex;align-items:center;gap:10px;margin:0;
-      font-family:var(--font-display);font-size:14px;font-weight:700;
-      letter-spacing:.14em;text-transform:uppercase;color:var(--text-strong)
+    .hdr-brand{
+      display:inline-flex;align-items:center;gap:0;margin:0;padding:0;
+      font-family:var(--font-display);color:#7a91a3;text-decoration:none;line-height:1
     }
-    .hdr h1 .brand-mark{
-      width:10px;height:10px;border-radius:2px;background:var(--accent);flex-shrink:0;
-      transition:transform .35s ease
+    .hdr-brand .brand-logo{
+      height:40px;width:auto;display:block;flex-shrink:0;position:relative;z-index:2
     }
-    .hdr h1:hover .brand-mark{transform:rotate(45deg)}
+    .hdr-brand .brand-word-clip{
+      display:block;overflow:hidden;margin-left:-10px;margin-top:3px;
+      position:relative;z-index:1;line-height:1
+    }
+    .hdr-brand .brand-word{
+      display:inline-block;white-space:nowrap;line-height:1;color:#7a91a3;
+      font-size:1.25rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+      vertical-align:middle
+    }
+    .hdr-brand.brand-animate .brand-logo{
+      opacity:0;transform:scale(.92);animation:brandLogoIn .45s ease forwards
+    }
+    .hdr-brand.brand-animate .brand-word{
+      clip-path:inset(0 0 0 100%);
+      animation:brandWordReveal .9s cubic-bezier(.22,1,.36,1) .38s forwards
+    }
+    @keyframes brandLogoIn{to{opacity:1;transform:scale(1)}}
+    @keyframes brandWordReveal{to{clip-path:inset(0 0 0 0)}}
+    @media (prefers-reduced-motion:reduce){
+      .hdr-brand.brand-animate .brand-logo{animation:none;opacity:1;transform:none}
+      .hdr-brand.brand-animate .brand-word{animation:none;clip-path:none}
+    }
     .page-progress{border-bottom:1px solid var(--border);background:rgba(5,5,6,.92);backdrop-filter:blur(10px);
       padding:10px 24px 12px}
     .page-progress-inner{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1600px;margin:0 auto}
@@ -176,6 +196,12 @@
     .rate-field{display:flex;flex-direction:column;gap:4px}
     .rate-field label{font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.45px}
     .rate-field input{padding:7px 8px;font-size:12px;font-weight:700}
+    .rate-override-row{margin-bottom:4px}
+    .rate-override-label{display:block;font-size:11px;font-weight:800;color:var(--text);
+      text-transform:uppercase;letter-spacing:.45px;margin-bottom:6px}
+    .rate-override-input-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+    .rate-sym{font-size:13px;font-weight:700;color:var(--muted)}
+    .btn-sm{padding:7px 12px;font-size:12px}
 
     /* Practical/CG slider */
     .pq-ratio-row{display:flex;align-items:center;gap:10px}
@@ -204,6 +230,32 @@
                padding:9px 14px;font-size:12px}
     .btn-ghost:hover{border-color:var(--accent);color:var(--text)}
     .btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+    .asset-suggestion-chip {
+      display:flex;align-items:center;gap:8px;
+      padding:7px 12px;
+      background:var(--card2);
+      border:1px solid var(--border);
+      border-radius:20px;
+      cursor:pointer;
+      transition:all .15s;
+      font-size:12px;
+    }
+    .asset-suggestion-chip:hover {
+      border-color:var(--accent);
+      background:rgba(69,106,237,.1);
+    }
+    .asset-suggestion-chip.added {
+      border-color:var(--green);
+      opacity:.7;
+    }
+    .chip-name { font-weight:600; color:var(--text); }
+    .chip-meta { font-size:10px; }
+    .chip-add  {
+      font-size:10px;font-weight:800;
+      color:var(--accent);
+      text-transform:uppercase;letter-spacing:.5px;
+    }
 
     /* ── Cards ── */
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
@@ -504,7 +556,10 @@
 <div class="hdr">
   <div class="hdr-left">
     <a href="/dashboard" class="back-to-dash">← Dashboard</a>
-    <h1><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--muted)">BID</span></h1>
+    <a class="hdr-brand brand-animate" href="/dashboard" aria-label="FrameBid">
+      <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+      <span class="brand-word-clip" aria-hidden="true"><span class="brand-word">FRAMEBID</span></span>
+    </a>
     <div class="project-context" id="project-context-display" style="display:none">
       <strong id="project-context-name"></strong>
       <span class="muted" id="project-context-date"></span>
@@ -522,6 +577,8 @@
         <option value="EUR">EUR</option>
         <option value="AUD">AUD</option>
       </select>
+      <span id="fx-rate-display"
+            style="font-size:11px;color:var(--muted);white-space:nowrap;display:none"></span>
     </label>
     <!-- <span id="fx-pill" class="pill hidden" title="Exchange rate source"></span> -->
     <label class="hdr-user" title="Saved with corrections">
@@ -565,6 +622,29 @@
   </div>
   <div id="rates-panel" class="card" style="display:none;margin-top:-6px;padding-top:14px">
     <div class="sec-label" style="margin-bottom:10px">Labor rates by department</div>
+    <div class="rate-override-row">
+      <label class="rate-override-label" for="rates-override-input">
+        Apply one rate to all departments
+      </label>
+      <div class="rate-override-input-row">
+        <span class="rate-sym" id="rates-override-sym">$</span>
+        <input type="number"
+               id="rates-override-input"
+               class="rate-input"
+               placeholder="e.g. 750"
+               min="0" step="50"
+               style="width:90px">
+        <button type="button" class="btn-blue btn-sm"
+                onclick="applyRateOverrideToAll()">
+          Apply to All
+        </button>
+      </div>
+      <p class="muted" style="font-size:11px;margin:0">
+        Sets all department rates to the same value.
+        Individual rates can still be adjusted afterwards.
+      </p>
+    </div>
+    <div style="height:1px;background:var(--border);margin:10px 0"></div>
     <div class="rates-grid" id="rates-grid"></div>
     <p style="font-size:11px;color:var(--muted);margin-top:10px">
       Enter rates in your selected display currency. Stored as USD internally for estimates.
@@ -859,6 +939,38 @@
 
     <div class="section-divider"><div></div>VFX ASSET BREAKDOWN<div></div></div>
 
+    <div id="asset-suggestion-banner" class="hidden"
+         style="margin:16px 0;padding:16px;
+                background:var(--card);border-radius:var(--r);
+                border:1px solid var(--accent)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--accent)">
+            ✨ AI identified potential assets in your shots
+          </div>
+          <div class="muted" style="font-size:12px;margin-top:2px">
+            The following CG builds appear to be needed.
+            Click any to add to your asset breakdown.
+          </div>
+        </div>
+        <button type="button" onclick="dismissAssetSuggestions()"
+                class="btn-ghost btn-sm">✕</button>
+      </div>
+      <div id="asset-suggestion-chips"
+           style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+      </div>
+      <div style="margin-top:10px">
+        <button type="button" onclick="addAllSuggestedAssets()"
+                class="btn-blue btn-sm">
+          + Add All to Asset Breakdown
+        </button>
+        <button type="button" onclick="dismissAssetSuggestions()"
+                class="btn-ghost btn-sm" style="margin-left:8px">
+          Dismiss
+        </button>
+      </div>
+    </div>
+
     <div class="prequal-toggle" id="asset-rates-toggle" onclick="toggleAssetRatesPanel()">
       <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
       <span>Asset Dept Rates (<span id="asset-rates-currency-label">USD</span>/day)</span>
@@ -866,6 +978,25 @@
     </div>
     <div id="asset-rates-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
         <div class="sec-label" style="margin-bottom:10px">Asset build rates by department</div>
+        <div class="rate-override-row">
+          <label class="rate-override-label" for="asset-rates-override-input">
+            Apply one rate to all asset departments
+          </label>
+          <div class="rate-override-input-row">
+            <span class="rate-sym" id="asset-rates-override-sym">$</span>
+            <input type="number"
+                   id="asset-rates-override-input"
+                   class="rate-input"
+                   placeholder="e.g. 750"
+                   min="0" step="50"
+                   style="width:90px">
+            <button type="button" class="btn-blue btn-sm"
+                    onclick="applyAssetRateOverrideToAll()">
+              Apply to All
+            </button>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
         <div class="rates-grid" id="asset-rates-grid"></div>
         <div class="rates-hint muted" style="font-size:11px;margin-top:6px">
           Rates shown in <span id="asset-rates-currency">USD</span>/day.
@@ -1400,6 +1531,7 @@ function onDisplayCurrencyChange(code) {
   try { localStorage.setItem(DISPLAY_CURRENCY_STORAGE_KEY, c); } catch {}
   updateRatesCurrencyLabels();
   buildAssetRatesPanel();
+  updateFxRateDisplay();
   refreshAllMoneyDisplays();
 }
 
@@ -1410,6 +1542,37 @@ function updateRatesCurrencyLabels() {
   if (assetLbl) assetLbl.textContent = _displayCurrency;
   const assetCur = document.getElementById('asset-rates-currency');
   if (assetCur) assetCur.textContent = _displayCurrency;
+  const sym = CURRENCY_SYMBOLS[_displayCurrency] || '$';
+  const overrideSym = document.getElementById('rates-override-sym');
+  if (overrideSym) overrideSym.textContent = sym;
+  const assetOverrideSym = document.getElementById('asset-rates-override-sym');
+  if (assetOverrideSym) assetOverrideSym.textContent = sym;
+}
+
+function updateFxRateDisplay() {
+  const el = document.getElementById('fx-rate-display');
+  if (!el) return;
+
+  if (!_displayCurrency || _displayCurrency === 'USD') {
+    el.style.display = 'none';
+    return;
+  }
+
+  const rate = _fxRates[_displayCurrency];
+  if (!rate) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const formatted = Number(rate).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  });
+  el.textContent = `1 USD = ${formatted} ${_displayCurrency}`;
+  el.title = _fxMeta.date
+    ? `Rate from ${_fxMeta.date} · Updates hourly`
+    : 'Rate updates hourly';
+  el.style.display = 'inline';
 }
 
 function updateFxStatusNote() {
@@ -1444,6 +1607,7 @@ async function loadFxRates() {
     _fxMeta = { date: null, source: 'fallback', fallback: true };
   }
   updateFxStatusNote();
+  updateFxRateDisplay();
   refreshAllMoneyDisplays();
 }
 
@@ -1493,11 +1657,32 @@ function renderDeptRatesPanel() {
     const display = rateDisplayValue(usd);
     return `<div class="rate-field">
       <label for="rate-${dept}">${deptLabel(dept)}</label>
-      <input type="number" id="rate-${dept}" min="0" step="${step}" value="${display}"
+      <input type="number" class="rate-input" id="rate-${dept}" min="0" step="${step}" value="${display}"
         oninput="onDeptRateChange('${dept}', this.value)">
     </div>`;
   }).join('');
+  const sym = CURRENCY_SYMBOLS[_displayCurrency] || '$';
+  const overrideSym = document.getElementById('rates-override-sym');
+  if (overrideSym) overrideSym.textContent = sym;
+  const overrideInput = document.getElementById('rates-override-input');
+  if (overrideInput) overrideInput.step = step;
   updateRatesSummary();
+}
+
+function applyRateOverrideToAll() {
+  const input = document.getElementById('rates-override-input');
+  const val = parseFloat(input?.value);
+  if (!val || val <= 0) {
+    toast('Enter a valid rate first', 'warn');
+    return;
+  }
+  RATE_DEPARTMENTS.forEach(dept => {
+    const inp = document.getElementById(`rate-${dept}`);
+    if (inp) inp.value = val;
+    onDeptRateChange(dept, val);
+  });
+  toast(`All shot dept rates set to ${money(displayToUsd(val))}/day`);
+  if (input) input.value = '';
 }
 
 function onDeptRateChange(dept, raw) {
@@ -1552,6 +1737,7 @@ function buildAssetRatesPanel() {
     <div class="rate-field">
       <label>${label}</label>
       <input type="number"
+             class="rate-input"
              min="0" step="${step}"
              value="${getAssetDeptRate(key)}"
              data-asset-dept="${key}"
@@ -1559,7 +1745,29 @@ function buildAssetRatesPanel() {
     </div>`).join('');
   const cur = document.getElementById('asset-rates-currency');
   if (cur) cur.textContent = _displayCurrency;
+  const sym = CURRENCY_SYMBOLS[_displayCurrency] || '$';
+  const overrideSym = document.getElementById('asset-rates-override-sym');
+  if (overrideSym) overrideSym.textContent = sym;
+  const overrideInput = document.getElementById('asset-rates-override-input');
+  if (overrideInput) overrideInput.step = step;
   updateAssetRatesSummary();
+}
+
+function applyAssetRateOverrideToAll() {
+  const input = document.getElementById('asset-rates-override-input');
+  const val = parseFloat(input?.value);
+  if (!val || val <= 0) {
+    toast('Enter a valid rate first', 'warn');
+    return;
+  }
+  Object.keys(ASSET_DEPT_LABELS).forEach(key => {
+    const inp = document.querySelector(`#asset-rates-grid input[data-asset-dept="${key}"]`);
+    if (inp) inp.value = val;
+    setAssetDeptRate(key, val);
+  });
+  recalcAllAssetCosts();
+  toast(`All asset dept rates set to ${money(displayToUsd(val))}/day`);
+  if (input) input.value = '';
 }
 
 function toggleAssetRatesPanel() {
@@ -1596,6 +1804,149 @@ function recalcAllAssetCosts() {
   document.querySelectorAll('#asset-tbody tr').forEach(tr => updateAssetRowTotals(tr));
   updateAssetSummary();
   updateCombinedSummary();
+}
+
+let _suggestedAssets = [];
+
+async function suggestAssetsFromShots(descriptions, project) {
+  try {
+    const r = await fetch(`${API}/suggest-assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shot_descriptions: descriptions,
+        project_name: project || null,
+      }),
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    const assets = data.suggested_assets || [];
+    if (assets.length > 0) {
+      showAssetSuggestionBanner(assets);
+    }
+  } catch {}
+}
+
+function showAssetSuggestionBanner(assets) {
+  _suggestedAssets = assets;
+  const banner = document.getElementById('asset-suggestion-banner');
+  const chips = document.getElementById('asset-suggestion-chips');
+  if (!banner || !chips) return;
+
+  chips.innerHTML = assets.map((a, i) => `
+    <div class="asset-suggestion-chip"
+         onclick="addSuggestedAsset(${i})"
+         title="${escAttr(a.reason || '')}">
+      <span class="chip-name">${escHtml(a.asset_name || 'Asset')}</span>
+      <span class="chip-meta muted">
+        ${a.appears_in_shots || '?'} shot${a.appears_in_shots !== 1 ? 's' : ''}
+      </span>
+      <span class="chip-add">+ Add</span>
+    </div>
+  `).join('');
+
+  banner.classList.remove('hidden');
+  banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function addSuggestedAsset(idx) {
+  const asset = _suggestedAssets[idx];
+  if (!asset) return;
+
+  const assetEntry = {
+    item_number: String((_assetInputs?.length || 0) + 1),
+    asset_name: asset.asset_name,
+    description: asset.description || asset.asset_name,
+    variations: 1,
+    assumptions: asset.reason || '',
+    asset_type: asset.asset_type || '',
+  };
+
+  estimateSingleSuggestedAsset(assetEntry);
+
+  const chips = document.querySelectorAll('.asset-suggestion-chip');
+  if (chips[idx]) {
+    chips[idx].classList.add('added');
+    const addLabel = chips[idx].querySelector('.chip-add');
+    if (addLabel) addLabel.textContent = '✓ Added';
+    chips[idx].style.pointerEvents = 'none';
+  }
+}
+
+function addAllSuggestedAssets() {
+  _suggestedAssets.forEach((_, i) => {
+    const chip = document.querySelectorAll('.asset-suggestion-chip')[i];
+    if (!chip?.classList.contains('added')) {
+      addSuggestedAsset(i);
+    }
+  });
+}
+
+async function estimateSingleSuggestedAsset(asset) {
+  document.getElementById('asset-results')?.classList.remove('hidden');
+  if (!Array.isArray(_assetInputs)) _assetInputs = [];
+  if (!Array.isArray(_assetResults)) _assetResults = [];
+
+  const tbody = document.getElementById('asset-tbody');
+  if (!tbody || !tbody.children.length) {
+    buildAssetTableHeader();
+  }
+
+  // Reserve row index synchronously so parallel "Add All" calls don't collide
+  const idx = _assetInputs.length;
+  _assetInputs[idx] = asset;
+  _assetResults[idx] = null;
+
+  const tier = asset.asset_type?.includes('background') ? 'background' : 'secondary';
+
+  try {
+    const r = await fetch(`${API}/estimate/assets/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        assets: [{
+          asset_name: asset.asset_name,
+          description: asset.description || asset.asset_name,
+          variations: asset.variations || 1,
+        }],
+        asset_context: {
+          tier,
+          notes: asset.assumptions || asset.reason || '',
+          day_rate: getAssetDeptRateUsd('modelling') || 750,
+        },
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const msg = JSON.parse(line.slice(6));
+          if (msg.type === 'result') {
+            appendAssetResultRow(idx, asset, msg.data);
+            updateAssetSummary();
+            updateCombinedSummary();
+            sizeTableWrappers();
+          }
+        } catch {}
+      }
+    }
+  } catch (e) {
+    toast('Asset estimate failed: ' + (e.message || e), 'error');
+  }
+}
+
+function dismissAssetSuggestions() {
+  document.getElementById('asset-suggestion-banner')?.classList.add('hidden');
 }
 
 function getDeptRates() {
@@ -4494,6 +4845,15 @@ async function runBatchStream(shots, project, preQual) {
         autoShowPopulatedCols(_batchResult.shots.filter(Boolean));
         applyColVisibility();
         await autoGenerateMissingMethodologies();
+
+        // Suggest assets in background (non-blocking)
+        const descriptions = (_batchResult?.shots || [])
+          .map(s => s.description || '')
+          .filter(Boolean);
+        if (descriptions.length > 0) {
+          suggestAssetsFromShots(descriptions, getBatchProject() || '');
+        }
+
         const includedShots = (_batchResult?.shots || []).filter(isIncludedShot);
         if (includedShots.length > 0) {
           const projectName = getBatchProjectRaw();
@@ -5542,6 +5902,7 @@ document.addEventListener('visibilitychange', () => {
   await loadDeptRates();
   loadAssetDeptRates();
   await loadFxRates();
+  updateFxRateDisplay();
   await checkServer();
   sizeTableWrappers();
   await loadProjectBidFromContext();

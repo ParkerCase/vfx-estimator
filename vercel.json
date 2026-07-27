@@ -5,6 +5,7 @@
   "buildCommand": "cp frontend/landing.html frontend/index.html && cp frontend/dashboard.html frontend/dashboard-page.html && cp frontend/estimate_ui.html frontend/estimate.html && cp frontend/signin.html frontend/signin-page.html",
   "outputDirectory": "frontend",
   "rewrites": [
+    { "source": "/access", "destination": "/access.html" },
     { "source": "/dashboard", "destination": "/dashboard-page.html" },
     { "source": "/estimate", "destination": "/estimate.html" },
     { "source": "/signin", "destination": "/signin-page.html" }

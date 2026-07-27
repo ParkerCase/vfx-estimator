@@ -157,6 +157,11 @@ class SuggestMethodologyRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class SuggestAssetsRequest(BaseModel):
+    shot_descriptions: List[str]
+    project_name: Optional[str] = None
+
+
 class GoogleAuthRequest(BaseModel):
     credential: str
 
@@ -934,6 +939,90 @@ Return JSON only:
                 flush=True,
             )
         return result or {"suggestions": []}
+
+    @app.post("/suggest-assets")
+    def suggest_assets(req: SuggestAssetsRequest) -> Dict[str, Any]:
+        """
+        Analyse shot descriptions and identify distinct CG asset
+        builds implied (creatures, environments, vehicles, props,
+        digital doubles). Deduplicate across all shots.
+        """
+        svc = get_service()
+        descriptions = (req.shot_descriptions or [])[:60]
+        combined = "\n".join(
+            f"- {d[:200]}" for d in descriptions if str(d).strip()
+        )
+        if not combined.strip():
+            return {"suggested_assets": [], "total_cg_assets": 0}
+
+        project_line = f"\nPROJECT: {req.project_name}\n" if req.project_name else "\n"
+        prompt = f"""You are a VFX producer reviewing shot descriptions
+to identify what CG ASSETS need to be built for this project.
+{project_line}
+Read all shot descriptions and identify every distinct CG asset
+that requires a build (modelling, rigging, lookdev, etc.).
+
+RULES:
+- Only list assets that need to be BUILT from scratch
+- Group multiple shots using the same asset into ONE entry
+- Do NOT list the same asset twice under different names
+- Only include CG builds — not 2D compositing work
+- Common asset types: creature, digital double, vehicle,
+  environment/set, hero prop, destruction/FX element
+- A "CG castle" seen in 6 shots = ONE environment asset
+- Background crowd = ONE crowd asset (not per-shot)
+- Do NOT include camera tracks, wire removal, or 2D work
+
+SHOT DESCRIPTIONS:
+{combined}
+
+Return ONLY a JSON object:
+{{
+  "suggested_assets": [
+    {{
+      "asset_name": "CG Dragon — Hero Creature",
+      "asset_type": "hero_creature",
+      "description": "Large winged dragon creature, appears in 8 shots. Hero quality required for close-up shots.",
+      "appears_in_shots": 8,
+      "confidence": 0.95,
+      "reason": "Referenced as 'the dragon' across multiple shots with varied angles"
+    }},
+    {{
+      "asset_name": "Burning Village Environment",
+      "asset_type": "cg_environment_hero",
+      "description": "Full CG village environment seen burning. Multiple camera angles require full 360 build.",
+      "appears_in_shots": 4,
+      "confidence": 0.85,
+      "reason": "Village set needed for fire sequence shots"
+    }}
+  ],
+  "total_cg_assets": 3
+}}
+"""
+        from vfx_estimator.llm.gemini_client import generate_json
+
+        try:
+            result = generate_json(
+                prompt,
+                settings=svc.settings,
+                debug_label="suggest_assets",
+                timeout_sec=60,
+            )
+        except Exception as exc:
+            print(
+                f"[suggest_assets] generate_json raised {type(exc).__name__}: {exc}",
+                flush=True,
+            )
+            result = None
+        if not result:
+            return {"suggested_assets": [], "total_cg_assets": 0}
+        assets = result.get("suggested_assets") or []
+        if not isinstance(assets, list):
+            assets = []
+        total = result.get("total_cg_assets")
+        if not isinstance(total, int):
+            total = len(assets)
+        return {"suggested_assets": assets, "total_cg_assets": total}
 
     @app.post("/estimate/assets/stream")
     async def estimate_assets_stream(req: AssetEstimateRequest) -> StreamingResponse:

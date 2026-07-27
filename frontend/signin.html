@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sign in — FrameBid</title>
+  <script src="/assets/site-gate.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -57,22 +58,61 @@
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 0;
       font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      color: #7a91a3;
+      text-decoration: none;
     }
-    .brand-mark {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      background: var(--accent);
+    .brand-logo {
+      height: 40px;
+      width: auto;
+      display: block;
       flex-shrink: 0;
-      transition: transform 0.35s ease;
+      position: relative;
+      z-index: 2;
     }
-    .brand:hover .brand-mark { transform: rotate(45deg); }
+    .brand-word-clip {
+      display: block;
+      overflow: hidden;
+      height: 1.15em;
+      width: 0;
+      margin-left: -10px;
+      margin-top: 3px;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-word {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: #7a91a3;
+    }
+    .brand.brand-animate .brand-logo {
+      opacity: 0;
+      transform: scale(0.92);
+      animation: brandLogoIn 0.45s ease forwards;
+    }
+    .brand.brand-animate .brand-word-clip {
+      animation: brandWordReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.38s forwards;
+    }
+    @keyframes brandLogoIn { to { opacity: 1; transform: scale(1); } }
+    @keyframes brandWordReveal { to { width: 7.85em; } }
+    @media (prefers-reduced-motion: reduce) {
+      .brand.brand-animate .brand-logo,
+      .brand.brand-animate .brand-word-clip {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        width: 7.85em;
+      }
+    }
     .top-link {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -146,7 +186,10 @@
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>FRAME<span style="color:var(--mute)">BID</span></a>
+    <a class="brand brand-animate" href="/" aria-label="FrameBid">
+      <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+      <span class="brand-word-clip" aria-hidden="true"><span class="brand-word">FRAMEBID</span></span>
+    </a>
     <a class="top-link" href="/">← Back</a>
   </header>
 
