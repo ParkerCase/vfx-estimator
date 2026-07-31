@@ -213,6 +213,61 @@
       background:var(--text);cursor:pointer;border:2px solid var(--bg)}
     .pq-ratio-label{font-size:11px;color:var(--text);font-weight:700;min-width:100px;text-align:right}
 
+    .resource-schedule-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:12px;margin-bottom:14px
+    }
+    .resource-schedule-grid label{
+      display:flex;flex-direction:column;gap:4px;font-size:10px;font-weight:800;
+      text-transform:uppercase;letter-spacing:.45px;color:var(--muted)
+    }
+    .resource-schedule-grid input,.resource-schedule-grid select{
+      padding:8px 10px;font-size:13px;font-weight:600;width:100%
+    }
+    .resource-schedule-grid .span-2{grid-column:span 2}
+    @media (max-width:700px){.resource-schedule-grid .span-2{grid-column:span 1}}
+    .resource-plan-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
+    .resource-plan-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+    .resource-plan-table th,.resource-plan-table td{
+      padding:8px 10px;border-bottom:1px solid var(--border);text-align:left
+    }
+    .resource-plan-table th{
+      font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800
+    }
+    .resource-plan-table td:nth-child(n+2),
+    .resource-plan-table th:nth-child(n+2){text-align:right}
+    .resource-plan-table tfoot td{
+      font-weight:800;border-top:1px solid var(--border);padding-top:10px
+    }
+    .resource-plan-summary{
+      margin-top:12px;padding:12px 14px;background:var(--card2);
+      border:1px solid var(--border);border-radius:var(--r);line-height:1.5
+    }
+    .resource-plan-meta{
+      margin-top:10px;display:flex;flex-wrap:wrap;gap:12px 18px;
+      font-size:12px;color:var(--muted)
+    }
+    .resource-week-wrap{margin-top:16px;overflow:auto}
+    .resource-week-table{width:100%;border-collapse:collapse;font-size:11px;min-width:640px}
+    .resource-week-table th,.resource-week-table td{
+      padding:6px 8px;border:1px solid var(--border);text-align:center;white-space:nowrap
+    }
+    .resource-week-table th:first-child,.resource-week-table td:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+    .resource-week-cell{font-variant-numeric:tabular-nums;font-weight:700}
+    .resource-week-cell.peak{background:rgba(226,165,58,.18);color:var(--orange)}
+    .resource-week-cell.mid{background:rgba(69,106,237,.12)}
+    .resource-realistic-ok{color:var(--green);font-weight:700}
+    .resource-realistic-warn{color:var(--orange);font-weight:700}
+
+    .security-footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 32px;
+    }
+
     /* ── Buttons ── */
     button{border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);
            font-weight:600;transition:all .15s}
@@ -231,31 +286,25 @@
     .btn-ghost:hover{border-color:var(--accent);color:var(--text)}
     .btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
 
-    .asset-suggestion-chip {
-      display:flex;align-items:center;gap:8px;
-      padding:7px 12px;
-      background:var(--card2);
-      border:1px solid var(--border);
-      border-radius:20px;
-      cursor:pointer;
-      transition:all .15s;
-      font-size:12px;
+    .suggested-asset-cell{min-width:160px;max-width:220px}
+    .suggested-asset-pill{
+      display:flex;flex-direction:column;gap:6px;
+      padding:8px 10px;border-radius:10px;
+      background:var(--card2);border:1px solid var(--border);
     }
-    .asset-suggestion-chip:hover {
-      border-color:var(--accent);
-      background:rgba(69,106,237,.1);
+    .suggested-asset-pill .asset-pill-name{
+      font-size:12px;font-weight:700;color:var(--text);line-height:1.35;
     }
-    .asset-suggestion-chip.added {
-      border-color:var(--green);
-      opacity:.7;
+    .suggested-asset-pill .btn-accent-sm{
+      align-self:flex-start;
+      background:var(--accent);color:#fff;border:none;border-radius:8px;
+      padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;
     }
-    .chip-name { font-weight:600; color:var(--text); }
-    .chip-meta { font-size:10px; }
-    .chip-add  {
-      font-size:10px;font-weight:800;
-      color:var(--accent);
-      text-transform:uppercase;letter-spacing:.5px;
+    .suggested-asset-pill .btn-accent-sm:hover{filter:brightness(1.08)}
+    .suggested-asset-pill .btn-accent-sm:disabled{
+      opacity:.7;cursor:default;background:var(--green);color:#0a1410;
     }
+    .suggested-asset-loading{font-size:11px;color:var(--muted);font-weight:600}
 
     /* ── Cards ── */
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
@@ -494,6 +543,12 @@
     .presets-table tr.studio td{background:rgba(69,106,237,.06)}
     .presets-table input{width:58px;padding:5px 6px;font-size:12px}
     .presets-table input.preset-desc{width:240px}
+    .presets-table input:disabled{opacity:.55;cursor:not-allowed}
+    .preset-type-cell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:140px}
+    .preset-type-name{font-weight:800}
+    .preset-badge{color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.3px}
+    .preset-row-actions{display:inline-flex;gap:4px;margin-left:auto}
+    .preset-row-actions .btn-history{padding:3px 8px;font-size:10px}
     .presets-note{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}
     .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(69,106,237,.35);
       border-radius:8px;background:rgba(69,106,237,.07);font-size:12px;color:var(--text);line-height:1.5}
@@ -507,6 +562,8 @@
     .row-mini-btn:hover{border-color:var(--accent);color:var(--accent)}
     .row-mini-btn.rerun{display:none}
     .row-mini-btn.rerun.show{display:inline-block}
+    tr.batch-data-row.row-rerunning{opacity:.6;pointer-events:none}
+    tr.batch-data-row.row-rerunning .row-mini-btn.rerun{display:inline-block}
     .method-suggestions{position:absolute;left:6px;top:34px;z-index:30;width:320px;background:var(--card);
       border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(0,0,0,.45);padding:8px}
     .method-card{padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;background:var(--surface)}
@@ -670,14 +727,19 @@
         <thead>
           <tr>
             <th>Shot Type</th><th>Description</th><th>CAM</th><th>MM</th><th>LAY</th><th>ANIM</th>
-            <th>CFX</th><th>FX</th><th>LGT</th><th>DMP</th><th>CP</th><th>CR</th><th>COMP</th><th>Total</th><th>Actions</th>
+            <th>CFX</th><th>FX</th><th>LGT</th><th>DMP</th><th>CP</th><th>CR</th><th>COMP</th><th>Total</th>
           </tr>
         </thead>
         <tbody id="presets-body">
-          <tr><td colspan="15" style="color:var(--muted)">Loading presets...</td></tr>
+          <tr><td colspan="14" style="color:var(--muted)">Loading presets...</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="muted" style="font-size:11px;margin-top:8px">
+      Changes to presets apply to all users during the
+      current beta period. Per-studio presets will be
+      available at launch.
+    </p>
 
     <div class="section-divider" style="margin:28px 0 20px">
       <div class="divider-line"></div>
@@ -701,14 +763,19 @@
             <th>Asset Type</th><th>Description</th>
             <th>MODEL</th><th>TEX</th><th>RIG</th><th>CFX</th>
             <th>FX</th><th>LKDV</th><th>DMP</th><th>CDEV</th>
-            <th>Total</th><th>Actions</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody id="asset-presets-body">
-          <tr><td colspan="12" style="color:var(--muted)">Loading asset presets...</td></tr>
+          <tr><td colspan="11" style="color:var(--muted)">Loading asset presets...</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="muted" style="font-size:11px;margin-top:8px">
+      Changes to presets apply to all users during the
+      current beta period. Per-studio presets will be
+      available at launch.
+    </p>
   </div>
 
   <div class="card" style="margin-bottom:14px">
@@ -892,7 +959,7 @@
           <span id="batch-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
           <div class="btn-row" style="margin:0">
             <button class="btn-green with-icon" onclick="saveAllBatchCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save All Corrections</button>
-            <button class="btn-ghost with-icon" onclick="exportBatchCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
+            <button class="btn-ghost with-icon" onclick="exportBidExcel()"><svg class="icon"><use href="#i-download"></use></svg>Export Excel</button>
             <span id="batch-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
           </div>
         </div>
@@ -938,38 +1005,6 @@
     </div>
 
     <div class="section-divider"><div></div>VFX ASSET BREAKDOWN<div></div></div>
-
-    <div id="asset-suggestion-banner" class="hidden"
-         style="margin:16px 0;padding:16px;
-                background:var(--card);border-radius:var(--r);
-                border:1px solid var(--accent)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div style="font-weight:700;font-size:13px;color:var(--accent)">
-            ✨ AI identified potential assets in your shots
-          </div>
-          <div class="muted" style="font-size:12px;margin-top:2px">
-            The following CG builds appear to be needed.
-            Click any to add to your asset breakdown.
-          </div>
-        </div>
-        <button type="button" onclick="dismissAssetSuggestions()"
-                class="btn-ghost btn-sm">✕</button>
-      </div>
-      <div id="asset-suggestion-chips"
-           style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-      </div>
-      <div style="margin-top:10px">
-        <button type="button" onclick="addAllSuggestedAssets()"
-                class="btn-blue btn-sm">
-          + Add All to Asset Breakdown
-        </button>
-        <button type="button" onclick="dismissAssetSuggestions()"
-                class="btn-ghost btn-sm" style="margin-left:8px">
-          Dismiss
-        </button>
-      </div>
-    </div>
 
     <div class="prequal-toggle" id="asset-rates-toggle" onclick="toggleAssetRatesPanel()">
       <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
@@ -1072,7 +1107,7 @@
         <span id="asset-summary" style="font-size:13px;color:var(--text);font-weight:700">—</span>
         <div class="btn-row" style="margin:0">
           <button class="btn-green with-icon" onclick="saveAssetCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save Corrections</button>
-          <button class="btn-ghost with-icon" onclick="exportAssetCsv()"><svg class="icon"><use href="#i-download"></use></svg>Export CSV</button>
+          <button class="btn-ghost with-icon" onclick="exportBidExcel()"><svg class="icon"><use href="#i-download"></use></svg>Export Excel</button>
           <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
         </div>
       </div>
@@ -1141,7 +1176,67 @@
       <div class="fx-status-note" id="fx-status-note"></div>
     </div>
 
+    <div class="prequal-toggle hidden" id="resource-plan-toggle" onclick="toggleResourcePlanning()" style="margin-top:16px">
+      <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
+      <span>📅 Resource Planning (schedule estimator)</span>
+    </div>
+    <div id="resource-plan-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
+      <div class="sec-label" style="margin-bottom:8px">Resource Planning</div>
+      <p class="muted" style="font-size:13px;margin-bottom:14px;max-width:52rem;line-height:1.55">
+        Turn bid days into a production plan. FrameBid uses each department's estimated workload,
+        delivery schedule, and production dependencies to calculate recommended staffing by
+        department, week, and project phase.
+      </p>
+
+      <div class="resource-schedule-grid">
+        <label for="rp-start">
+          Project start
+          <input type="date" id="rp-start" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-end">
+          Final delivery
+          <input type="date" id="rp-end" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-days-per-week">
+          Working days / week
+          <input type="number" id="rp-days-per-week" min="1" max="7" step="1" value="5" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-holidays">
+          Holidays / shutdown days
+          <input type="number" id="rp-holidays" min="0" step="1" value="0" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-utilization">
+          Utilization %
+          <input type="number" id="rp-utilization" min="50" max="100" step="5" value="100" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-buffer">
+          Revision buffer %
+          <input type="number" id="rp-buffer" min="0" max="50" step="5" value="0" onchange="onResourceScheduleChange()">
+        </label>
+        <label for="rp-overlap">
+          Department timing
+          <select id="rp-overlap" onchange="onResourceScheduleChange()">
+            <option value="overlap" selected>Overlap (pipeline stages share calendar)</option>
+            <option value="sequential">Sequential (stage must finish before next)</option>
+          </select>
+        </label>
+        <label class="span-2" style="justify-content:flex-end">
+          &nbsp;
+          <div class="resource-plan-actions" style="margin:0">
+            <button type="button" class="btn-blue btn-sm" onclick="runResourcePlan()">Calculate staffing</button>
+            <span class="muted" id="rp-schedule-hint" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:500"></span>
+          </div>
+        </label>
+      </div>
+
+      <div id="resource-plan-results"></div>
+    </div>
+
 </div><!-- /wrap -->
+
+<footer class="security-footer">
+  <span>🔒 Your data is encrypted in transit (TLS 1.3) and at rest. Bids are isolated per account.</span>
+</footer>
 
 <div id="col-map-modal" class="modal-overlay" onclick="closeColMapOutside(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
@@ -1806,80 +1901,120 @@ function recalcAllAssetCosts() {
   updateCombinedSummary();
 }
 
-let _suggestedAssets = [];
+const CG_INDICATORS = [
+  'full cg', 'cg creature', 'cg character', 'cg environment',
+  'cg vehicle', 'digital double', 'cg asset', '3d build',
+  'cg integration', 'hero asset', 'cg prop', 'modelling',
+  'rigging', '3d element',
+];
 
-async function suggestAssetsFromShots(descriptions, project) {
+function methodologyImpliesCgAsset(methodology) {
+  const lower = (methodology || '').toLowerCase();
+  return CG_INDICATORS.some(kw => lower.includes(kw));
+}
+
+function suggestedAssetCellHtml(asset, shotIdx) {
+  if (!asset) return '';
+  if (asset.loading) {
+    return `<div class="suggested-asset-loading">Finding CG build…</div>`;
+  }
+  if (!asset.asset_name) return '';
+  const added = !!asset.added;
+  return `<div class="suggested-asset-pill" title="${escAttr(asset.reason || asset.description || '')}">
+    <span class="asset-pill-name">${escHtml(asset.asset_name)}</span>
+    <button type="button" class="btn-accent-sm"
+            ${added ? 'disabled' : ''}
+            onclick="addSuggestedAssetToSection(${shotIdx})">
+      ${added ? '✓ Added' : '+ Add to Assets'}
+    </button>
+  </div>`;
+}
+
+function renderSuggestedAssetCell(idx, asset) {
+  const el = document.getElementById(`suggested-asset-${idx}`);
+  if (!el) return;
+  el.innerHTML = suggestedAssetCellHtml(asset, idx);
+}
+
+async function suggestAssetForShotRow(idx) {
+  const row = _batchResult?.shots?.[idx];
+  if (!row) return;
+  const method = (row.methodology || '').trim();
+  if (!methodologyImpliesCgAsset(method)) {
+    if (!row.suggestedAsset?.added) {
+      row.suggestedAsset = null;
+      renderSuggestedAssetCell(idx, null);
+    }
+    return;
+  }
+  if (row.suggestedAsset?.added) {
+    renderSuggestedAssetCell(idx, row.suggestedAsset);
+    return;
+  }
+
+  row.suggestedAsset = { loading: true };
+  renderSuggestedAssetCell(idx, row.suggestedAsset);
+
   try {
+    const combined = combinedRowDescription(row);
     const r = await fetch(`${API}/suggest-assets`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        shot_descriptions: descriptions,
-        project_name: project || null,
+        shot_descriptions: [combined],
+        project_name: getBatchProject() || null,
       }),
     });
-    if (!r.ok) return;
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    const assets = data.suggested_assets || [];
-    if (assets.length > 0) {
-      showAssetSuggestionBanner(assets);
+    const asset = (data.suggested_assets || [])[0];
+    if (!asset?.asset_name) {
+      row.suggestedAsset = null;
+      renderSuggestedAssetCell(idx, null);
+      return;
     }
-  } catch {}
-}
-
-function showAssetSuggestionBanner(assets) {
-  _suggestedAssets = assets;
-  const banner = document.getElementById('asset-suggestion-banner');
-  const chips = document.getElementById('asset-suggestion-chips');
-  if (!banner || !chips) return;
-
-  chips.innerHTML = assets.map((a, i) => `
-    <div class="asset-suggestion-chip"
-         onclick="addSuggestedAsset(${i})"
-         title="${escAttr(a.reason || '')}">
-      <span class="chip-name">${escHtml(a.asset_name || 'Asset')}</span>
-      <span class="chip-meta muted">
-        ${a.appears_in_shots || '?'} shot${a.appears_in_shots !== 1 ? 's' : ''}
-      </span>
-      <span class="chip-add">+ Add</span>
-    </div>
-  `).join('');
-
-  banner.classList.remove('hidden');
-  banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function addSuggestedAsset(idx) {
-  const asset = _suggestedAssets[idx];
-  if (!asset) return;
-
-  const assetEntry = {
-    item_number: String((_assetInputs?.length || 0) + 1),
-    asset_name: asset.asset_name,
-    description: asset.description || asset.asset_name,
-    variations: 1,
-    assumptions: asset.reason || '',
-    asset_type: asset.asset_type || '',
-  };
-
-  estimateSingleSuggestedAsset(assetEntry);
-
-  const chips = document.querySelectorAll('.asset-suggestion-chip');
-  if (chips[idx]) {
-    chips[idx].classList.add('added');
-    const addLabel = chips[idx].querySelector('.chip-add');
-    if (addLabel) addLabel.textContent = '✓ Added';
-    chips[idx].style.pointerEvents = 'none';
+    row.suggestedAsset = { ...asset, added: false };
+    _visibleCols['SUGGESTED ASSET'] = true;
+    saveVisibleCols();
+    renderSuggestedAssetCell(idx, row.suggestedAsset);
+    applyColVisibility();
+    buildColCheckboxes();
+  } catch {
+    row.suggestedAsset = null;
+    renderSuggestedAssetCell(idx, null);
   }
 }
 
-function addAllSuggestedAssets() {
-  _suggestedAssets.forEach((_, i) => {
-    const chip = document.querySelectorAll('.asset-suggestion-chip')[i];
-    if (!chip?.classList.contains('added')) {
-      addSuggestedAsset(i);
+function maybeSuggestAssetsForBatchShots() {
+  (_batchResult?.shots || []).forEach((shot, idx) => {
+    if (!shot) return;
+    if ((shot.methodology || '').trim()) {
+      suggestAssetForShotRow(idx);
     }
   });
+}
+
+async function addSuggestedAssetToSection(shotIdx) {
+  const shot = _batchResult?.shots?.[shotIdx];
+  const asset = shot?.suggestedAsset;
+  if (!asset?.asset_name || asset.added) return;
+
+  document.getElementById('asset-card')?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('asset-results')?.classList.remove('hidden');
+
+  await estimateSingleSuggestedAsset({
+    item_number: String(Date.now()),
+    asset_name: asset.asset_name,
+    description: asset.description || asset.asset_name,
+    variations: 1,
+    assumptions: asset.reason || `Implied by shot ${shotIdx + 1}`,
+    asset_type: asset.asset_type || '',
+  });
+
+  asset.added = true;
+  shot.suggestedAsset = asset;
+  renderSuggestedAssetCell(shotIdx, asset);
+  toast(`"${asset.asset_name}" added to Asset Breakdown`);
 }
 
 async function estimateSingleSuggestedAsset(asset) {
@@ -1892,7 +2027,6 @@ async function estimateSingleSuggestedAsset(asset) {
     buildAssetTableHeader();
   }
 
-  // Reserve row index synchronously so parallel "Add All" calls don't collide
   const idx = _assetInputs.length;
   _assetInputs[idx] = asset;
   _assetResults[idx] = null;
@@ -1943,10 +2077,6 @@ async function estimateSingleSuggestedAsset(asset) {
   } catch (e) {
     toast('Asset estimate failed: ' + (e.message || e), 'error');
   }
-}
-
-function dismissAssetSuggestions() {
-  document.getElementById('asset-suggestion-banner')?.classList.add('hidden');
 }
 
 function getDeptRates() {
@@ -2215,6 +2345,7 @@ const BID_DEPT_SHORT = {
   CAMERA: 'CAM', MATCHMOVE: 'MM', LAYOUT: 'LAY', ANIM: 'ANIM', CFX: 'CFX', FX: 'FX',
   LGT: 'LGT', DMP: 'DMP', 'COMP PAINT': 'CP', 'COMP ROTO': 'CR', COMP: 'COMP',
   CROWDS: 'CROWDS', ENVIRO: 'ENV', AI: 'AI', METHODOLOGY: 'METHOD',
+  'SUGGESTED ASSET': 'CG BUILD',
 };
 
 const PRESET_DEPTS = [
@@ -2244,9 +2375,10 @@ const ASSET_PRESET_DEPT_KEYS = ASSET_PRESET_DEPTS.map(([, key]) => key);
 const ASSET_PRESET_DEPT_HEADERS = ASSET_PRESET_DEPTS.map(([header]) => header);
 
 const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
-const TOGGLE_COLS = ['METHODOLOGY', ...BID_DEPTS];
+const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', ...BID_DEPTS];
 const COL_DEFAULTS = {
   METHODOLOGY: false,
+  'SUGGESTED ASSET': false,
   CAMERA: true,
   MATCHMOVE: false,
   LAYOUT: true,
@@ -2314,8 +2446,24 @@ function presetRowPayload(shotType) {
 
 function presetInput(value, field, shotType, extraClass='') {
   const val = typeof value === 'number' ? value : (value || '');
-  return `<input class="${extraClass}" data-field="${field}" value="${escAttr(val)}"
-    onchange="savePresetFromRow('${escAttr(shotType)}')">`;
+  const type = field === 'description' ? 'text' : 'number';
+  const numericAttrs = field === 'description' ? '' : ' step="0.5" min="0"';
+  return `<input type="${type}" class="${extraClass}" data-field="${field}" data-shot-type="${escAttr(shotType)}"
+    value="${escAttr(String(val))}"${numericAttrs}
+    oninput="onShotPresetInputChange(this)">`;
+}
+
+function onShotPresetInputChange(input) {
+  if (input.dataset.field === 'total' || input.dataset.field === 'description') return;
+  const row = [...document.querySelectorAll('tr[data-preset]')]
+    .find(tr => tr.dataset.preset === input.dataset.shotType);
+  if (!row) return;
+  let sum = 0;
+  PRESET_DEPTS.forEach(([, key]) => {
+    sum += parseFloat(row.querySelector(`[data-field="${key}"]`)?.value || 0) || 0;
+  });
+  const totalInp = row.querySelector('[data-field="total"]');
+  if (totalInp) totalInp.value = Math.round(sum * 2) / 2;
 }
 
 function renderPresets() {
@@ -2323,30 +2471,39 @@ function renderPresets() {
   if (!body) return;
   const entries = Object.entries(_presets).sort(([a], [b]) => a.localeCompare(b));
   if (!entries.length) {
-    body.innerHTML = '<tr><td colspan="15" style="color:var(--muted)">No presets available.</td></tr>';
+    body.innerHTML = '<tr><td colspan="14" style="color:var(--muted)">No presets available.</td></tr>';
     return;
   }
   body.innerHTML = entries.map(([shotType, p]) => {
     const source = p.source || 'system';
+    const isStudio = source === 'studio';
     const deptCells = PRESET_DEPTS.map(([, key]) =>
       `<td>${presetInput(p[key] || 0, key, shotType)}</td>`
     ).join('');
-    const resetBtn = source === 'studio'
+    const resetBtn = isStudio
       ? `<button type="button" class="btn-history danger" onclick="resetPreset('${escAttr(shotType)}')">Reset</button>`
-      : `<span style="color:var(--muted);font-size:11px">System</span>`;
-    return `<tr class="${source === 'studio' ? 'studio' : ''}" data-preset="${escAttr(shotType)}">
-      <td style="font-weight:800">${escHtml(shotType)}</td>
+      : '';
+    return `<tr class="${isStudio ? 'studio' : ''}" data-preset="${escAttr(shotType)}">
+      <td>
+        <div class="preset-type-cell">
+          <span class="preset-type-name">${escHtml(shotType)}</span>
+          ${isStudio ? '<span class="preset-badge">custom</span>' : ''}
+          <span class="preset-row-actions">
+            <button type="button" class="btn-history" onclick="savePresetFromRow('${escAttr(shotType)}')">Save</button>
+            ${resetBtn}
+          </span>
+        </div>
+      </td>
       <td>${presetInput(p.description || '', 'description', shotType, 'preset-desc')}</td>
       ${deptCells}
       <td>${presetInput(p.total || 0, 'total', shotType)}</td>
-      <td>${resetBtn}</td>
     </tr>`;
   }).join('');
 }
 
 async function loadPresets() {
   const body = document.getElementById('presets-body');
-  if (body) body.innerHTML = '<tr><td colspan="15" style="color:var(--muted)">Loading presets...</td></tr>';
+  if (body) body.innerHTML = '<tr><td colspan="14" style="color:var(--muted)">Loading presets...</td></tr>';
   try {
     const r = await fetch(`${API}/presets`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -2354,7 +2511,7 @@ async function loadPresets() {
     _presets = data.presets || {};
     renderPresets();
   } catch (e) {
-    if (body) body.innerHTML = `<tr><td colspan="15" style="color:var(--red)">Could not load presets: ${escHtml(e.message)}</td></tr>`;
+    if (body) body.innerHTML = `<tr><td colspan="14" style="color:var(--red)">Could not load presets: ${escHtml(e.message)}</td></tr>`;
   }
 }
 
@@ -2402,7 +2559,7 @@ function addCustomPreset() {
 async function loadAssetPresets() {
   const tbody = document.getElementById('asset-presets-body');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="12" style="color:var(--muted)">Loading asset presets...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="11" style="color:var(--muted)">Loading asset presets...</td></tr>';
   try {
     const r = await fetch(`${API}/presets/assets`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -2410,7 +2567,7 @@ async function loadAssetPresets() {
     const presets = data.presets || {};
     _assetPresets = presets;
     if (!Object.keys(presets).length) {
-      tbody.innerHTML = `<tr><td colspan="12" style="color:var(--muted);padding:12px">
+      tbody.innerHTML = `<tr><td colspan="11" style="color:var(--muted);padding:12px">
         No asset presets yet - click "+ Add Asset Preset"
       </td></tr>`;
       return;
@@ -2420,7 +2577,7 @@ async function loadAssetPresets() {
       .map(([type, p]) => renderAssetPresetRow(type, p))
       .join('');
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="12" style="color:var(--red)">Failed to load: ${escHtml(e.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="color:var(--red)">Failed to load: ${escHtml(e.message)}</td></tr>`;
   }
 }
 
@@ -2434,19 +2591,24 @@ function renderAssetPresetRow(assetType, p) {
   const deptCells = ASSET_PRESET_DEPT_KEYS.map(key =>
     `<td>${assetPresetInput(p[key] || 0, key, assetType)}</td>`
   ).join('');
+  const resetBtn = isStudio
+    ? `<button type="button" class="btn-history danger" onclick="resetAssetPreset('${escAttr(assetType)}')">Reset</button>`
+    : '';
 
   return `<tr class="${isStudio ? 'studio' : ''}" data-asset-preset="${escAttr(assetType)}">
     <td>
-      <span style="font-weight:600">${escHtml(assetType)}</span>
-      ${isStudio ? '<span style="color:var(--accent);font-size:10px;font-weight:800;margin-left:6px">custom</span>' : ''}
+      <div class="preset-type-cell">
+        <span class="preset-type-name">${escHtml(assetType)}</span>
+        ${isStudio ? '<span class="preset-badge">custom</span>' : ''}
+        <span class="preset-row-actions">
+          <button type="button" class="btn-history" onclick="saveAssetPresetRow('${escAttr(assetType)}')">Save</button>
+          ${resetBtn}
+        </span>
+      </div>
     </td>
     <td>${assetPresetInput(p.description || '', 'description', assetType, 'preset-desc')}</td>
     ${deptCells}
     <td>${assetPresetInput(p.total || 0, 'total', assetType)}</td>
-    <td style="white-space:nowrap">
-      <button type="button" class="btn-history" onclick="saveAssetPresetRow('${escAttr(assetType)}')">Save</button>
-      ${isStudio ? `<button type="button" class="btn-history danger" onclick="resetAssetPreset('${escAttr(assetType)}')">Reset</button>` : ''}
-    </td>
   </tr>`;
 }
 
@@ -2705,6 +2867,10 @@ function clearBatchResults() {
   document.getElementById('batch-bid-summary').classList.add('hidden');
   document.getElementById('combined-summary')?.classList.add('hidden');
   document.getElementById('tax-credit-card')?.classList.add('hidden');
+  document.getElementById('resource-plan-toggle')?.classList.add('hidden');
+  document.getElementById('resource-plan-panel')?.classList.add('hidden');
+  document.getElementById('resource-plan-toggle')?.classList.remove('open');
+  document.getElementById('resource-plan-results').innerHTML = '';
   document.getElementById('batch-bid-summary-stats').innerHTML = '';
   document.getElementById('batch-dept-summary-body').innerHTML = '';
   document.getElementById('batch-dept-summary-foot').innerHTML = '';
@@ -2724,6 +2890,9 @@ function appendBatchResultRow(i, row) {
   row._edited = false;
   if (row._included == null) row._included = !isExcludedShot(row);
   row._notes = notes;
+  if (!row._raw_description) {
+    row._raw_description = String(desc).replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '').trim() || desc;
+  }
   row._ai_dept_days = { ...depts };
   row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
 
@@ -2754,6 +2923,11 @@ function appendBatchResultRow(i, row) {
     <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${errorIconHtml}</td>
     <td class="col-desc">${escHtml(desc)}</td>
     <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology)}</td>
+    <td class="col-suggested-asset" data-dept="SUGGESTED ASSET">
+      <div id="suggested-asset-${i}" class="suggested-asset-cell">
+        ${suggestedAssetCellHtml(row.suggestedAsset, i)}
+      </div>
+    </td>
     <td class="col-notes"><textarea class="batch-notes-inp" data-idx="${i}"
       placeholder="Notes for this shot"
       oninput="updateBatchRowNotes(this)">${escHtml(notes)}</textarea></td>`;
@@ -4528,7 +4702,10 @@ function updateCombinedSummary(shotStats) {
   const hasAnyCost = shotCount > 0 || assetStats.count > 0;
   document.getElementById('combined-summary')?.classList.toggle('hidden', !hasAnyCost);
   document.getElementById('tax-credit-card')?.classList.toggle('hidden', !hasAnyCost);
+  document.getElementById('resource-plan-toggle')?.classList.toggle('hidden', !hasAnyCost);
   if (!hasAnyCost) {
+    document.getElementById('resource-plan-panel')?.classList.add('hidden');
+    document.getElementById('resource-plan-toggle')?.classList.remove('open');
     updateTaxCreditDisplay(0);
     renderFxMultiSummary(0, 0);
     updateFxStatusNote();
@@ -4547,6 +4724,417 @@ function updateCombinedSummary(shotStats) {
   renderFxMultiSummary(grossCost, netSummary.net);
   updateFxStatusNote();
   return { shotCost, assetCost: assetStats.totalCost, grossCost, net: netSummary.net };
+}
+
+const DEPT_PIPELINE = [
+  ['camera_track', 'matchmove'],
+  ['layout'],
+  ['animation', 'cfx', 'fx', 'dmp'],
+  ['lighting'],
+  ['comp_paint', 'comp_roto', 'compositing'],
+];
+// Overlap mode: each dept's available window as a fraction of the full working schedule.
+// Matches typical pipeline timing (e.g. Anim full run, FX shorter, Comp late).
+const OVERLAP_DEPT_WINDOW_FRAC = {
+  camera_track: 1.0, matchmove: 0.90, layout: 0.85,
+  animation: 1.0, cfx: 0.75, fx: 0.80, dmp: 0.70,
+  lighting: 0.60,
+  comp_paint: 0.70, comp_roto: 0.65, compositing: 0.70,
+  prep: 1.0, crowds: 0.75, enviro: 0.80, ai: 0.70,
+};
+let _resourcePlanDeptDays = {};
+
+function toggleResourcePlanning() {
+  const toggle = document.getElementById('resource-plan-toggle');
+  const panel = document.getElementById('resource-plan-panel');
+  if (!toggle || !panel) return;
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  toggle.classList.toggle('open', opening);
+  if (opening) openResourcePlanning();
+  sizeTableWrappers();
+}
+
+function defaultResourceDates() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  // Default to next Monday if mid-week
+  const day = start.getDay();
+  if (day !== 1) {
+    const add = day === 0 ? 1 : (8 - day);
+    start.setDate(start.getDate() + add);
+  }
+  const end = new Date(start);
+  end.setDate(end.getDate() + 10 * 7 - 1); // ~10 weeks
+  const iso = d => d.toISOString().slice(0, 10);
+  return { start: iso(start), end: iso(end) };
+}
+
+function openResourcePlanning() {
+  const startEl = document.getElementById('rp-start');
+  const endEl = document.getElementById('rp-end');
+  if (startEl && !startEl.value) {
+    const d = defaultResourceDates();
+    startEl.value = d.start;
+    if (endEl) endEl.value = d.end;
+  }
+  _resourcePlanDeptDays = gatherResourcePlanDeptDays();
+  updateResourceScheduleHint();
+  const results = document.getElementById('resource-plan-results');
+  if (results && !Object.keys(_resourcePlanDeptDays).length) {
+    results.innerHTML = `<p class="muted" style="margin-top:8px">No department days yet — run a batch estimate first.</p>`;
+  } else if (results && results.innerHTML.trim() === '') {
+    runResourcePlan();
+  }
+}
+
+function onResourceScheduleChange() {
+  updateResourceScheduleHint();
+}
+
+function gatherResourcePlanDeptDays() {
+  const rows = collectBatchRowsFromTable();
+  const deptDays = {};
+  BID_DEPTS.forEach(bidDept => {
+    const key = BID_TO_INTERNAL[bidDept];
+    if (!key) return;
+    const total = rows.reduce(
+      (s, r) => s + (parseFloat(r.dept_days?.[bidDept]) || 0), 0
+    );
+    if (total > 0) deptDays[key] = Math.round(total * 2) / 2;
+  });
+  return deptDays;
+}
+
+function parseDateInput(id) {
+  const v = document.getElementById(id)?.value;
+  if (!v) return null;
+  const d = new Date(v + 'T00:00:00');
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function countWorkingDays(start, end, daysPerWeek) {
+  if (!start || !end || end < start) return 0;
+  const dpw = Math.max(1, Math.min(7, parseInt(daysPerWeek, 10) || 5));
+  // Treat working days as Mon..(Mon+dpw-1)
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    const dow = cur.getDay(); // 0 Sun … 6 Sat
+    const monIndex = dow === 0 ? 6 : dow - 1; // Mon=0
+    if (monIndex < dpw) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+}
+
+function readResourceSchedule() {
+  const start = parseDateInput('rp-start');
+  const end = parseDateInput('rp-end');
+  const daysPerWeek = Math.max(1, Math.min(7, parseInt(document.getElementById('rp-days-per-week')?.value, 10) || 5));
+  const holidays = Math.max(0, parseInt(document.getElementById('rp-holidays')?.value, 10) || 0);
+  const utilizationPct = Math.max(50, Math.min(100, parseFloat(document.getElementById('rp-utilization')?.value) || 100));
+  const bufferPct = Math.max(0, Math.min(50, parseFloat(document.getElementById('rp-buffer')?.value) || 0));
+  const overlap = (document.getElementById('rp-overlap')?.value || 'overlap') === 'overlap';
+  const rawWorking = countWorkingDays(start, end, daysPerWeek);
+  const afterHolidays = Math.max(0, rawWorking - holidays);
+  const afterBuffer = Math.max(1, Math.floor(afterHolidays * (1 - bufferPct / 100)));
+  const weeks = daysPerWeek > 0 ? afterHolidays / daysPerWeek : 0;
+  return {
+    start, end, daysPerWeek, holidays, utilizationPct, bufferPct, overlap,
+    rawWorking, afterHolidays, availableWorkingDays: afterBuffer, weeks,
+  };
+}
+
+function updateResourceScheduleHint() {
+  const el = document.getElementById('rp-schedule-hint');
+  if (!el) return;
+  const s = readResourceSchedule();
+  if (!s.start || !s.end) {
+    el.textContent = 'Set start and delivery dates.';
+    return;
+  }
+  if (s.end < s.start) {
+    el.textContent = 'Delivery must be after start.';
+    return;
+  }
+  el.textContent = `${s.afterHolidays} working days (~${s.weeks.toFixed(1)} wks) · ${s.availableWorkingDays} after ${s.bufferPct}% buffer`;
+}
+
+function deptPipelineStage(dept) {
+  for (let i = 0; i < DEPT_PIPELINE.length; i++) {
+    if (DEPT_PIPELINE[i].includes(dept)) return i;
+  }
+  return DEPT_PIPELINE.length; // leftover stage
+}
+
+function calcDeptAvailableDays(deptDays, schedule) {
+  const total = schedule.availableWorkingDays;
+  const util = Math.max(0.5, Math.min(1, schedule.utilizationPct / 100));
+  // Lower utilization → fewer effective artist-days → higher crew needed
+  const effectiveTotal = Math.max(1, total * util);
+
+  const stageWeights = DEPT_PIPELINE.map(stage =>
+    stage.reduce((s, d) => s + (parseFloat(deptDays[d]) || 0), 0)
+  );
+  const leftoverDays = Object.entries(deptDays).reduce((s, [d, v]) => {
+    return deptPipelineStage(d) >= DEPT_PIPELINE.length ? s + (parseFloat(v) || 0) : s;
+  }, 0);
+  const weights = [...stageWeights, leftoverDays];
+  const weightSum = weights.reduce((a, b) => a + b, 0) || 1;
+
+  // Sequential: stage windows are non-overlapping slices of the schedule
+  let cursor = 0;
+  const sequentialWindows = weights.map(w => {
+    const dur = effectiveTotal * (w / weightSum);
+    cursor += dur;
+    return Math.max(1, dur);
+  });
+
+  const windows = {};
+  Object.keys(deptDays).forEach(dept => {
+    const stage = deptPipelineStage(dept);
+    let available;
+    if (schedule.overlap) {
+      const frac = OVERLAP_DEPT_WINDOW_FRAC[dept]
+        ?? (stage < DEPT_PIPELINE.length ? 0.75 : 0.65);
+      available = Math.max(1, Math.round(effectiveTotal * frac));
+    } else {
+      available = Math.max(1, Math.round(sequentialWindows[stage] || effectiveTotal));
+    }
+    windows[dept] = available;
+  });
+  return windows;
+}
+
+function calcStaffingPlan(deptDays, schedule) {
+  const availableByDept = calcDeptAvailableDays(deptDays, schedule);
+  const results = [];
+
+  Object.entries(deptDays || {}).forEach(([dept, bidDays]) => {
+    const days = parseFloat(bidDays) || 0;
+    if (days <= 0) return;
+    const availableDays = availableByDept[dept] || schedule.availableWorkingDays;
+    const averageCrew = days / availableDays;
+    const recommendedCrew = Math.max(1, Math.ceil(averageCrew));
+    // Peak: work concentrates in ~70% of the window during ramp-up / peak / ramp-down
+    const peakCrew = Math.max(recommendedCrew, Math.ceil(days / Math.max(1, availableDays * 0.7)));
+    results.push({
+      dept,
+      bidDays: days,
+      availableDays,
+      averageCrew,
+      recommendedCrew,
+      peakCrew,
+      startOffset: 0,
+      endOffset: availableDays,
+    });
+  });
+
+  // Sort by pipeline stage then name
+  results.sort((a, b) => {
+    const sa = deptPipelineStage(a.dept);
+    const sb = deptPipelineStage(b.dept);
+    if (sa !== sb) return sa - sb;
+    return a.dept.localeCompare(b.dept);
+  });
+
+  // Week-by-week plan with trapezoid ramp (25% ramp-up, 50% peak, 25% ramp-down)
+  const weekCount = Math.max(1, Math.ceil(schedule.availableWorkingDays / schedule.daysPerWeek));
+  const weekly = buildWeeklyStaffing(results, schedule, weekCount);
+
+  const totalRecommended = results.reduce((s, r) => s + r.recommendedCrew, 0);
+  const totalPeak = results.reduce((s, r) => s + r.peakCrew, 0);
+  const totalBidDays = results.reduce((s, r) => s + r.bidDays, 0);
+  const maxPeakWeek = weekly.weekTotals.length ? Math.max(...weekly.weekTotals) : 0;
+
+  // Flag tight schedules: very high average crew or extreme peak week vs recommended total
+  const realistic = results.every(r => r.averageCrew <= 6)
+    && maxPeakWeek <= Math.max(totalRecommended * 1.75, totalRecommended + 4);
+
+  return {
+    results,
+    weekly,
+    totalRecommended,
+    totalPeak,
+    totalBidDays,
+    maxPeakWeek,
+    realistic,
+    schedule,
+  };
+}
+
+function buildWeeklyStaffing(results, schedule, weekCount) {
+  const weeks = [];
+  for (let w = 0; w < weekCount; w++) weeks.push({});
+
+  results.forEach(r => {
+    // Map dept window onto project weeks proportionally by stage position
+    const stage = deptPipelineStage(r.dept);
+    const nStages = DEPT_PIPELINE.length + 1;
+    let startFrac, endFrac;
+    if (schedule.overlap) {
+      const frac = OVERLAP_DEPT_WINDOW_FRAC[r.dept]
+        ?? (stage < DEPT_PIPELINE.length ? 0.75 : 0.65);
+      // Later / shorter windows start later but still finish by delivery
+      startFrac = Math.max(0, 1 - frac);
+      endFrac = 1;
+    } else {
+      startFrac = stage / nStages;
+      endFrac = (stage + 1) / nStages;
+    }
+    const startWeek = Math.floor(startFrac * weekCount);
+    const endWeek = Math.max(startWeek + 1, Math.ceil(endFrac * weekCount));
+    const span = Math.max(1, endWeek - startWeek);
+    const ramp = Math.max(1, Math.floor(span * 0.25));
+    const peakSpan = Math.max(1, span - ramp * 2);
+
+    for (let w = startWeek; w < endWeek && w < weekCount; w++) {
+      const i = w - startWeek;
+      let headcount;
+      if (i < ramp) {
+        // ramp up toward peak
+        headcount = Math.max(1, Math.round(r.peakCrew * ((i + 1) / (ramp + 1))));
+      } else if (i < ramp + peakSpan) {
+        headcount = r.peakCrew;
+      } else {
+        const down = i - (ramp + peakSpan) + 1;
+        headcount = Math.max(1, Math.round(r.recommendedCrew * (1 - down / (ramp + 1))));
+      }
+      weeks[w][r.dept] = headcount;
+    }
+  });
+
+  const weekTotals = weeks.map(week =>
+    Object.values(week).reduce((s, n) => s + (parseInt(n, 10) || 0), 0)
+  );
+  return { weeks, weekTotals, weekCount };
+}
+
+function renderResourcePlan(plan) {
+  const { results, weekly, totalRecommended, totalPeak, totalBidDays, maxPeakWeek, realistic, schedule } = plan;
+  if (!results?.length) {
+    return `<p class="muted" style="margin-top:8px">No department days to schedule.</p>`;
+  }
+
+  const rows = results.map(r => `
+    <tr>
+      <td>${escHtml(DEPT_LABELS[r.dept] || r.dept)}</td>
+      <td>${fmt(r.bidDays)}</td>
+      <td>${fmt(r.availableDays)}</td>
+      <td>${r.averageCrew.toFixed(1)}</td>
+      <td><strong>${r.recommendedCrew}</strong></td>
+      <td>${r.peakCrew}</td>
+    </tr>
+  `).join('');
+
+  const weekHeaders = Array.from({ length: weekly.weekCount }, (_, i) => `<th>W${i + 1}</th>`).join('');
+  const weekBody = results.map(r => {
+    const cells = weekly.weeks.map((week, i) => {
+      const n = week[r.dept] || 0;
+      const cls = n >= r.peakCrew ? 'peak' : (n > 0 ? 'mid' : '');
+      return `<td class="resource-week-cell ${cls}">${n || '—'}</td>`;
+    }).join('');
+    return `<tr><td>${escHtml(DEPT_LABELS[r.dept] || r.dept)}</td>${cells}</tr>`;
+  }).join('');
+  const weekTotalRow = weekly.weekTotals.map(n =>
+    `<td class="resource-week-cell ${n === maxPeakWeek && n > 0 ? 'peak' : ''}">${n}</td>`
+  ).join('');
+
+  const realisticHtml = realistic
+    ? `<span class="resource-realistic-ok">Schedule looks realistic for recommended crew</span>`
+    : `<span class="resource-realistic-warn">Schedule may be tight — consider more crew or more calendar time</span>`;
+
+  return `
+    <div class="sec-label" style="margin:8px 0 6px">Simple Staffing Estimate</div>
+    <p class="muted" style="font-size:12px;margin-bottom:8px">
+      Formula: <strong>department workdays ÷ available working days = average crew</strong>,
+      then rounded up to a practical recommended headcount. Peak assumes work concentrates
+      in ~70% of each department's window (ramp-up / peak / ramp-down).
+    </p>
+    <table class="resource-plan-table">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Bid Days</th>
+          <th>Available Days</th>
+          <th>Average Crew</th>
+          <th>Recommended Crew</th>
+          <th>Peak Crew</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>${fmt(totalBidDays)}</td>
+          <td>—</td>
+          <td>—</td>
+          <td>${totalRecommended}</td>
+          <td>${totalPeak}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="resource-plan-summary">
+      <div><strong>Total recommended crew: ${totalRecommended}</strong>
+        · Peak simultaneous (sum of peaks): ${totalPeak}
+        · Peak week headcount: ${maxPeakWeek}</div>
+      <div class="resource-plan-meta">
+        <span>${schedule.afterHolidays} working days on calendar
+          (~${schedule.weeks.toFixed(1)} wks @ ${schedule.daysPerWeek}d/wk)</span>
+        <span>${schedule.availableWorkingDays} days after ${schedule.bufferPct}% revision buffer</span>
+        <span>Utilization ${schedule.utilizationPct}%</span>
+        <span>${schedule.overlap ? 'Overlapping stages' : 'Sequential stages'}</span>
+      </div>
+      <div style="margin-top:8px">${realisticHtml}</div>
+    </div>
+
+    <div class="sec-label" style="margin:18px 0 6px">Production Staffing Plan (week by week)</div>
+    <p class="muted" style="font-size:12px;margin-bottom:8px">
+      Distributes each department across its schedule window with ramp-up, peak, and ramp-down
+      based on Camera → Matchmove → Layout → Animation/CFX/FX → Lighting → Comp dependencies.
+    </p>
+    <div class="resource-week-wrap">
+      <table class="resource-week-table">
+        <thead>
+          <tr><th>Department</th>${weekHeaders}</tr>
+        </thead>
+        <tbody>
+          ${weekBody}
+          <tr><td><strong>Total HC</strong></td>${weekTotalRow}</tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="muted" style="font-size:11px;margin-top:10px">
+      How much work is there, how much time is available, and how many people are required to finish it?
+      Estimates assume the working-day calendar above. Real schedules vary with artist availability,
+      reviews, and client feedback.
+    </p>
+  `;
+}
+
+function runResourcePlan() {
+  _resourcePlanDeptDays = gatherResourcePlanDeptDays();
+  if (!Object.keys(_resourcePlanDeptDays).length) {
+    toast('No department days available — run a batch estimate first.', 'warn');
+    return;
+  }
+  const schedule = readResourceSchedule();
+  if (!schedule.start || !schedule.end || schedule.end < schedule.start) {
+    toast('Set a valid project start and delivery date.', 'warn');
+    return;
+  }
+  if (schedule.availableWorkingDays < 1) {
+    toast('Schedule has no available working days after holidays/buffer.', 'warn');
+    return;
+  }
+
+  const plan = calcStaffingPlan(_resourcePlanDeptDays, schedule);
+  const el = document.getElementById('resource-plan-results');
+  if (el) el.innerHTML = renderResourcePlan(plan);
+  updateResourceScheduleHint();
 }
 
 async function runAssetEstimate() {
@@ -4680,12 +5268,18 @@ function collectAssetRows() {
     const baseDays = Object.values(deptDays).reduce((s, d) => s + d, 0);
     const totalDays = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays)
       || calcVariationMandays(baseDays, vars);
+    const costUsd = Math.round(
+      calcAssetRowCostUsd(deptDays) * assetVariationMultiplier(baseDays, vars) * 100
+    ) / 100;
+    const conf = Number.isFinite(idx) ? (_assetResults[idx]?.confidence || 0) : 0;
     rows.push({
       item_number: asset.item_number || String(i + 1),
       asset_name: asset.asset_name || '',
       variations: vars,
       dept_days: deptDays,
       total_days: totalDays,
+      cost: costUsd,
+      confidence: conf,
       notes: tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '',
     });
   });
@@ -4845,14 +5439,7 @@ async function runBatchStream(shots, project, preQual) {
         autoShowPopulatedCols(_batchResult.shots.filter(Boolean));
         applyColVisibility();
         await autoGenerateMissingMethodologies();
-
-        // Suggest assets in background (non-blocking)
-        const descriptions = (_batchResult?.shots || [])
-          .map(s => s.description || '')
-          .filter(Boolean);
-        if (descriptions.length > 0) {
-          suggestAssetsFromShots(descriptions, getBatchProject() || '');
-        }
+        maybeSuggestAssetsForBatchShots();
 
         const includedShots = (_batchResult?.shots || []).filter(isIncludedShot);
         if (includedShots.length > 0) {
@@ -4937,7 +5524,7 @@ async function runBatchEstimate() {
 function buildBatchTableHeader() {
   let html = `<th class="batch-include-cell"><input type="checkbox" id="batch-include-all" checked
     title="Select or deselect all rows" onchange="toggleAllBatchRowsIncluded(this.checked)">
-    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th>NOTES</th>`;
+    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th data-dept="SUGGESTED ASSET">SUGGESTED ASSET</th><th>NOTES</th>`;
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
@@ -5041,6 +5628,7 @@ function autoShowPopulatedCols(results) {
     if (hasData && !_visibleCols[dept]) _visibleCols[dept] = true;
   });
   if (results.some(r => (r?.methodology || '').trim())) _visibleCols.METHODOLOGY = true;
+  if (results.some(r => r?.suggestedAsset?.asset_name)) _visibleCols['SUGGESTED ASSET'] = true;
   saveVisibleCols();
   applyColVisibility();
   buildColCheckboxes();
@@ -5313,14 +5901,71 @@ function showRowRerun(idx) {
   document.querySelectorAll(`[data-rerun-idx="${idx}"]`).forEach(btn => btn.classList.add('show'));
 }
 
-function combinedRowDescription(row) {
-  const base = row.description || row.script_description || '';
-  const method = (row.methodology || '').trim();
-  if (!method || base.includes('METHODOLOGY:')) return base;
+function combinedRowDescription(row, methodologyOverride) {
+  const raw = row._raw_description || row.description || row.script_description || '';
+  const base = String(raw).replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '').trim() || String(raw).trim();
+  const method = String(
+    methodologyOverride !== undefined ? methodologyOverride : (row.methodology || '')
+  ).trim();
+  if (!method) return base;
   return `${base} | METHODOLOGY: ${method}`;
 }
 
-function setMethodology(idx, value) {
+function readRowMethodology(idx) {
+  const tr = document.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
+  const ta = tr?.querySelector('textarea.methodology-inp');
+  if (ta) return String(ta.value || '').trim();
+  return String(_batchResult?.shots?.[idx]?.methodology || '').trim();
+}
+
+function showRowRerunSpinner(tr) {
+  if (!tr) return;
+  tr.classList.add('row-rerunning');
+}
+
+function hideRowRerunSpinner(tr) {
+  tr?.classList.remove('row-rerunning');
+}
+
+function estimateDeptDaysToBidDepts(estDeptDays) {
+  const bidDepts = {};
+  const src = estDeptDays || {};
+  Object.entries(BID_TO_INTERNAL).forEach(([bid, internal]) => {
+    const v = parseFloat(src[internal] ?? src[bid]);
+    if (Number.isFinite(v) && v > 0) bidDepts[bid] = v;
+  });
+  // Also accept any bid-keyed values not in the map
+  BID_DEPTS.forEach(bid => {
+    if (bidDepts[bid] != null) return;
+    const v = parseFloat(src[bid]);
+    if (Number.isFinite(v) && v > 0) bidDepts[bid] = v;
+  });
+  return bidDepts;
+}
+
+function updateBatchRowDeptDays(rowIdx, deptDays) {
+  const row = _batchResult?.shots?.[rowIdx];
+  if (!row) return;
+  const bidDepts = { ...(deptDays || {}) };
+  row.dept_days = bidDepts;
+  row._ai_dept_days = { ...bidDepts };
+  row.total_mandays = Object.values(bidDepts).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+  row.cost_per_shot = computeClientShotCost(bidDepts, getDeptRates(), {
+    mandaysFallback: row.total_mandays,
+  });
+
+  document.querySelectorAll(`tr.batch-data-row[data-idx="${rowIdx}"]`).forEach(tr => {
+    BID_DEPTS.forEach(dept => {
+      const inp = tr.querySelector(`.bid-dept-inp[data-dept="${dept}"]`);
+      if (!inp) return;
+      const val = bidDepts[dept];
+      inp.value = Number.isFinite(parseFloat(val)) && parseFloat(val) > 0 ? val : '';
+    });
+    updateBatchRowTotals(tr, true);
+  });
+}
+
+async function setMethodology(idx, value, opts = {}) {
   if (!_batchResult?.shots?.[idx]) return;
   const text = String(value || '').trim();
   _batchResult.shots[idx].methodology = text;
@@ -5334,6 +5979,20 @@ function setMethodology(idx, value) {
   });
   applyColVisibility();
   _batchResult.export_csv_base64 = null;
+  if (opts.rerun && text) {
+    const btn = document.querySelector(`[data-rerun-idx="${idx}"]`);
+    await rerunBatchRow(idx, btn);
+  }
+  if (text) {
+    suggestAssetForShotRow(idx);
+  } else if (!_batchResult.shots[idx].suggestedAsset?.added) {
+    _batchResult.shots[idx].suggestedAsset = null;
+    renderSuggestedAssetCell(idx, null);
+  }
+}
+
+async function applySuggestedMethodology(idx, methodology) {
+  await setMethodology(idx, methodology, { rerun: true });
 }
 
 function editMethodology(idx) {
@@ -5341,8 +6000,8 @@ function editMethodology(idx) {
     const current = _batchResult?.shots?.[idx]?.methodology || '';
     cell.innerHTML = `<textarea class="methodology-inp" style="width:100%;min-height:70px">${escHtml(current)}</textarea>
       <div style="display:flex;gap:6px;margin-top:6px">
-        <button type="button" class="row-mini-btn" onclick="setMethodology(${idx}, this.closest('.method-cell').querySelector('textarea').value)">Apply</button>
-        <button type="button" class="row-mini-btn" data-original="${escAttr(current)}" onclick="setMethodology(${idx}, this.dataset.original)">Cancel</button>
+        <button type="button" class="row-mini-btn" onclick="applySuggestedMethodology(${idx}, this.closest('.method-cell').querySelector('textarea').value)">Apply</button>
+        <button type="button" class="row-mini-btn" data-original="${escAttr(current)}" onclick="setMethodology(${idx}, this.dataset.original, {rerun:false})">Cancel</button>
       </div>`;
   });
 }
@@ -5384,8 +6043,8 @@ async function suggestMethodology(idx, btn) {
       : '<div class="method-card"><div>No suggestions returned.</div></div>';
     wrap.querySelectorAll('[data-method]').forEach(card => {
       card.addEventListener('click', () => {
-        setMethodology(idx, card.dataset.method || '');
         closeMethodologySuggestions();
+        applySuggestedMethodology(idx, card.dataset.method || '');
       });
     });
     btn.closest('.method-cell')?.appendChild(wrap);
@@ -5408,7 +6067,8 @@ async function generateMethodology(idx, btn, silent=false) {
     const suggestions = await fetchMethodologySuggestions(row);
     const first = suggestions.find(s => (s.methodology || '').trim());
     if (!first) return false;
-    setMethodology(idx, first.methodology);
+    // Auto-fill text only — skip mass re-estimate during batch auto-gen
+    setMethodology(idx, first.methodology, { rerun: false });
     if (!silent) toast('Methodology generated. Click ↻ to re-estimate with it.', 'info');
     return true;
   } catch (e) {
@@ -5459,44 +6119,60 @@ async function autoGenerateMissingMethodologies() {
 async function rerunBatchRow(idx, btn) {
   const row = _batchResult?.shots?.[idx];
   if (!row) return;
-  btn.disabled = true;
-  btn.textContent = '...';
+  const tr = document.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
+  const methodFromCell = readRowMethodology(idx);
+  if (methodFromCell) {
+    row.methodology = methodFromCell;
+    row._has_methodology = true;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+  }
+  showRowRerunSpinner(tr);
+  showRowRerun(idx);
+
   try {
     const r = await fetch(`${API}/estimate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        description: combinedRowDescription(row),
+        description: combinedRowDescription(row, methodFromCell),
         pre_qual: getPreQualData(),
         dept_rates: getDeptRates(),
+        mode: 'hybrid',
       }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const est = await r.json();
-    const bidDepts = {};
-    Object.entries(BID_TO_INTERNAL).forEach(([bid, internal]) => {
-      const v = est.dept_days?.[internal] ?? est.dept_days?.[bid];
-      if (v) bidDepts[bid] = v;
+    const bidDepts = estimateDeptDaysToBidDepts(est.dept_days);
+    updateBatchRowDeptDays(idx, bidDepts);
+    if (Number.isFinite(parseFloat(est.per_shot_mandays ?? est.total_mandays))) {
+      row.total_mandays = est.per_shot_mandays ?? est.total_mandays;
+    }
+    if (est.confidence != null) row.confidence = est.confidence;
+    row.cost_per_shot = computeClientShotCost(bidDepts, getDeptRates(), {
+      mandaysFallback: row.total_mandays,
     });
-    row.dept_days = bidDepts;
-    row.total_mandays = est.per_shot_mandays ?? est.total_mandays ?? 0;
-    row.cost_per_shot = computeClientShotCost(bidDepts, getDeptRates(), { mandaysFallback: row.total_mandays });
-    row.confidence = est.confidence ?? row.confidence;
-    document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"]`).forEach(tr => {
-      Object.entries(bidDepts).forEach(([dept, val]) => {
-        const inp = tr.querySelector(`.bid-dept-inp[data-dept="${dept}"]`);
-        if (inp) inp.value = val;
-      });
-      updateBatchRowTotals(tr, true);
+    document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"]`).forEach(rowTr => {
+      const confEl = rowTr.querySelector('.conf-badge, [data-conf]');
+      // refresh totals/cost cells already handled in updateBatchRowDeptDays
+      updateBatchRowTotals(rowTr, true);
     });
     refreshBatchBidSummary();
     autoShowPopulatedCols([row]);
+    applyColVisibility();
+    _batchResult.export_csv_base64 = null;
     toast(`Re-estimated ${row.shot_code || `row ${idx + 1}`}`, 'info');
   } catch (e) {
-    toast(`Re-run failed: ${e.message}`, 'err');
+    toast(`Re-estimate failed: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '↻';
+    hideRowRerunSpinner(tr);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '↻';
+    }
   }
 }
 
@@ -5550,6 +6226,219 @@ function exportBatchCsv() {
   a.click();
   URL.revokeObjectURL(a.href);
   toast('Bid CSV downloaded.');
+}
+
+function collectBatchRowsForExport() {
+  const rows = [];
+  document.querySelectorAll('#batch-table-body tr.batch-data-row').forEach(tr => {
+    const idx = parseInt(tr.dataset.idx, 10);
+    const shot = Number.isFinite(idx) ? _batchResult?.shots?.[idx] : null;
+    if (!isIncludedShot(shot)) return;
+    const depts = readRowDepts(tr);
+    const days = parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0;
+    const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
+    const nShots = parseInt(shot?.number_of_shots ?? 1, 10) || 1;
+    const seqCost = sequenceCostForRow({
+      cost_per_shot: cost,
+      number_of_shots: nShots,
+    });
+    const notes = tr.querySelector('.batch-notes-inp')?.value
+      ?? shot?._notes
+      ?? shot?.vfx_notes
+      ?? '';
+    rows.push({
+      item_number: shot?.item_number || '',
+      shot_code: shot?.shot_code || '',
+      description: shot?._raw_description || shot?.description || shot?.script_description || '',
+      methodology: shot?.methodology || '',
+      notes: String(notes || '').trim(),
+      number_of_shots: nShots,
+      dept_days: depts,
+      total_days: days,
+      total_mandays: days,
+      cost,
+      cost_per_shot: cost,
+      sequence_cost: seqCost ?? cost,
+      confidence: shot?.confidence || 0,
+      _included: true,
+    });
+  });
+  return rows;
+}
+
+function getDeptRateUsd(bidDept) {
+  const internal = BID_TO_INTERNAL[bidDept] || bidDept;
+  return rateForDept(internal, getDeptRates());
+}
+
+function applySheetColWidths(sheet, widths) {
+  sheet['!cols'] = widths.map(wch => ({ wch }));
+}
+
+function exportBidExcel() {
+  if (typeof XLSX === 'undefined') {
+    toast('Excel library not loaded — try Export CSV instead.', 'err');
+    return;
+  }
+
+  const shotRowsData = collectBatchRowsForExport();
+  const assetRowsData = collectAssetRows();
+  if (!shotRowsData.length && !assetRowsData.length) {
+    toast('Run a shot or asset estimate first.', 'warn');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+  const visibleAssetDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
+
+  // ── TAB 1: Shot Breakdown ──────────────────────────
+  const shotHeader = [
+    'ITEM#', 'SHOT CODE', 'DESCRIPTION', 'METHODOLOGY',
+    'NOTES', 'SHOTS',
+    ...BID_DEPTS,
+    'TOTAL PROD DAYS', 'COST PER SHOT', 'SEQUENCE COST',
+    'CONFIDENCE',
+  ];
+  const shotRows = shotRowsData.map(r => [
+    r.item_number,
+    r.shot_code,
+    r.description,
+    r.methodology || '',
+    r.notes || '',
+    r.number_of_shots || 1,
+    ...BID_DEPTS.map(d => r.dept_days?.[d] ?? 0),
+    r.total_days,
+    r.cost,
+    r.sequence_cost || r.cost,
+    Math.round((r.confidence || 0) * 100) + '%',
+  ]);
+  const shotSheet = XLSX.utils.aoa_to_sheet([shotHeader, ...shotRows]);
+  applySheetColWidths(shotSheet, [
+    10, 14, 40, 28, 20, 8,
+    ...BID_DEPTS.map(() => 8),
+    12, 12, 12, 10,
+  ]);
+  XLSX.utils.book_append_sheet(wb, shotSheet, 'Shot Breakdown');
+
+  // ── TAB 2: Asset Breakdown ─────────────────────────
+  const assetHeader = [
+    'ITEM#', 'ASSET NAME', 'NOTES', 'VARIATIONS',
+    ...visibleAssetDepts,
+    'TOTAL PROD DAYS', 'ASSET COST', 'CONFIDENCE',
+  ];
+  const assetRows = assetRowsData.map(r => [
+    r.item_number,
+    r.asset_name,
+    r.notes || '',
+    r.variations || 1,
+    ...visibleAssetDepts.map(d => r.dept_days?.[bidDeptToAssetInternal(d)] ?? 0),
+    r.total_days,
+    r.cost,
+    Math.round((r.confidence || 0) * 100) + '%',
+  ]);
+  const assetSheet = XLSX.utils.aoa_to_sheet([assetHeader, ...assetRows]);
+  applySheetColWidths(assetSheet, [
+    10, 28, 24, 10,
+    ...visibleAssetDepts.map(() => 8),
+    12, 12, 10,
+  ]);
+  XLSX.utils.book_append_sheet(wb, assetSheet, 'Asset Breakdown');
+
+  // ── TAB 3: Department Totals ───────────────────────
+  const deptTotalRows = [
+    ['DEPARTMENT', 'SHOT DAYS', 'ASSET DAYS', 'TOTAL DAYS', 'RATE (USD)', 'TOTAL COST (USD)'],
+  ];
+  BID_DEPTS.forEach(dept => {
+    const shotDays = Math.round(shotRowsData.reduce(
+      (s, r) => s + (parseFloat(r.dept_days?.[dept]) || 0), 0
+    ) * 2) / 2;
+    if (shotDays <= 0) return;
+    const rate = getDeptRateUsd(dept);
+    deptTotalRows.push([
+      bidDeptLabel(dept),
+      shotDays,
+      0,
+      shotDays,
+      rate,
+      Math.round(shotDays * rate),
+    ]);
+  });
+  visibleAssetDepts.forEach(dept => {
+    const key = bidDeptToAssetInternal(dept);
+    const assetDays = Math.round(assetRowsData.reduce(
+      (s, r) => s + (parseFloat(r.dept_days?.[key]) || 0), 0
+    ) * 2) / 2;
+    if (assetDays <= 0) return;
+    const rate = getAssetDeptRateUsd(key);
+    deptTotalRows.push([
+      `${ASSET_DEPT_LABELS[key] || dept} (Asset)`,
+      0,
+      assetDays,
+      assetDays,
+      rate,
+      Math.round(assetDays * rate),
+    ]);
+  });
+  const deptSheet = XLSX.utils.aoa_to_sheet(deptTotalRows);
+  applySheetColWidths(deptSheet, [22, 12, 12, 12, 12, 14]);
+  XLSX.utils.book_append_sheet(wb, deptSheet, 'Department Totals');
+
+  // ── TAB 4: Bid Summary ─────────────────────────────
+  const stats = computeBatchBidStats(shotRowsData);
+  const assetStats = updateAssetSummary();
+  const gross = Math.round(((stats.totalCost || 0) + (assetStats.totalCost || 0)) * 100) / 100;
+  const netSummary = computeBidNetSummary(gross);
+  const taxCredit = netSummary.creditAmt;
+  const adminFee = netSummary.adminAmt;
+  const net = netSummary.net;
+
+  const summaryRows = [
+    ['BID SUMMARY', ''],
+    ['Project', getBatchProject() || ''],
+    ['', ''],
+    ['Shot Production Days', fmt(stats.totalDays)],
+    ['Shot Cost', money(stats.totalCost)],
+    ['Shot Count', stats.shotCount],
+    ['Avg Cost / Shot', money(stats.avgCost)],
+    ['', ''],
+    ['Asset Production Days', fmt(assetStats.totalDays || 0)],
+    ['Asset Cost', money(assetStats.totalCost || 0)],
+    ['Asset Count', assetStats.count || 0],
+    ['', ''],
+    ['Gross Total', money(gross)],
+    [`Tax Credit (${_taxCreditPct}%)`, money(-taxCredit)],
+    [`Admin / Overhead (${_adminFeePct}%)`, money(adminFee)],
+    ['NET TOTAL', money(net)],
+    ['', ''],
+    ['Currency', _displayCurrency],
+    ['Exchange Rate',
+      _displayCurrency !== 'USD'
+        ? `1 USD = ${Number(_fxRates[_displayCurrency] || 1).toFixed(4)} ${_displayCurrency}`
+        : 'N/A'],
+  ];
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+  applySheetColWidths(summarySheet, [28, 22]);
+  XLSX.utils.book_append_sheet(wb, summarySheet, 'Bid Summary');
+
+  // ── TAB 5: Scene Breakdown ─────────────────────────
+  const sceneData = computeSceneGroups(shotRowsData, stats.totalCost);
+  const sceneRows = [
+    ['SCENE', 'SHOTS', 'TOTAL PROD DAYS', 'TOTAL COST'],
+    ...sceneData.map(s => [
+      s.label || s.scene || `Scene ${s.key}`,
+      s.shotCount,
+      fmt(s.totalDays),
+      money(s.totalCost),
+    ]),
+  ];
+  const sceneSheet = XLSX.utils.aoa_to_sheet(sceneRows);
+  applySheetColWidths(sceneSheet, [16, 10, 16, 14]);
+  XLSX.utils.book_append_sheet(wb, sceneSheet, 'Scene Breakdown');
+
+  const project = (getBatchProject() || 'BID').replace(/[^\w\-]+/g, '_');
+  const filename = `${project}_AI_ESTIMATE.xlsx`;
+  XLSX.writeFile(wb, filename);
+  toast(`Downloaded ${filename}`);
 }
 
 async function saveAllBatchCorrections() {
