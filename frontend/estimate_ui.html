@@ -465,9 +465,16 @@
     .batch-settings{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
     .batch-settings label{font-size:11px;color:var(--text);font-weight:800;display:flex;flex-direction:column;gap:4px}
     .batch-settings input{padding:8px 10px;min-width:120px}
-    .batch-bar{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
+    .batch-bar{background:var(--surface);border-top:1px solid var(--border);
                padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
                flex-wrap:wrap;gap:10px;margin-top:0;border-radius:0 0 var(--r) var(--r)}
+    .rp-mode-row{display:flex;flex-direction:column;gap:4px}
+    .rp-mode-label{display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+      font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+    .rp-mode-label input[type=radio]{accent-color:var(--accent)}
+    #rp-artists-grid .rate-field{display:flex;flex-direction:column;gap:4px}
+    #rp-artists-grid .rate-field-label{font-size:11px;font-weight:700;color:var(--muted)}
+    #global-action-bar.hidden{display:none!important}
     .batch-mix-panel{border-top:1px solid var(--border);padding:14px 18px;background:var(--card2)}
     .batch-mix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 16px}
     .batch-mix-row{display:grid;grid-template-columns:52px 1fr 72px;gap:8px;align-items:center}
@@ -957,11 +964,7 @@
         </div>
         <div class="batch-bar">
           <span id="batch-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
-          <div class="btn-row" style="margin:0">
-            <button class="btn-green with-icon" onclick="saveAllBatchCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save All Corrections</button>
-            <button class="btn-ghost with-icon" onclick="exportBidExcel()"><svg class="icon"><use href="#i-download"></use></svg>Export Excel</button>
-            <span id="batch-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
-          </div>
+          <span id="batch-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
         </div>
       </div>
 
@@ -1102,14 +1105,26 @@
           <tbody id="asset-tbody"></tbody>
         </table>
       </div>
-      <div id="asset-dept-summary" style="margin-top:16px"></div>
+      <div id="asset-dept-summary-wrap" class="hidden" style="margin-top:16px">
+        <div class="sec-label" style="margin-bottom:10px">Department Totals — Assets</div>
+        <div class="batch-dept-summary-wrap">
+          <table class="batch-dept-summary" id="asset-dept-summary-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th class="num">Build Days</th>
+                <th class="num">Rate / Day</th>
+                <th class="num">Cost</th>
+              </tr>
+            </thead>
+            <tbody id="asset-dept-summary-body"></tbody>
+            <tfoot id="asset-dept-summary-foot"></tfoot>
+          </table>
+        </div>
+      </div>
       <div class="batch-bar">
         <span id="asset-summary" style="font-size:13px;color:var(--text);font-weight:700">—</span>
-        <div class="btn-row" style="margin:0">
-          <button class="btn-green with-icon" onclick="saveAssetCorrections()"><svg class="icon"><use href="#i-check"></use></svg>Save Corrections</button>
-          <button class="btn-ghost with-icon" onclick="exportBidExcel()"><svg class="icon"><use href="#i-download"></use></svg>Export Excel</button>
-          <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
-        </div>
+        <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
       </div>
     </div>
 
@@ -1176,60 +1191,82 @@
       <div class="fx-status-note" id="fx-status-note"></div>
     </div>
 
-    <div class="prequal-toggle hidden" id="resource-plan-toggle" onclick="toggleResourcePlanning()" style="margin-top:16px">
-      <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
-      <span>📅 Resource Planning (schedule estimator)</span>
-    </div>
-    <div id="resource-plan-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
-      <div class="sec-label" style="margin-bottom:8px">Resource Planning</div>
-      <p class="muted" style="font-size:13px;margin-bottom:14px;max-width:52rem;line-height:1.55">
-        Turn bid days into a production plan. FrameBid uses each department's estimated workload,
-        delivery schedule, and production dependencies to calculate recommended staffing by
-        department, week, and project phase.
-      </p>
+    <div id="resource-planning-card" class="card hidden" style="margin-top:16px">
+      <div class="sec-label" style="margin-bottom:12px">📅 Resource Planning</div>
 
-      <div class="resource-schedule-grid">
-        <label for="rp-start">
-          Project start
-          <input type="date" id="rp-start" onchange="onResourceScheduleChange()">
+      <div class="rp-mode-row">
+        <label class="rp-mode-label">
+          <input type="radio" name="rp-mode" value="forward" checked onchange="setRpMode('forward')">
+          I need it done in:
+          <input type="number" id="rp-target-weeks" value="12" min="1" max="200" step="1"
+                 style="width:60px;margin:0 6px" onclick="event.stopPropagation()">
+          weeks
         </label>
-        <label for="rp-end">
-          Final delivery
-          <input type="date" id="rp-end" onchange="onResourceScheduleChange()">
-        </label>
-        <label for="rp-days-per-week">
-          Working days / week
-          <input type="number" id="rp-days-per-week" min="1" max="7" step="1" value="5" onchange="onResourceScheduleChange()">
-        </label>
-        <label for="rp-holidays">
-          Holidays / shutdown days
-          <input type="number" id="rp-holidays" min="0" step="1" value="0" onchange="onResourceScheduleChange()">
-        </label>
-        <label for="rp-utilization">
-          Utilization %
-          <input type="number" id="rp-utilization" min="50" max="100" step="5" value="100" onchange="onResourceScheduleChange()">
-        </label>
-        <label for="rp-buffer">
-          Revision buffer %
-          <input type="number" id="rp-buffer" min="0" max="50" step="5" value="0" onchange="onResourceScheduleChange()">
-        </label>
-        <label for="rp-overlap">
-          Department timing
-          <select id="rp-overlap" onchange="onResourceScheduleChange()">
-            <option value="overlap" selected>Overlap (pipeline stages share calendar)</option>
-            <option value="sequential">Sequential (stage must finish before next)</option>
-          </select>
-        </label>
-        <label class="span-2" style="justify-content:flex-end">
-          &nbsp;
-          <div class="resource-plan-actions" style="margin:0">
-            <button type="button" class="btn-blue btn-sm" onclick="runResourcePlan()">Calculate staffing</button>
-            <span class="muted" id="rp-schedule-hint" style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:500"></span>
-          </div>
+        <label class="rp-mode-label" style="margin-top:8px">
+          <input type="radio" name="rp-mode" value="reverse" onchange="setRpMode('reverse')">
+          I have this many artists:
         </label>
       </div>
 
-      <div id="resource-plan-results"></div>
+      <div id="rp-artists-grid" class="hidden"
+           style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+      </div>
+
+      <button type="button" class="btn-blue" style="margin-top:14px" onclick="runResourcePlan()">
+        Calculate
+      </button>
+
+      <div id="rp-results" class="hidden" style="margin-top:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="stat-block">
+            <div class="n" id="rp-total-weeks">—</div>
+            <div class="l">Estimated production weeks</div>
+          </div>
+          <div class="stat-block">
+            <div class="n" id="rp-bottleneck-dept">—</div>
+            <div class="l">Bottleneck department</div>
+          </div>
+        </div>
+
+        <div class="batch-dept-summary-wrap">
+          <table class="batch-dept-summary" id="rp-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>Type</th>
+                <th class="num">Bid Days</th>
+                <th class="num">Artists</th>
+                <th class="num">Calendar Weeks</th>
+              </tr>
+            </thead>
+            <tbody id="rp-table-body"></tbody>
+          </table>
+        </div>
+
+        <p class="muted" style="font-size:11px;margin-top:10px;line-height:1.5">
+          ⓘ Estimates assume 5-day working weeks. Asset build departments (Modelling, Rigging, Lookdev, etc.)
+          are included alongside shot departments. Departments within the same pipeline stage run in parallel;
+          each stage must complete before the next begins.<br>
+          <em>These are estimates — real schedules vary based on revisions, artist availability, and client feedback.</em>
+        </p>
+      </div>
+    </div>
+
+    <div id="global-action-bar" class="hidden"
+         style="margin-top:32px;padding:20px;background:var(--card);border:1px solid var(--border);
+                border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;
+                flex-wrap:wrap;gap:12px">
+      <div id="global-action-summary" style="font-size:13px;color:var(--muted)"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn-green with-icon" onclick="saveAllCorrections()">
+          <svg class="icon"><use href="#i-check"></use></svg>
+          Save All Corrections
+        </button>
+        <button type="button" class="btn-blue with-icon" onclick="exportBidExcel()">
+          <svg class="icon"><use href="#i-download"></use></svg>
+          Export Excel
+        </button>
+      </div>
     </div>
 
 </div><!-- /wrap -->
@@ -2867,10 +2904,9 @@ function clearBatchResults() {
   document.getElementById('batch-bid-summary').classList.add('hidden');
   document.getElementById('combined-summary')?.classList.add('hidden');
   document.getElementById('tax-credit-card')?.classList.add('hidden');
-  document.getElementById('resource-plan-toggle')?.classList.add('hidden');
-  document.getElementById('resource-plan-panel')?.classList.add('hidden');
-  document.getElementById('resource-plan-toggle')?.classList.remove('open');
-  document.getElementById('resource-plan-results').innerHTML = '';
+  document.getElementById('resource-planning-card')?.classList.add('hidden');
+  document.getElementById('rp-results')?.classList.add('hidden');
+  document.getElementById('global-action-bar')?.classList.add('hidden');
   document.getElementById('batch-bid-summary-stats').innerHTML = '';
   document.getElementById('batch-dept-summary-body').innerHTML = '';
   document.getElementById('batch-dept-summary-foot').innerHTML = '';
@@ -4621,69 +4657,75 @@ function updateAssetSummary() {
   const avgCost = includedCount ? Math.round((totalCost / includedCount) * 100) / 100 : 0;
   document.getElementById('asset-summary').textContent =
     `${includedCount} assets · ${fmt(totalDays)} production days · ${money(avgCost)} avg asset · ${money(totalCost)} total asset cost`;
-  renderAssetDeptSummary({ count: includedCount, totalDays, totalCost, avgCost });
+  renderAssetDeptSummary();
+  updateGlobalActionBar();
+  maybeShowResourcePlanning();
   return { count: includedCount, totalDays, totalCost, avgCost };
 }
 
-function renderAssetDeptSummary(assetStats) {
-  const wrap = document.getElementById('asset-dept-summary');
-  if (!wrap) return;
-  const rows = [...document.querySelectorAll('#asset-tbody tr')].filter(isIncludedAssetRow);
+function renderAssetDeptSummary() {
+  const wrap = document.getElementById('asset-dept-summary-wrap');
+  const body = document.getElementById('asset-dept-summary-body');
+  const foot = document.getElementById('asset-dept-summary-foot');
+  if (!wrap || !body || !foot) return;
+
+  const rows = document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])');
   if (!rows.length) {
-    wrap.innerHTML = '';
+    wrap.classList.add('hidden');
     return;
   }
+
   const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const deptRows = visibleDepts.map(bidDept => {
-    const key = assetInternalKey(bidDept);
-    const days = Math.round(rows.reduce((sum, tr) => {
-      const inp = tr.querySelector(`input.bid-dept-inp[data-asset-dept="${bidDept}"]`);
-      return sum + (parseFloat(inp?.value) || 0);
-    }, 0) * 2) / 2;
-    const rate = getAssetDeptRateUsd(key);
-    const cost = Math.round(days * rate * 100) / 100;
-    return { key, label: ASSET_DEPT_LABELS[key] || bidDept, days, rate, cost };
-  }).filter(r => r.days > 0);
-  const totalBaseDays = Math.round(deptRows.reduce((s, r) => s + r.days, 0) * 2) / 2;
-  const totalBaseCost = Math.round(deptRows.reduce((s, r) => s + r.cost, 0) * 100) / 100;
-  wrap.innerHTML = `
-    <div class="sec-label" style="margin:16px 0 10px">Asset Cost Summary</div>
-    <div class="batch-bid-summary-stats">
-      <div class="stat-block"><div class="n">${assetStats.count}</div><div class="l">Assets</div></div>
-      <div class="stat-block"><div class="n">${fmt(assetStats.totalDays)}d</div><div class="l">Total Production Days</div></div>
-      <div class="stat-block"><div class="n">${money(assetStats.totalCost)}</div><div class="l">Total Cost</div></div>
-      <div class="stat-block"><div class="n">${money(assetStats.avgCost)}</div><div class="l">Avg Cost / Asset</div></div>
-    </div>
-    <div class="sec-label" style="margin:16px 0 10px">Department Totals (Assets)</div>
-    <div class="batch-dept-summary-wrap">
-      <table class="batch-dept-summary">
-        <thead>
-          <tr>
-            <th>Department</th>
-            <th style="text-align:right">Production Days</th>
-            <th style="text-align:right">Rate</th>
-            <th style="text-align:right">Cost</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${deptRows.length ? deptRows.map(r => `<tr>
-            <td>${escHtml(r.label)}</td>
-            <td class="num">${fmt(r.days)}</td>
-            <td class="num">${money(r.rate)}</td>
-            <td class="num cost">${money(r.cost)}</td>
-          </tr>`).join('') : `<tr><td colspan="4" style="color:var(--muted);font-style:italic">No department breakdown available.</td></tr>`}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>All depts</td>
-            <td class="num">${fmt(totalBaseDays)}</td>
-            <td class="num">—</td>
-            <td class="num cost">${money(totalBaseCost)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>`;
-  fitStatNumbers(wrap);
+  const deptTotals = {};
+  let grandDays = 0;
+  let grandCost = 0;
+
+  rows.forEach(tr => {
+    tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+      const bidDept = inp.dataset.assetDept;
+      const key = assetInternalKey(bidDept);
+      const days = parseFloat(inp.value) || 0;
+      deptTotals[key] = (deptTotals[key] || 0) + days;
+    });
+  });
+
+  const deptRows = visibleDepts
+    .map(bidDept => {
+      const key = assetInternalKey(bidDept);
+      const days = Math.round((deptTotals[key] || 0) * 2) / 2;
+      if (days <= 0) return null;
+      const rateUsd = getAssetDeptRateUsd(key) || 750;
+      const cost = Math.round(days * rateUsd * 100) / 100;
+      grandDays += days;
+      grandCost += cost;
+      return {
+        label: ASSET_DEPT_LABELS[key] || bidDept,
+        days,
+        rate: rateUsd,
+        cost,
+      };
+    })
+    .filter(Boolean);
+
+  if (!deptRows.length) {
+    wrap.classList.add('hidden');
+    return;
+  }
+
+  wrap.classList.remove('hidden');
+  body.innerHTML = deptRows.map(r => `<tr>
+      <td>${escHtml(r.label)}</td>
+      <td class="num">${fmt(r.days)}</td>
+      <td class="num">${money(r.rate)}</td>
+      <td class="num cost">${money(r.cost)}</td>
+    </tr>`).join('');
+
+  foot.innerHTML = `<tr>
+      <td>All departments</td>
+      <td class="num">${fmt(grandDays)}</td>
+      <td class="num">—</td>
+      <td class="num cost">${money(grandCost)}</td>
+    </tr>`;
 }
 
 function currentShotStats() {
@@ -4702,10 +4744,9 @@ function updateCombinedSummary(shotStats) {
   const hasAnyCost = shotCount > 0 || assetStats.count > 0;
   document.getElementById('combined-summary')?.classList.toggle('hidden', !hasAnyCost);
   document.getElementById('tax-credit-card')?.classList.toggle('hidden', !hasAnyCost);
-  document.getElementById('resource-plan-toggle')?.classList.toggle('hidden', !hasAnyCost);
   if (!hasAnyCost) {
-    document.getElementById('resource-plan-panel')?.classList.add('hidden');
-    document.getElementById('resource-plan-toggle')?.classList.remove('open');
+    document.getElementById('resource-planning-card')?.classList.add('hidden');
+    document.getElementById('global-action-bar')?.classList.add('hidden');
     updateTaxCreditDisplay(0);
     renderFxMultiSummary(0, 0);
     updateFxStatusNote();
@@ -4723,418 +4764,260 @@ function updateCombinedSummary(shotStats) {
   updateTaxCreditDisplay(grossCost);
   renderFxMultiSummary(grossCost, netSummary.net);
   updateFxStatusNote();
+  maybeShowResourcePlanning();
+  updateGlobalActionBar();
   return { shotCost, assetCost: assetStats.totalCost, grossCost, net: netSummary.net };
 }
 
-const DEPT_PIPELINE = [
+// Pipeline order — each array is a parallel stage.
+// Depts in the same stage run concurrently; each stage completes before the next.
+const DEPT_PIPELINE_STAGES = [
   ['camera_track', 'matchmove'],
-  ['layout'],
-  ['animation', 'cfx', 'fx', 'dmp'],
+  ['layout', 'modelling', 'texturing'],
+  ['animation', 'cfx', 'fx', 'dmp', 'rigging', 'lookdev'],
   ['lighting'],
-  ['comp_paint', 'comp_roto', 'compositing'],
+  ['compositing', 'comp_paint', 'comp_roto', 'comp_dev'],
 ];
-// Overlap mode: each dept's available window as a fraction of the full working schedule.
-// Matches typical pipeline timing (e.g. Anim full run, FX shorter, Comp late).
-const OVERLAP_DEPT_WINDOW_FRAC = {
-  camera_track: 1.0, matchmove: 0.90, layout: 0.85,
-  animation: 1.0, cfx: 0.75, fx: 0.80, dmp: 0.70,
-  lighting: 0.60,
-  comp_paint: 0.70, comp_roto: 0.65, compositing: 0.70,
-  prep: 1.0, crowds: 0.75, enviro: 0.80, ai: 0.70,
+
+const DEPT_DISPLAY_NAMES = {
+  camera_track: 'Camera Track', matchmove: 'Matchmove',
+  layout: 'Layout', animation: 'Animation',
+  cfx: 'CFX', fx: 'FX', lighting: 'Lighting',
+  dmp: 'DMP', compositing: 'Comp', comp_paint: 'Comp Paint',
+  comp_roto: 'Comp Roto', modelling: 'Modelling',
+  texturing: 'Texturing', rigging: 'Rigging',
+  lookdev: 'Lookdev', comp_dev: 'Comp Dev',
+  prep: 'Prep', crowds: 'Crowds', enviro: 'Environment', ai: 'AI / Generative',
 };
-let _resourcePlanDeptDays = {};
 
-function toggleResourcePlanning() {
-  const toggle = document.getElementById('resource-plan-toggle');
-  const panel = document.getElementById('resource-plan-panel');
-  if (!toggle || !panel) return;
-  const opening = panel.classList.contains('hidden');
-  panel.classList.toggle('hidden', !opening);
-  toggle.classList.toggle('open', opening);
-  if (opening) openResourcePlanning();
-  sizeTableWrappers();
-}
+const ASSET_ONLY_DEPTS = new Set(['modelling', 'texturing', 'rigging', 'lookdev', 'comp_dev']);
+const WORKING_DAYS_PER_WEEK = 5;
+let _rpMode = 'forward';
 
-function defaultResourceDates() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  // Default to next Monday if mid-week
-  const day = start.getDay();
-  if (day !== 1) {
-    const add = day === 0 ? 1 : (8 - day);
-    start.setDate(start.getDate() + add);
-  }
-  const end = new Date(start);
-  end.setDate(end.getDate() + 10 * 7 - 1); // ~10 weeks
-  const iso = d => d.toISOString().slice(0, 10);
-  return { start: iso(start), end: iso(end) };
-}
+function collectAllDeptDays() {
+  const combined = {};
 
-function openResourcePlanning() {
-  const startEl = document.getElementById('rp-start');
-  const endEl = document.getElementById('rp-end');
-  if (startEl && !startEl.value) {
-    const d = defaultResourceDates();
-    startEl.value = d.start;
-    if (endEl) endEl.value = d.end;
-  }
-  _resourcePlanDeptDays = gatherResourcePlanDeptDays();
-  updateResourceScheduleHint();
-  const results = document.getElementById('resource-plan-results');
-  if (results && !Object.keys(_resourcePlanDeptDays).length) {
-    results.innerHTML = `<p class="muted" style="margin-top:8px">No department days yet — run a batch estimate first.</p>`;
-  } else if (results && results.innerHTML.trim() === '') {
-    runResourcePlan();
-  }
-}
-
-function onResourceScheduleChange() {
-  updateResourceScheduleHint();
-}
-
-function gatherResourcePlanDeptDays() {
-  const rows = collectBatchRowsFromTable();
-  const deptDays = {};
+  const shotRows = collectBatchRowsFromTable();
   BID_DEPTS.forEach(bidDept => {
-    const key = BID_TO_INTERNAL[bidDept];
-    if (!key) return;
-    const total = rows.reduce(
+    const key = BID_TO_INTERNAL[bidDept] || String(bidDept).toLowerCase();
+    const total = shotRows.reduce(
       (s, r) => s + (parseFloat(r.dept_days?.[bidDept]) || 0), 0
     );
-    if (total > 0) deptDays[key] = Math.round(total * 2) / 2;
-  });
-  return deptDays;
-}
-
-function parseDateInput(id) {
-  const v = document.getElementById(id)?.value;
-  if (!v) return null;
-  const d = new Date(v + 'T00:00:00');
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function countWorkingDays(start, end, daysPerWeek) {
-  if (!start || !end || end < start) return 0;
-  const dpw = Math.max(1, Math.min(7, parseInt(daysPerWeek, 10) || 5));
-  // Treat working days as Mon..(Mon+dpw-1)
-  let count = 0;
-  const cur = new Date(start);
-  while (cur <= end) {
-    const dow = cur.getDay(); // 0 Sun … 6 Sat
-    const monIndex = dow === 0 ? 6 : dow - 1; // Mon=0
-    if (monIndex < dpw) count++;
-    cur.setDate(cur.getDate() + 1);
-  }
-  return count;
-}
-
-function readResourceSchedule() {
-  const start = parseDateInput('rp-start');
-  const end = parseDateInput('rp-end');
-  const daysPerWeek = Math.max(1, Math.min(7, parseInt(document.getElementById('rp-days-per-week')?.value, 10) || 5));
-  const holidays = Math.max(0, parseInt(document.getElementById('rp-holidays')?.value, 10) || 0);
-  const utilizationPct = Math.max(50, Math.min(100, parseFloat(document.getElementById('rp-utilization')?.value) || 100));
-  const bufferPct = Math.max(0, Math.min(50, parseFloat(document.getElementById('rp-buffer')?.value) || 0));
-  const overlap = (document.getElementById('rp-overlap')?.value || 'overlap') === 'overlap';
-  const rawWorking = countWorkingDays(start, end, daysPerWeek);
-  const afterHolidays = Math.max(0, rawWorking - holidays);
-  const afterBuffer = Math.max(1, Math.floor(afterHolidays * (1 - bufferPct / 100)));
-  const weeks = daysPerWeek > 0 ? afterHolidays / daysPerWeek : 0;
-  return {
-    start, end, daysPerWeek, holidays, utilizationPct, bufferPct, overlap,
-    rawWorking, afterHolidays, availableWorkingDays: afterBuffer, weeks,
-  };
-}
-
-function updateResourceScheduleHint() {
-  const el = document.getElementById('rp-schedule-hint');
-  if (!el) return;
-  const s = readResourceSchedule();
-  if (!s.start || !s.end) {
-    el.textContent = 'Set start and delivery dates.';
-    return;
-  }
-  if (s.end < s.start) {
-    el.textContent = 'Delivery must be after start.';
-    return;
-  }
-  el.textContent = `${s.afterHolidays} working days (~${s.weeks.toFixed(1)} wks) · ${s.availableWorkingDays} after ${s.bufferPct}% buffer`;
-}
-
-function deptPipelineStage(dept) {
-  for (let i = 0; i < DEPT_PIPELINE.length; i++) {
-    if (DEPT_PIPELINE[i].includes(dept)) return i;
-  }
-  return DEPT_PIPELINE.length; // leftover stage
-}
-
-function calcDeptAvailableDays(deptDays, schedule) {
-  const total = schedule.availableWorkingDays;
-  const util = Math.max(0.5, Math.min(1, schedule.utilizationPct / 100));
-  // Lower utilization → fewer effective artist-days → higher crew needed
-  const effectiveTotal = Math.max(1, total * util);
-
-  const stageWeights = DEPT_PIPELINE.map(stage =>
-    stage.reduce((s, d) => s + (parseFloat(deptDays[d]) || 0), 0)
-  );
-  const leftoverDays = Object.entries(deptDays).reduce((s, [d, v]) => {
-    return deptPipelineStage(d) >= DEPT_PIPELINE.length ? s + (parseFloat(v) || 0) : s;
-  }, 0);
-  const weights = [...stageWeights, leftoverDays];
-  const weightSum = weights.reduce((a, b) => a + b, 0) || 1;
-
-  // Sequential: stage windows are non-overlapping slices of the schedule
-  let cursor = 0;
-  const sequentialWindows = weights.map(w => {
-    const dur = effectiveTotal * (w / weightSum);
-    cursor += dur;
-    return Math.max(1, dur);
+    if (total > 0) combined[key] = (combined[key] || 0) + total;
   });
 
-  const windows = {};
-  Object.keys(deptDays).forEach(dept => {
-    const stage = deptPipelineStage(dept);
-    let available;
-    if (schedule.overlap) {
-      const frac = OVERLAP_DEPT_WINDOW_FRAC[dept]
-        ?? (stage < DEPT_PIPELINE.length ? 0.75 : 0.65);
-      available = Math.max(1, Math.round(effectiveTotal * frac));
-    } else {
-      available = Math.max(1, Math.round(sequentialWindows[stage] || effectiveTotal));
-    }
-    windows[dept] = available;
-  });
-  return windows;
-}
-
-function calcStaffingPlan(deptDays, schedule) {
-  const availableByDept = calcDeptAvailableDays(deptDays, schedule);
-  const results = [];
-
-  Object.entries(deptDays || {}).forEach(([dept, bidDays]) => {
-    const days = parseFloat(bidDays) || 0;
-    if (days <= 0) return;
-    const availableDays = availableByDept[dept] || schedule.availableWorkingDays;
-    const averageCrew = days / availableDays;
-    const recommendedCrew = Math.max(1, Math.ceil(averageCrew));
-    // Peak: work concentrates in ~70% of the window during ramp-up / peak / ramp-down
-    const peakCrew = Math.max(recommendedCrew, Math.ceil(days / Math.max(1, availableDays * 0.7)));
-    results.push({
-      dept,
-      bidDays: days,
-      availableDays,
-      averageCrew,
-      recommendedCrew,
-      peakCrew,
-      startOffset: 0,
-      endOffset: availableDays,
+  document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])').forEach(tr => {
+    tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+      const key = assetInternalKey(inp.dataset.assetDept);
+      const days = parseFloat(inp.value) || 0;
+      if (days > 0) combined[key] = (combined[key] || 0) + days;
     });
   });
 
-  // Sort by pipeline stage then name
-  results.sort((a, b) => {
-    const sa = deptPipelineStage(a.dept);
-    const sb = deptPipelineStage(b.dept);
-    if (sa !== sb) return sa - sb;
-    return a.dept.localeCompare(b.dept);
+  Object.keys(combined).forEach(k => {
+    combined[k] = Math.round(combined[k] * 2) / 2;
   });
-
-  // Week-by-week plan with trapezoid ramp (25% ramp-up, 50% peak, 25% ramp-down)
-  const weekCount = Math.max(1, Math.ceil(schedule.availableWorkingDays / schedule.daysPerWeek));
-  const weekly = buildWeeklyStaffing(results, schedule, weekCount);
-
-  const totalRecommended = results.reduce((s, r) => s + r.recommendedCrew, 0);
-  const totalPeak = results.reduce((s, r) => s + r.peakCrew, 0);
-  const totalBidDays = results.reduce((s, r) => s + r.bidDays, 0);
-  const maxPeakWeek = weekly.weekTotals.length ? Math.max(...weekly.weekTotals) : 0;
-
-  // Flag tight schedules: very high average crew or extreme peak week vs recommended total
-  const realistic = results.every(r => r.averageCrew <= 6)
-    && maxPeakWeek <= Math.max(totalRecommended * 1.75, totalRecommended + 4);
-
-  return {
-    results,
-    weekly,
-    totalRecommended,
-    totalPeak,
-    totalBidDays,
-    maxPeakWeek,
-    realistic,
-    schedule,
-  };
+  return combined;
 }
 
-function buildWeeklyStaffing(results, schedule, weekCount) {
-  const weeks = [];
-  for (let w = 0; w < weekCount; w++) weeks.push({});
+function calcResourcePlan(allDeptDays, mode, param) {
+  const results = [];
 
-  results.forEach(r => {
-    // Map dept window onto project weeks proportionally by stage position
-    const stage = deptPipelineStage(r.dept);
-    const nStages = DEPT_PIPELINE.length + 1;
-    let startFrac, endFrac;
-    if (schedule.overlap) {
-      const frac = OVERLAP_DEPT_WINDOW_FRAC[r.dept]
-        ?? (stage < DEPT_PIPELINE.length ? 0.75 : 0.65);
-      // Later / shorter windows start later but still finish by delivery
-      startFrac = Math.max(0, 1 - frac);
-      endFrac = 1;
+  Object.entries(allDeptDays || {}).forEach(([dept, days]) => {
+    if (!days || days <= 0) return;
+
+    let artists;
+    let calendarDays;
+    if (mode === 'forward') {
+      const targetDays = Math.max(1, (parseFloat(param) || 12) * WORKING_DAYS_PER_WEEK);
+      artists = Math.max(1, Math.ceil(days / targetDays));
+      calendarDays = Math.ceil(days / artists);
     } else {
-      startFrac = stage / nStages;
-      endFrac = (stage + 1) / nStages;
+      artists = Math.max(1, parseInt(param?.[dept], 10) || 1);
+      calendarDays = Math.ceil(days / artists);
     }
-    const startWeek = Math.floor(startFrac * weekCount);
-    const endWeek = Math.max(startWeek + 1, Math.ceil(endFrac * weekCount));
-    const span = Math.max(1, endWeek - startWeek);
-    const ramp = Math.max(1, Math.floor(span * 0.25));
-    const peakSpan = Math.max(1, span - ramp * 2);
 
-    for (let w = startWeek; w < endWeek && w < weekCount; w++) {
-      const i = w - startWeek;
-      let headcount;
-      if (i < ramp) {
-        // ramp up toward peak
-        headcount = Math.max(1, Math.round(r.peakCrew * ((i + 1) / (ramp + 1))));
-      } else if (i < ramp + peakSpan) {
-        headcount = r.peakCrew;
-      } else {
-        const down = i - (ramp + peakSpan) + 1;
-        headcount = Math.max(1, Math.round(r.recommendedCrew * (1 - down / (ramp + 1))));
-      }
-      weeks[w][r.dept] = headcount;
-    }
+    results.push({
+      dept,
+      label: DEPT_DISPLAY_NAMES[dept] || DEPT_LABELS[dept] || dept,
+      days,
+      artists,
+      calendarDays,
+      calendarWeeks: calendarDays / WORKING_DAYS_PER_WEEK,
+      isAssetDept: ASSET_ONLY_DEPTS.has(dept),
+    });
   });
 
-  const weekTotals = weeks.map(week =>
-    Object.values(week).reduce((s, n) => s + (parseInt(n, 10) || 0), 0)
-  );
-  return { weeks, weekTotals, weekCount };
-}
+  results.sort((a, b) => {
+    const stageOf = d => {
+      for (let i = 0; i < DEPT_PIPELINE_STAGES.length; i++) {
+        if (DEPT_PIPELINE_STAGES[i].includes(d)) return i;
+      }
+      return DEPT_PIPELINE_STAGES.length;
+    };
+    const sa = stageOf(a.dept);
+    const sb = stageOf(b.dept);
+    if (sa !== sb) return sa - sb;
+    return a.label.localeCompare(b.label);
+  });
 
-function renderResourcePlan(plan) {
-  const { results, weekly, totalRecommended, totalPeak, totalBidDays, maxPeakWeek, realistic, schedule } = plan;
-  if (!results?.length) {
-    return `<p class="muted" style="margin-top:8px">No department days to schedule.</p>`;
+  let totalCalendarWeeks = 0;
+  DEPT_PIPELINE_STAGES.forEach(stage => {
+    const stageDepts = results.filter(r => stage.includes(r.dept));
+    if (!stageDepts.length) return;
+    totalCalendarWeeks += Math.max(...stageDepts.map(r => r.calendarWeeks));
+  });
+
+  const pipelineFlat = DEPT_PIPELINE_STAGES.flat();
+  const unplacedDepts = results.filter(r => !pipelineFlat.includes(r.dept));
+  if (unplacedDepts.length) {
+    totalCalendarWeeks += Math.max(...unplacedDepts.map(r => r.calendarWeeks));
   }
 
-  const rows = results.map(r => `
-    <tr>
-      <td>${escHtml(DEPT_LABELS[r.dept] || r.dept)}</td>
-      <td>${fmt(r.bidDays)}</td>
-      <td>${fmt(r.availableDays)}</td>
-      <td>${r.averageCrew.toFixed(1)}</td>
-      <td><strong>${r.recommendedCrew}</strong></td>
-      <td>${r.peakCrew}</td>
-    </tr>
-  `).join('');
+  const bottleneck = results.reduce(
+    (a, b) => (b.calendarWeeks > a.calendarWeeks ? b : a),
+    results[0] || { dept: '', label: '—', calendarWeeks: 0 }
+  );
 
-  const weekHeaders = Array.from({ length: weekly.weekCount }, (_, i) => `<th>W${i + 1}</th>`).join('');
-  const weekBody = results.map(r => {
-    const cells = weekly.weeks.map((week, i) => {
-      const n = week[r.dept] || 0;
-      const cls = n >= r.peakCrew ? 'peak' : (n > 0 ? 'mid' : '');
-      return `<td class="resource-week-cell ${cls}">${n || '—'}</td>`;
-    }).join('');
-    return `<tr><td>${escHtml(DEPT_LABELS[r.dept] || r.dept)}</td>${cells}</tr>`;
+  return { results, totalCalendarWeeks, bottleneck };
+}
+
+function setRpMode(mode) {
+  _rpMode = mode === 'reverse' ? 'reverse' : 'forward';
+  const artistsGrid = document.getElementById('rp-artists-grid');
+  if (!artistsGrid) return;
+  if (_rpMode === 'reverse') {
+    artistsGrid.classList.remove('hidden');
+    buildRpArtistInputs();
+  } else {
+    artistsGrid.classList.add('hidden');
+  }
+}
+
+function buildRpArtistInputs() {
+  const grid = document.getElementById('rp-artists-grid');
+  if (!grid) return;
+  const allDepts = collectAllDeptDays();
+  const entries = Object.entries(allDepts).filter(([, days]) => days > 0);
+  if (!entries.length) {
+    grid.innerHTML = `<div class="muted" style="font-size:12px">No department days yet.</div>`;
+    return;
+  }
+  grid.innerHTML = entries.map(([dept, days]) => {
+    const prev = document.getElementById(`rp-artists-${dept}`);
+    const val = prev ? (parseInt(prev.value, 10) || 2) : 2;
+    return `
+      <div class="rate-field">
+        <label class="rate-field-label" for="rp-artists-${escAttr(dept)}">
+          ${escHtml(DEPT_DISPLAY_NAMES[dept] || DEPT_LABELS[dept] || dept)}
+          <span class="muted" style="font-size:10px">(${fmt(days)}d)</span>
+        </label>
+        <input type="number" id="rp-artists-${escAttr(dept)}" value="${val}" min="1" max="50" step="1" style="width:70px">
+      </div>`;
   }).join('');
-  const weekTotalRow = weekly.weekTotals.map(n =>
-    `<td class="resource-week-cell ${n === maxPeakWeek && n > 0 ? 'peak' : ''}">${n}</td>`
-  ).join('');
+}
 
-  const realisticHtml = realistic
-    ? `<span class="resource-realistic-ok">Schedule looks realistic for recommended crew</span>`
-    : `<span class="resource-realistic-warn">Schedule may be tight — consider more crew or more calendar time</span>`;
-
-  return `
-    <div class="sec-label" style="margin:8px 0 6px">Simple Staffing Estimate</div>
-    <p class="muted" style="font-size:12px;margin-bottom:8px">
-      Formula: <strong>department workdays ÷ available working days = average crew</strong>,
-      then rounded up to a practical recommended headcount. Peak assumes work concentrates
-      in ~70% of each department's window (ramp-up / peak / ramp-down).
-    </p>
-    <table class="resource-plan-table">
-      <thead>
-        <tr>
-          <th>Department</th>
-          <th>Bid Days</th>
-          <th>Available Days</th>
-          <th>Average Crew</th>
-          <th>Recommended Crew</th>
-          <th>Peak Crew</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr>
-          <td>Total</td>
-          <td>${fmt(totalBidDays)}</td>
-          <td>—</td>
-          <td>—</td>
-          <td>${totalRecommended}</td>
-          <td>${totalPeak}</td>
-        </tr>
-      </tfoot>
-    </table>
-
-    <div class="resource-plan-summary">
-      <div><strong>Total recommended crew: ${totalRecommended}</strong>
-        · Peak simultaneous (sum of peaks): ${totalPeak}
-        · Peak week headcount: ${maxPeakWeek}</div>
-      <div class="resource-plan-meta">
-        <span>${schedule.afterHolidays} working days on calendar
-          (~${schedule.weeks.toFixed(1)} wks @ ${schedule.daysPerWeek}d/wk)</span>
-        <span>${schedule.availableWorkingDays} days after ${schedule.bufferPct}% revision buffer</span>
-        <span>Utilization ${schedule.utilizationPct}%</span>
-        <span>${schedule.overlap ? 'Overlapping stages' : 'Sequential stages'}</span>
-      </div>
-      <div style="margin-top:8px">${realisticHtml}</div>
-    </div>
-
-    <div class="sec-label" style="margin:18px 0 6px">Production Staffing Plan (week by week)</div>
-    <p class="muted" style="font-size:12px;margin-bottom:8px">
-      Distributes each department across its schedule window with ramp-up, peak, and ramp-down
-      based on Camera → Matchmove → Layout → Animation/CFX/FX → Lighting → Comp dependencies.
-    </p>
-    <div class="resource-week-wrap">
-      <table class="resource-week-table">
-        <thead>
-          <tr><th>Department</th>${weekHeaders}</tr>
-        </thead>
-        <tbody>
-          ${weekBody}
-          <tr><td><strong>Total HC</strong></td>${weekTotalRow}</tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="muted" style="font-size:11px;margin-top:10px">
-      How much work is there, how much time is available, and how many people are required to finish it?
-      Estimates assume the working-day calendar above. Real schedules vary with artist availability,
-      reviews, and client feedback.
-    </p>
-  `;
+function renderRpResults(plan) {
+  const { results, totalCalendarWeeks, bottleneck } = plan;
+  const totalEl = document.getElementById('rp-total-weeks');
+  const bottleEl = document.getElementById('rp-bottleneck-dept');
+  const tbody = document.getElementById('rp-table-body');
+  if (totalEl) totalEl.textContent = totalCalendarWeeks.toFixed(1) + ' wks';
+  if (bottleEl) bottleEl.textContent = bottleneck?.label || '—';
+  if (tbody) {
+    tbody.innerHTML = results.map(r => `
+      <tr ${r.dept === bottleneck?.dept ? 'style="background:rgba(226,165,58,.08)"' : ''}>
+        <td>${escHtml(r.label)}
+          ${r.dept === bottleneck?.dept
+            ? '<span class="muted" style="font-size:10px"> ← bottleneck</span>'
+            : ''}
+        </td>
+        <td class="muted" style="font-size:11px">${r.isAssetDept ? 'Asset build' : 'Shot dept'}</td>
+        <td class="num">${fmt(r.days)}</td>
+        <td class="num">${r.artists}</td>
+        <td class="num">${r.calendarWeeks.toFixed(1)}</td>
+      </tr>
+    `).join('');
+  }
+  document.getElementById('rp-results')?.classList.remove('hidden');
+  fitStatNumbers(document.getElementById('resource-planning-card') || document);
 }
 
 function runResourcePlan() {
-  _resourcePlanDeptDays = gatherResourcePlanDeptDays();
-  if (!Object.keys(_resourcePlanDeptDays).length) {
-    toast('No department days available — run a batch estimate first.', 'warn');
-    return;
-  }
-  const schedule = readResourceSchedule();
-  if (!schedule.start || !schedule.end || schedule.end < schedule.start) {
-    toast('Set a valid project start and delivery date.', 'warn');
-    return;
-  }
-  if (schedule.availableWorkingDays < 1) {
-    toast('Schedule has no available working days after holidays/buffer.', 'warn');
+  const allDeptDays = collectAllDeptDays();
+  if (!Object.keys(allDeptDays).length) {
+    toast('Run a shot or asset estimate first', 'warn');
     return;
   }
 
-  const plan = calcStaffingPlan(_resourcePlanDeptDays, schedule);
-  const el = document.getElementById('resource-plan-results');
-  if (el) el.innerHTML = renderResourcePlan(plan);
-  updateResourceScheduleHint();
+  let param;
+  if (_rpMode === 'forward') {
+    param = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
+  } else {
+    param = {};
+    Object.keys(allDeptDays).forEach(dept => {
+      const inp = document.getElementById(`rp-artists-${dept}`);
+      param[dept] = parseInt(inp?.value || '2', 10) || 2;
+    });
+  }
+
+  const plan = calcResourcePlan(allDeptDays, _rpMode, param);
+  renderRpResults(plan);
+  document.getElementById('resource-planning-card')?.classList.remove('hidden');
+}
+
+function maybeShowResourcePlanning() {
+  const hasShotDays = (_batchResult?.shots || []).some(isIncludedShot);
+  const hasAssetRows = document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])').length > 0;
+  const card = document.getElementById('resource-planning-card');
+  if (!card) return;
+  if (hasShotDays || hasAssetRows) card.classList.remove('hidden');
+  else {
+    card.classList.add('hidden');
+    document.getElementById('rp-results')?.classList.add('hidden');
+  }
+}
+
+function updateGlobalActionBar() {
+  const bar = document.getElementById('global-action-bar');
+  const summary = document.getElementById('global-action-summary');
+  if (!bar || !summary) return;
+
+  const shotRows = collectBatchRowsFromTable();
+  const assetRows = [...document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])')];
+  const hasSomething = shotRows.length > 0 || assetRows.length > 0;
+  if (!hasSomething) {
+    bar.classList.add('hidden');
+    return;
+  }
+
+  bar.classList.remove('hidden');
+
+  const shotDays = shotRows.reduce(
+    (s, r) => s + (parseFloat(r.total_mandays) || 0), 0
+  );
+  const assetDays = assetRows.reduce((s, tr) => {
+    const fromData = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays);
+    if (Number.isFinite(fromData)) return s + fromData;
+    return s + (parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0);
+  }, 0);
+
+  const parts = [];
+  if (shotRows.length) parts.push(`${shotRows.length} shots · ${fmt(shotDays)}d`);
+  if (assetRows.length) parts.push(`${assetRows.length} assets · ${fmt(assetDays)}d`);
+  summary.textContent = parts.join('  ·  ');
+}
+
+async function saveAllCorrections() {
+  const shotSaved = await saveAllBatchCorrections({ silent: true }) || 0;
+  const assetSaved = await saveAssetCorrections({ silent: true }) || 0;
+  const saved = shotSaved + assetSaved;
+  if (saved > 0) {
+    toast(`${saved} correction${saved !== 1 ? 's' : ''} saved`);
+  } else {
+    toast('Nothing to save — adjust some values first', 'warn');
+  }
+  return saved;
 }
 
 async function runAssetEstimate() {
@@ -5286,11 +5169,12 @@ function collectAssetRows() {
   return rows;
 }
 
-async function saveAssetCorrections() {
+async function saveAssetCorrections(opts = {}) {
+  const silent = !!opts.silent;
   const rows = document.querySelectorAll('#asset-tbody tr');
   if (!rows.length) {
-    toast('Run an asset estimate first.', 'warn');
-    return;
+    if (!silent) toast('Run an asset estimate first.', 'warn');
+    return 0;
   }
   const status = document.getElementById('asset-save-status');
   if (status) status.textContent = 'Saving…';
@@ -5334,11 +5218,11 @@ async function saveAssetCorrections() {
   }
 
   if (status) status.textContent = saved > 0 ? `Saved ${saved}` : '';
-  if (saved > 0) {
-    toast(`${saved} asset correction${saved > 1 ? 's' : ''} saved`);
-  } else {
-    toast('No asset rows with dept days to save.', 'warn');
+  if (!silent) {
+    if (saved > 0) toast(`${saved} asset correction${saved > 1 ? 's' : ''} saved`);
+    else toast('No asset rows with dept days to save.', 'warn');
   }
+  return saved;
 }
 
 function getBatchProjectRaw() {
@@ -6435,19 +6319,45 @@ function exportBidExcel() {
   applySheetColWidths(sceneSheet, [16, 10, 16, 14]);
   XLSX.utils.book_append_sheet(wb, sceneSheet, 'Scene Breakdown');
 
+  // ── TAB 6: Resource Planning ───────────────────────
+  const allDeptDays = collectAllDeptDays();
+  if (Object.keys(allDeptDays).length > 0) {
+    const targetWeeks = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
+    const plan = calcResourcePlan(allDeptDays, 'forward', targetWeeks);
+    const rpHeader = [
+      'Department', 'Type', 'Bid Days', 'Artists Needed', 'Calendar Weeks',
+    ];
+    const rpRows = plan.results.map(r => [
+      r.label,
+      r.isAssetDept ? 'Asset build' : 'Shot dept',
+      r.days,
+      r.artists,
+      Number(r.calendarWeeks.toFixed(1)),
+    ]);
+    rpRows.push(['TOTAL (sequential)', '', '', '', Number(plan.totalCalendarWeeks.toFixed(1))]);
+    rpRows.push([`Target: ${targetWeeks} weeks`, '', '', '', '']);
+    if (plan.bottleneck?.label) {
+      rpRows.push([`Bottleneck: ${plan.bottleneck.label}`, '', '', '', Number(plan.bottleneck.calendarWeeks.toFixed(1))]);
+    }
+    const rpSheet = XLSX.utils.aoa_to_sheet([rpHeader, ...rpRows]);
+    applySheetColWidths(rpSheet, [22, 14, 12, 14, 14]);
+    XLSX.utils.book_append_sheet(wb, rpSheet, 'Resource Planning');
+  }
+
   const project = (getBatchProject() || 'BID').replace(/[^\w\-]+/g, '_');
   const filename = `${project}_AI_ESTIMATE.xlsx`;
   XLSX.writeFile(wb, filename);
   toast(`Downloaded ${filename}`);
 }
 
-async function saveAllBatchCorrections() {
+async function saveAllBatchCorrections(opts = {}) {
+  const silent = !!opts.silent;
   if (!_batchResult?.shots?.length) {
-    toast('Run a batch estimate first.', 'warn');
-    return;
+    if (!silent) toast('Run a batch estimate first.', 'warn');
+    return 0;
   }
   const status = document.getElementById('batch-save-status');
-  status.textContent = 'Saving…';
+  if (status) status.textContent = 'Saving…';
   const dataRows = document.querySelectorAll('#batch-table-body tr.batch-data-row');
   const corrections = [];
 
@@ -6473,9 +6383,9 @@ async function saveAllBatchCorrections() {
   }
 
   if (!corrections.length) {
-    status.textContent = '';
-    toast('Edit at least one dept or notes cell before saving.', 'warn');
-    return;
+    if (status) status.textContent = '';
+    if (!silent) toast('Edit at least one dept or notes cell before saving.', 'warn');
+    return 0;
   }
 
   try {
@@ -6486,12 +6396,15 @@ async function saveAllBatchCorrections() {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
-    status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved ${d.saved} corrections`;
-    toast(`Saved ${d.saved} corrections — retrieval index updated.`);
+    const saved = d.saved || corrections.length;
+    if (status) status.innerHTML = `${iconSvg('check', 'icon icon-sm')} Saved ${saved} corrections`;
+    if (!silent) toast(`Saved ${saved} corrections — retrieval index updated.`);
     checkServer();
+    return saved;
   } catch (e) {
-    status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
-    toast('Bulk save failed: ' + e.message, 'err');
+    if (status) status.innerHTML = `${iconSvg('x-circle', 'icon icon-sm')} Failed`;
+    if (!silent) toast('Bulk save failed: ' + e.message, 'err');
+    return 0;
   }
 }
 
