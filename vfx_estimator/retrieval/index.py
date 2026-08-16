@@ -16,6 +16,57 @@ from vfx_estimator.types import SimilarShot
 
 _cached_index: Optional["ShotRetrievalIndex"] = None
 
+PRESET_DEPT_TO_BID = {
+    "camera_track": "CAMERA",
+    "matchmove": "MATCHMOVE",
+    "layout": "LAYOUT",
+    "animation": "ANIM",
+    "cfx": "CFX",
+    "fx": "FX",
+    "lighting": "LGT",
+    "dmp": "DMP",
+    "comp_paint": "COMP PAINT",
+    "comp_roto": "COMP ROTO",
+    "compositing": "COMP",
+}
+
+
+def load_preset_training_rows(settings: Settings) -> List[Dict[str, Any]]:
+    """Convert DB shot presets into retrieval rows weighted like training data."""
+    pg_url = settings.resolved_xata_postgres_url()
+    if not pg_url:
+        return []
+    try:
+        from vfx_estimator.integrations.xata import load_presets
+
+        presets = load_presets(pg_url)
+    except Exception:
+        return []
+
+    rows: List[Dict[str, Any]] = []
+    for key, preset in presets.items():
+        total = float(preset.get("total") or 0)
+        description = str(preset.get("description") or "").strip()
+        if total <= 0 or not description:
+            continue
+        dept_days = {
+            bid_key: float(preset.get(internal_key) or 0)
+            for internal_key, bid_key in PRESET_DEPT_TO_BID.items()
+            if float(preset.get(internal_key) or 0) > 0
+        }
+        rows.append(
+            {
+                "description": description,
+                "mandays": total,
+                "cost": total * float(settings.day_rate),
+                "source": "preset",
+                "weight": 1.0,
+                "project": key,
+                "dept_days": dept_days,
+            }
+        )
+    return rows
+
 
 def build_index(
     settings: Optional[Settings] = None,
@@ -26,7 +77,13 @@ def build_index(
     settings = settings or get_settings()
     training = load_training_shots(settings)
     store = corrections or CorrectionsStore(settings=settings)
-    _cached_index = ShotRetrievalIndex(training, settings=settings, corrections=store)
+    preset_rows = load_preset_training_rows(settings)
+    _cached_index = ShotRetrievalIndex(
+        training,
+        settings=settings,
+        corrections=store,
+        extra_rows=preset_rows,
+    )
     return _cached_index
 
 
@@ -182,6 +239,7 @@ class ShotRetrievalIndex:
                     similarity=float(sims[int(idx)]),
                     source=r["source"],
                     project=r.get("project"),
+                    dept_days=r.get("dept_days") or {},
                 )
             )
         return out

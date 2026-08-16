@@ -127,6 +127,21 @@ CREATE INDEX IF NOT EXISTS idx_bid_history_user ON vfx_bid_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_bid_history_created ON vfx_bid_history(created_at DESC);
 """
 
+BID_HISTORY_CURRENCY_COLUMNS_SQL = """
+ALTER TABLE vfx_bid_history
+    ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD',
+    ADD COLUMN IF NOT EXISTS display_currency TEXT DEFAULT 'USD',
+    ADD COLUMN IF NOT EXISTS fx_rate FLOAT DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS day_rate_usd FLOAT DEFAULT 700,
+    ADD COLUMN IF NOT EXISTS variant_label TEXT DEFAULT '',
+    ADD COLUMN IF NOT EXISTS cover_snapshot JSONB DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS assets JSONB DEFAULT '[]';
+UPDATE vfx_bid_history
+SET display_currency = COALESCE(NULLIF(currency, ''), 'USD')
+WHERE display_currency IS NULL
+   OR display_currency = 'USD';
+"""
+
 PRESET_DEPT_COLUMNS = (
     "camera_track",
     "matchmove",
@@ -592,6 +607,11 @@ def _shot_total_mandays(shot: Dict[str, Any]) -> float:
     return 0.0
 
 
+def _ensure_bid_history_currency_columns(cur) -> None:
+    """Idempotent schema upgrade for multi-currency / cover snapshots."""
+    cur.execute(BID_HISTORY_CURRENCY_COLUMNS_SQL)
+
+
 def save_bid_history(
     pg_url: str,
     project_name: str,
@@ -600,6 +620,13 @@ def save_bid_history(
     pre_qual: Optional[Dict[str, Any]] = None,
     notes: str = "",
     project_id: Optional[int] = None,
+    currency: str = "USD",
+    display_currency: Optional[str] = None,
+    fx_rate: float = 1.0,
+    day_rate_usd: float = 700.0,
+    variant_label: str = "",
+    cover_snapshot: Optional[Dict[str, Any]] = None,
+    assets: Optional[List[Dict[str, Any]]] = None,
 ) -> int:
     """Save a completed batch estimate to history."""
     if not pg_url:
@@ -611,15 +638,19 @@ def save_bid_history(
         raise RuntimeError("psycopg2 not installed") from e
 
     total_mandays = sum(_shot_total_mandays(s) for s in shots)
+    saved_currency = (display_currency or currency or "USD").upper()
     conn = psycopg2.connect(pg_url, connect_timeout=20)
     try:
         with conn.cursor() as cur:
+            _ensure_bid_history_currency_columns(cur)
             cur.execute(
                 """
                 INSERT INTO vfx_bid_history
                   (project_name, user_id, shot_count, total_mandays,
-                   shots, pre_qual, notes, project_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                   shots, pre_qual, notes, project_id,
+                   currency, display_currency, fx_rate, day_rate_usd,
+                   variant_label, cover_snapshot, assets)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
                 (
@@ -631,6 +662,13 @@ def save_bid_history(
                     Json(pre_qual or {}),
                     notes or "",
                     project_id,
+                    saved_currency,
+                    saved_currency,
+                    float(fx_rate or 1.0),
+                    float(day_rate_usd or 700.0),
+                    variant_label or "",
+                    Json(cover_snapshot or {}),
+                    Json(assets or []),
                 ),
             )
             bid_id = int(cur.fetchone()[0])
@@ -666,10 +704,20 @@ def list_bid_history(
                 where.append("project_id = %s")
                 params.append(project_id)
             where_sql = f"WHERE {' AND '.join(where)}" if where else ""
+            try:
+                _ensure_bid_history_currency_columns(cur)
+                conn.commit()
+            except Exception:
+                conn.rollback()
             cur.execute(
                 f"""
                 SELECT id, project_name, user_id, project_id, shot_count,
-                       total_mandays, created_at, notes
+                       total_mandays, created_at, notes,
+                       COALESCE(currency, 'USD') AS currency,
+                       COALESCE(NULLIF(display_currency, ''), currency, 'USD') AS display_currency,
+                       COALESCE(fx_rate, 1) AS fx_rate,
+                       COALESCE(day_rate_usd, 700) AS day_rate_usd,
+                       COALESCE(variant_label, '') AS variant_label
                 FROM vfx_bid_history
                 {where_sql}
                 ORDER BY created_at DESC LIMIT %s
@@ -686,6 +734,11 @@ def list_bid_history(
                 "total_mandays",
                 "created_at",
                 "notes",
+                "currency",
+                "display_currency",
+                "fx_rate",
+                "day_rate_usd",
+                "variant_label",
             ]
             return [dict(zip(cols, row)) for row in cur.fetchall()]
     except Exception as e:
@@ -708,11 +761,23 @@ def get_bid_history(pg_url: str, bid_id: int) -> Optional[Dict[str, Any]]:
     conn = psycopg2.connect(pg_url, connect_timeout=20)
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            try:
+                _ensure_bid_history_currency_columns(cur)
+                conn.commit()
+            except Exception:
+                conn.rollback()
             cur.execute(
                 """
                 SELECT id, project_name, user_id, project_id, shot_count,
                        total_mandays, shots, pre_qual,
-                       created_at, notes
+                       created_at, notes,
+                       COALESCE(currency, 'USD') AS currency,
+                       COALESCE(NULLIF(display_currency, ''), currency, 'USD') AS display_currency,
+                       COALESCE(fx_rate, 1) AS fx_rate,
+                       COALESCE(day_rate_usd, 700) AS day_rate_usd,
+                       COALESCE(variant_label, '') AS variant_label,
+                       COALESCE(cover_snapshot, '{}'::jsonb) AS cover_snapshot,
+                       COALESCE(assets, '[]'::jsonb) AS assets
                 FROM vfx_bid_history WHERE id = %s
                 """,
                 (bid_id,),
@@ -752,9 +817,13 @@ def delete_bid_history(pg_url: str, bid_id: int) -> bool:
 
 
 def _preset_from_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    created_by = str(row.get("created_by") or "system")
+    source = "system" if created_by == "system" else (
+        "reference" if created_by == "reference" else "studio"
+    )
     out: Dict[str, Any] = {
         "description": str(row.get("description") or ""),
-        "source": "studio" if str(row.get("created_by") or "") != "system" else "system",
+        "source": source,
     }
     total = 0.0
     for col in PRESET_DEPT_COLUMNS:
@@ -802,7 +871,7 @@ def load_presets(pg_url: str) -> Dict[str, Dict[str, Any]]:
                     SELECT shot_type, description, camera_track,
                            matchmove, layout, animation, cfx, fx,
                            lighting, dmp, comp_paint, comp_roto,
-                           compositing, total
+                           compositing, total, created_by
                     FROM vfx_presets
                     """
                 )
@@ -820,9 +889,10 @@ def load_presets(pg_url: str) -> Dict[str, Dict[str, Any]]:
                     "comp_roto",
                     "compositing",
                     "total",
+                    "created_by",
                 ]
                 for row in cur.fetchall():
-                    result[str(row[0])] = dict(zip(cols, row[1:]))
+                    result[str(row[0])] = _preset_from_row(dict(zip(cols, row[1:])))
         finally:
             conn.close()
         return result

@@ -138,17 +138,6 @@ AI (Generative AI work):
    hundreds of people = +10 animation days
    thousands of people = +15 animation days
 
-9. CROWDS department:
-   Use when descriptions mention crowd multiplication, hundreds/thousands of people,
-   army, soldiers, extras. Maps to animation + crowds.
-   Use CROWDS for dedicated crowd sim work separate from character animation.
-   Department key "crowds" (maps to CROWDS column in bid).
-
-10. ENVIRO department:
-   Use for CG environment builds (full 3D environment construction separate from DMP).
-   Maps to ENVIRO / ENV LAYOUT in MARZ files.
-   Department key "enviro" (maps to ENVIRO column in bid).
-
 SHOT TYPE:
   establishing → MINIMUM 18 days total. lighting >=6, compositing >=5.
   hero         → All depts +30-50%.
@@ -160,6 +149,17 @@ TYPICAL DAY RANGES (standard shot):
   cfx 1-4d           |  fx 3-10d        |  lighting 3-9d  |  dmp 2-5d
   comp_paint 2-6d    |  comp_roto 1-4d  |  compositing 3-8d  |  ai 0d (default) or 1-5d
 """
+
+
+def _preset_category(key: str) -> str:
+    parts = str(key).lower().rsplit("_", 2)
+    if (
+        len(parts) == 3
+        and parts[-2] in {"low", "medium", "high", "hero"}
+        and re.fullmatch(r"sh\d+", parts[-1])
+    ):
+        return parts[0]
+    return str(key).split("_", 1)[0]
 
 
 def build_vfx_rules(custom_baselines: Optional[Dict[str, Dict[str, Any]]] = None) -> str:
@@ -176,22 +176,30 @@ def build_vfx_rules(custom_baselines: Optional[Dict[str, Dict[str, Any]]] = None
             if isinstance(data, dict):
                 baselines[key] = {**baselines.get(key, {}), **data}
 
-    baseline_text = "\n\nSHOT TYPE BASELINE ALLOCATIONS (medium complexity, standard shot):\n"
-    baseline_text += "Use these as your starting point, then apply modifiers.\n\n"
+    categories: Dict[str, List[tuple[str, Dict[str, Any]]]] = {}
     for key, data in baselines.items():
-        depts = {
-            k: v
-            for k, v in data.items()
-            if k not in ("description", "total", "source")
-        }
-        dept_str = ", ".join(
-            f"{k}={float(v):g}d"
-            for k, v in depts.items()
-            if isinstance(v, (int, float)) and float(v) > 0
-        )
-        total = data.get("total", 0)
-        baseline_text += f"  {key}: {data.get('description', key)}\n"
-        baseline_text += f"    Base: {dept_str} -> Total: {float(total or 0):g}d\n\n"
+        categories.setdefault(_preset_category(key), []).append((key, data))
+
+    baseline_text = "\n\nSHOT TYPE REFERENCE DATA (from studio knowledge base):\n"
+    baseline_text += "Use these as anchors. Adjust for complexity modifiers.\n\n"
+    for category, items in sorted(categories.items()):
+        baseline_text += f"  {category.replace('_', ' ').upper()}:\n"
+        for key, data in sorted(items):
+            depts = {
+                k: v
+                for k, v in data.items()
+                if k not in ("description", "total", "source")
+            }
+            dept_str = ", ".join(
+                f"{k}={float(v):g}d"
+                for k, v in depts.items()
+                if isinstance(v, (int, float)) and float(v) > 0
+            )
+            total = float(data.get("total") or 0)
+            baseline_text += f"    {key}: {data.get('description', key)}\n"
+            if dept_str:
+                baseline_text += f"      -> {dept_str} (total: {total:g}d)\n"
+        baseline_text += "\n"
 
     modifier_text = """
 COMPLEXITY MODIFIERS (multiply baseline days by):
@@ -217,7 +225,7 @@ ESTIMATION PROCESS:
 
 
 def _load_studio_presets(settings: Settings) -> Dict[str, Dict[str, Any]]:
-    """Load custom shot presets from Xata if any exist."""
+    """Load all system, reference, and studio shot presets from Xata."""
     try:
         from vfx_estimator.integrations.xata import load_presets
 
@@ -346,9 +354,16 @@ class GeminiMandaysEstimator:
         lines = ["SIMILAR SHOTS (use as pricing anchors):"]
         for i, h in enumerate(hits, 1):
             tag = "★ CORRECTION" if h.source == "correction" else h.source.upper()
+            dept_text = ", ".join(
+                f"{key}={float(days):g}d"
+                for key, days in h.dept_days.items()
+                if float(days) > 0
+            )
+            dept_line = f"\n     departments: {dept_text}" if dept_text else ""
             lines.append(
                 f'  {i}. [{tag}] "{h.description}"\n'
                 f"     mandays={h.mandays:.1f}  cost=${h.cost:,.0f}  sim={h.similarity:.2f}"
+                f"{dept_line}"
             )
         return "\n".join(lines) + "\n"
 
@@ -438,7 +453,7 @@ Return a JSON object. You MUST include these fields — missing core fields is a
   "departments" — object where each key is a department name and its value is {{"days": <number>}}.
                   Include ALL departments with non-zero work for this shot.
                   Valid dept names: camera_track, matchmove, layout, animation, cfx, fx,
-                  lighting, dmp, comp_paint, comp_roto, compositing, prep, crowds, enviro, ai
+                  lighting, dmp, comp_paint, comp_roto, compositing, prep, ai
   "total_days"  — float; MUST equal the exact arithmetic sum of all included department days
   "confidence"  — float between 0.0 and 1.0
   "reasoning"   — one sentence: shot type classification and key similar-shot anchor used

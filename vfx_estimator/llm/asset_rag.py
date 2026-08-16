@@ -106,7 +106,10 @@ ASSET DEPARTMENTS:
   rigging:    Character or creature rig and controls (0-15d)
   cfx:        Cloth/hair/fur simulation setup (0-8d)
   fx:         FX development for asset (fire, destruction sim, etc) (0-10d)
-  lighting:   Asset-specific lighting rig only if needed (0-5d)
+  lighting:   Asset-specific lighting rig setup (0-5d) — ONLY when the asset
+              needs custom build-time lighting, such as a glowing creature,
+              light-emitting prop, or environment with lighting pre-baked as
+              part of the asset. Do not include ordinary per-shot lighting.
   dmp:        Matte painting elements for asset, rare (0-5d)
   comp_dev:   Compositing development / integration tests (0-4d)
 
@@ -144,6 +147,7 @@ Return JSON only:
     "rigging": {{"days": 12}},
     "lookdev": {{"days": 4}},
     "cfx": {{"days": 5}},
+    "lighting": {{"days": 0}},
     "dmp": {{"days": 0}},
     "comp_dev": {{"days": 2}}
   }},
@@ -216,6 +220,32 @@ def _enforce_asset_dmp(asset: Any, result: Dict[str, Any]) -> None:
     _set_dept(result, "dmp", days)
 
 
+def _enforce_asset_lighting(asset: Any, result: Dict[str, Any]) -> None:
+    """Add build-time lighting only when the asset explicitly requires it."""
+    text = " ".join(
+        str(part or "")
+        for part in (
+            getattr(asset, "asset_name", ""),
+            getattr(asset, "description", ""),
+            result.get("baseline_used", ""),
+            result.get("reasoning", ""),
+        )
+    ).lower()
+    custom_lighting = re.search(
+        r"\b(pre[- ]?baked (?:interior )?lighting|custom lighting(?: rig)?|"
+        r"light[- ]emitting|emissive|self[- ]illuminat(?:ed|ing)|"
+        r"glowing|bioluminescent)\b",
+        text,
+    )
+    if not custom_lighting:
+        return
+    dept = _dept_days(result)
+    if dept.get("lighting", 0) > 0:
+        return
+    days = 3.0 if re.search(r"\b(environment|interior|pre[- ]?baked)\b", text) else 2.0
+    _set_dept(result, "lighting", days)
+
+
 def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Settings) -> Dict[str, Any]:
     if asset_context is None:
         tier, notes = "", ""
@@ -254,6 +284,7 @@ def estimate_single_asset(asset: Any, asset_context: Optional[Any], settings: Se
         }
     print(f"[asset_estimate] SUCCESS — got keys: {list(result.keys())}", flush=True)
     _enforce_asset_dmp(asset, result)
+    _enforce_asset_lighting(asset, result)
     dept = _dept_days(result)
     if dept:
         result["total_days"] = round(sum(dept.values()) * 2) / 2

@@ -18,8 +18,6 @@ BID_DEPT_MAP: Dict[str, str] = {
     "COMP PAINT": "comp_paint",
     "COMP ROTO": "comp_roto",
     "COMP": "compositing",
-    "CROWDS": "crowds",
-    "ENVIRO": "enviro",
     "AI": "ai",
 }
 
@@ -141,8 +139,9 @@ class SimilarShot(BaseModel):
     mandays: float
     cost: float
     similarity: float
-    source: Literal["training", "correction", "xata"] = "training"
+    source: Literal["training", "correction", "preset", "xata"] = "training"
     project: Optional[str] = None
+    dept_days: Dict[str, float] = Field(default_factory=dict)
 
 
 class ShotEstimate(BaseModel):
@@ -205,6 +204,13 @@ class SaveBidRequest(BaseModel):
     shots: List[Dict[str, Any]] = Field(default_factory=list)
     pre_qual: Optional[Dict[str, Any]] = None
     notes: Optional[str] = ""
+    currency: Optional[str] = "USD"
+    display_currency: Optional[str] = None
+    fx_rate: Optional[float] = 1.0
+    day_rate_usd: Optional[float] = 700.0
+    variant_label: Optional[str] = None
+    cover_snapshot: Optional[Dict[str, Any]] = None
+    assets: Optional[List[Dict[str, Any]]] = None
 
 
 class PresetRequest(BaseModel):

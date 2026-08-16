@@ -84,8 +84,6 @@ DEPT_MAX_DAYS: Dict[str, float] = {
     "cfx": 10,
     "prep": 5,
     "ai": 10,
-    "crowds": 25,
-    "enviro": 15,
 }
 
 
@@ -157,8 +155,14 @@ class SuggestMethodologyRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class SuggestAssetShot(BaseModel):
+    description: str
+    shot_code: Optional[str] = None
+
+
 class SuggestAssetsRequest(BaseModel):
-    shot_descriptions: List[str]
+    shots: List[SuggestAssetShot] = Field(default_factory=list)
+    shot_descriptions: List[str] = Field(default_factory=list)
     project_name: Optional[str] = None
 
 
@@ -948,9 +952,23 @@ Return JSON only:
         digital doubles). Deduplicate across all shots.
         """
         svc = get_service()
-        descriptions = (req.shot_descriptions or [])[:60]
+        shot_records = [
+            {
+                "description": shot.description,
+                "shot_code": shot.shot_code,
+            }
+            for shot in (req.shots or [])[:60]
+            if shot.description.strip()
+        ]
+        if not shot_records:
+            shot_records = [
+                {"description": description, "shot_code": None}
+                for description in (req.shot_descriptions or [])[:60]
+                if str(description).strip()
+            ]
         combined = "\n".join(
-            f"- {d[:200]}" for d in descriptions if str(d).strip()
+            f"- [{record['shot_code'] or 'No shot code'}] {record['description'][:200]}"
+            for record in shot_records
         )
         if not combined.strip():
             return {"suggested_assets": [], "total_cg_assets": 0}
@@ -972,6 +990,8 @@ RULES:
 - A "CG castle" seen in 6 shots = ONE environment asset
 - Background crowd = ONE crowd asset (not per-shot)
 - Do NOT include camera tracks, wire removal, or 2D work
+- Return every shot code that references each asset in associated_shot_codes
+- Use only the shot codes shown in square brackets below
 
 SHOT DESCRIPTIONS:
 {combined}
@@ -984,6 +1004,7 @@ Return ONLY a JSON object:
       "asset_type": "hero_creature",
       "description": "Large winged dragon creature, appears in 8 shots. Hero quality required for close-up shots.",
       "appears_in_shots": 8,
+      "associated_shot_codes": ["IVL_001", "IVL_003", "IVL_007"],
       "confidence": 0.95,
       "reason": "Referenced as 'the dragon' across multiple shots with varied angles"
     }},
@@ -992,6 +1013,7 @@ Return ONLY a JSON object:
       "asset_type": "cg_environment_hero",
       "description": "Full CG village environment seen burning. Multiple camera angles require full 360 build.",
       "appears_in_shots": 4,
+      "associated_shot_codes": ["IVL_010", "IVL_011"],
       "confidence": 0.85,
       "reason": "Village set needed for fire sequence shots"
     }}
@@ -1019,6 +1041,32 @@ Return ONLY a JSON object:
         assets = result.get("suggested_assets") or []
         if not isinstance(assets, list):
             assets = []
+        known_codes = {
+            str(record["shot_code"])
+            for record in shot_records
+            if record.get("shot_code")
+        }
+        for asset in assets:
+            if not isinstance(asset, dict):
+                continue
+            raw_codes = asset.get("associated_shot_codes") or asset.get("associated_shots") or []
+            if not isinstance(raw_codes, list):
+                raw_codes = []
+            codes = list(
+                dict.fromkeys(
+                    str(code).strip()
+                    for code in raw_codes
+                    if str(code).strip() in known_codes
+                )
+            )
+            if not codes and len(known_codes) == 1:
+                codes = list(known_codes)
+            asset["associated_shot_codes"] = codes
+            try:
+                reported_count = int(asset.get("appears_in_shots") or 0)
+            except (TypeError, ValueError):
+                reported_count = 0
+            asset["appears_in_shots"] = len(codes) or reported_count
         total = result.get("total_cg_assets")
         if not isinstance(total, int):
             total = len(assets)
@@ -1294,6 +1342,13 @@ Return ONLY a JSON object:
             pre_qual=req.pre_qual,
             notes=req.notes or "",
             project_id=req.project_id,
+            currency=req.display_currency or req.currency or "USD",
+            display_currency=req.display_currency or req.currency or "USD",
+            fx_rate=float(req.fx_rate or 1.0),
+            day_rate_usd=float(req.day_rate_usd or 700.0),
+            variant_label=req.variant_label or "",
+            cover_snapshot=req.cover_snapshot or {},
+            assets=req.assets or [],
         )
         return {"ok": True, "bid_id": bid_id}
 

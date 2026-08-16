@@ -19,6 +19,8 @@ from vfx_estimator.integrations.xata import (
 )
 from vfx_estimator.types import UserCorrection
 
+CHE_SHOT_PRESETS_PATH = ROOT / "vfx_estimator" / "data" / "che_shot_presets.json"
+
 
 CREATE_DASHBOARD_TABLES_SQL = """
 CREATE TABLE IF NOT EXISTS vfx_users (
@@ -57,7 +59,19 @@ CREATE TABLE IF NOT EXISTS vfx_tasks (
 
 ALTER TABLE vfx_bid_history
     ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES vfx_projects(id),
-    ADD COLUMN IF NOT EXISTS user_id TEXT;
+    ADD COLUMN IF NOT EXISTS user_id TEXT,
+    ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD',
+    ADD COLUMN IF NOT EXISTS display_currency TEXT DEFAULT 'USD',
+    ADD COLUMN IF NOT EXISTS fx_rate FLOAT DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS day_rate_usd FLOAT DEFAULT 700,
+    ADD COLUMN IF NOT EXISTS variant_label TEXT DEFAULT '',
+    ADD COLUMN IF NOT EXISTS cover_snapshot JSONB DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS assets JSONB DEFAULT '[]';
+
+UPDATE vfx_bid_history
+SET display_currency = COALESCE(NULLIF(currency, ''), 'USD')
+WHERE display_currency IS NULL
+   OR display_currency = 'USD';
 
 CREATE INDEX IF NOT EXISTS idx_projects_owner ON vfx_projects(owner_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_user ON vfx_tasks(user_id);
@@ -114,6 +128,59 @@ def _load_jsonl(path: Path) -> list[UserCorrection]:
     return out
 
 
+def _load_reference_presets(path: Path = CHE_SHOT_PRESETS_PATH) -> list[dict]:
+    if not path.is_file():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return [
+        row
+        for row in data
+        if isinstance(row, dict) and float(row.get("total") or 0) > 0
+    ]
+
+
+def _insert_reference_presets(cur, presets: list[dict]) -> int:
+    if not presets:
+        return 0
+    from psycopg2.extras import execute_values
+
+    columns = (
+        "camera_track",
+        "matchmove",
+        "layout",
+        "animation",
+        "cfx",
+        "fx",
+        "lighting",
+        "dmp",
+        "comp_paint",
+        "comp_roto",
+        "compositing",
+    )
+    values = [
+        (
+            row["shot_type"],
+            row.get("description") or row["shot_type"],
+            *(float(row.get(column) or 0) for column in columns),
+            float(row.get("total") or 0),
+            "reference",
+        )
+        for row in presets
+    ]
+    execute_values(
+        cur,
+        f"""
+        INSERT INTO vfx_presets
+          (shot_type, description, {", ".join(columns)}, total, created_by)
+        VALUES %s
+        ON CONFLICT (shot_type) DO NOTHING
+        """,
+        values,
+        page_size=1000,
+    )
+    return max(0, cur.rowcount)
+
+
 def main() -> None:
     get_settings.cache_clear()
     settings = get_settings()
@@ -126,15 +193,25 @@ def main() -> None:
     print("=" * 60)
 
     try:
+        reference_presets = _load_reference_presets()
+        inserted_presets = 0
+        preset_count = 0
         with get_postgres_connection(settings) as conn:
             with conn.cursor() as cur:
                 cur.execute(CREATE_CORRECTIONS_TABLE_SQL)
                 cur.execute(CREATE_PRESETS_TABLE_SQL)
+                inserted_presets = _insert_reference_presets(cur, reference_presets)
                 cur.execute(CREATE_ASSET_PRESETS_TABLE_SQL)
                 cur.execute(CREATE_DASHBOARD_TABLES_SQL)
+                cur.execute("SELECT COUNT(*) FROM vfx_presets")
+                preset_count = int(cur.fetchone()[0])
             conn.commit()
         print("OK    Table vfx_corrections ready (CREATE TABLE IF NOT EXISTS)")
         print("OK    Table vfx_presets ready (CREATE TABLE IF NOT EXISTS + seed presets)")
+        print(
+            f"OK    Shot reference presets: {inserted_presets} inserted, "
+            f"{preset_count} total ({len(reference_presets)} valid source rows)"
+        )
         print("OK    Table vfx_asset_presets ready (CREATE TABLE IF NOT EXISTS + seed presets)")
         print("OK    Dashboard auth/project/task tables ready")
     except Exception as e:

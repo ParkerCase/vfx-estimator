@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <style>
     :root {
       --bg:      #050506;
@@ -305,6 +306,12 @@
       opacity:.7;cursor:default;background:var(--green);color:#0a1410;
     }
     .suggested-asset-loading{font-size:11px;color:var(--muted);font-weight:600}
+    .spinner-sm{
+      width:14px;height:14px;border:2px solid var(--border);
+      border-top-color:var(--accent);border-radius:50%;
+      animation:spin .7s linear infinite;display:inline-block;flex:0 0 auto;
+    }
+    .suggestion-loading{display:flex;align-items:center;gap:6px;padding:4px}
 
     /* ── Cards ── */
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
@@ -468,10 +475,21 @@
     .batch-bar{background:var(--surface);border-top:1px solid var(--border);
                padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
                flex-wrap:wrap;gap:10px;margin-top:0;border-radius:0 0 var(--r) var(--r)}
-    .rp-mode-row{display:flex;flex-direction:column;gap:4px}
-    .rp-mode-label{display:flex;align-items:center;flex-wrap:wrap;gap:6px;
-      font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
-    .rp-mode-label input[type=radio]{accent-color:var(--accent)}
+    .rp-mode-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .rp-tab{
+      padding:7px 14px;border:1px solid var(--border);border-radius:8px;
+      background:var(--surface);color:var(--muted);cursor:pointer;
+      font-size:12px;transition:all .15s
+    }
+    .rp-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .rp-panel{padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r)}
+    .rp-input-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .rp-stage-header td{
+      border-top:1px solid var(--border)!important;background:var(--surface)!important;
+      color:var(--muted)!important;font-size:10px;font-weight:800;
+      text-transform:uppercase;letter-spacing:.6px;padding:10px 8px 4px!important
+    }
+    #rp-table-foot td{background:var(--accent)!important;color:#fff!important}
     #rp-artists-grid .rate-field{display:flex;flex-direction:column;gap:4px}
     #rp-artists-grid .rate-field-label{font-size:11px;font-weight:700;color:var(--muted)}
     #global-action-bar.hidden{display:none!important}
@@ -504,9 +522,6 @@
     .batch-dept-summary td{color:var(--text)}
     .batch-dept-summary .num{font-weight:800;text-align:right;white-space:nowrap}
     .batch-dept-summary .cost{color:var(--green);font-weight:800}
-    .batch-dept-summary .scene-pct-cell{min-width:100px}
-    .scene-pct-bar{height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden}
-    .scene-pct-bar > div{height:100%;background:var(--accent);border-radius:3px;min-width:2px}
     .batch-dept-summary tfoot td{font-weight:800;background:var(--card2)}
     .tax-credit-wrap{margin-top:4px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
     table.tax-credit-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -557,9 +572,34 @@
     .preset-row-actions{display:inline-flex;gap:4px;margin-left:auto}
     .preset-row-actions .btn-history{padding:3px 8px;font-size:10px}
     .presets-note{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}
+    .presets-filter-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+    .presets-filter-row input{min-width:280px;flex:1}
+    .presets-filter-row select{min-width:170px}
+    .preset-category-header td{
+      background:var(--card2)!important;color:var(--text);font-size:11px;font-weight:900;
+      text-transform:uppercase;letter-spacing:.65px;padding:10px 12px!important
+    }
+    .preset-meta{font-size:11px;color:var(--muted);white-space:nowrap}
+    .preset-badge.reference{color:var(--orange)}
+    .preset-badge.system{color:var(--muted)}
     .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(69,106,237,.35);
       border-radius:8px;background:rgba(69,106,237,.07);font-size:12px;color:var(--text);line-height:1.5}
     .method-cell{min-width:180px;max-width:260px;font-size:11px;color:var(--muted);position:relative}
+    .method-cell.method-loading .method-readonly,
+    .method-cell.method-loading .method-empty{
+      animation:methodLoadPulse 1.1s ease-in-out infinite;
+      border-radius:8px;background:rgba(69,106,237,.08)
+    }
+    .method-loading-dial{
+      display:inline-flex;align-items:center;gap:6px;margin-top:6px;
+      font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent)
+    }
+    .method-loading-dial .dial{
+      width:14px;height:14px;border-radius:50%;
+      border:2px solid rgba(69,106,237,.25);border-top-color:var(--accent);
+      animation:spin .7s linear infinite
+    }
+    @keyframes methodLoadPulse{0%,100%{opacity:.55}50%{opacity:1}}
     .method-readonly{max-height:70px;overflow:auto;white-space:pre-wrap}
     .method-empty{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .method-generate-hint{animation:methodPulse 1.8s ease-in-out infinite}
@@ -604,6 +644,7 @@
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-grip" viewBox="0 0 24 24">
     <circle cx="9" cy="7" r="1.4" fill="currentColor" stroke="none"/>
@@ -729,16 +770,35 @@
       <button type="button" class="btn-blue" onclick="addCustomPreset()">+ Add Shot Preset</button>
       <button type="button" class="btn-ghost" onclick="loadPresets()">Refresh</button>
     </div>
+    <div class="presets-filter-row">
+      <input type="text" id="presets-search"
+             placeholder="Search presets (e.g. 'creature hero')..."
+             oninput="filterPresets(this.value)">
+      <select id="presets-category-filter" onchange="filterPresets()">
+        <option value="">All categories</option>
+        <option value="cleanup">Cleanup</option>
+        <option value="creature">Creature</option>
+        <option value="crowd">Crowd</option>
+        <option value="destruction">Destruction</option>
+        <option value="digital_human">Digital Human</option>
+        <option value="environment">Environment</option>
+        <option value="fx">FX</option>
+        <option value="screen">Screen</option>
+        <option value="vehicle">Vehicle</option>
+        <option value="weather">Weather</option>
+      </select>
+    </div>
     <div class="presets-wrap">
       <table class="presets-table">
         <thead>
           <tr>
-            <th>Shot Type</th><th>Description</th><th>CAM</th><th>MM</th><th>LAY</th><th>ANIM</th>
-            <th>CFX</th><th>FX</th><th>LGT</th><th>DMP</th><th>CP</th><th>CR</th><th>COMP</th><th>Total</th>
+            <th>Shot Type</th><th>Category</th><th>Difficulty</th><th>Description</th><th>Source</th>
+            <th>CAM</th><th>MM</th><th>LAY</th><th>ANIM</th><th>CFX</th><th>FX</th>
+            <th>LGT</th><th>DMP</th><th>CP</th><th>CR</th><th>COMP</th><th>Total</th>
           </tr>
         </thead>
         <tbody id="presets-body">
-          <tr><td colspan="14" style="color:var(--muted)">Loading presets...</td></tr>
+          <tr><td colspan="17" style="color:var(--muted)">Loading presets...</td></tr>
         </tbody>
       </table>
     </div>
@@ -793,7 +853,7 @@
           Drop bid CSV or Excel here, or click to upload
         </div>
         <div style="font-size:12px;color:var(--muted)">
-          CSV, .xlsx, .xls — auto-maps column names (LVL UP, custom studio formats)
+          CSV, .xlsx, .xls — auto-maps column names (legacy and custom studio formats)
         </div>
         <input type="file" id="batch-csv-file" accept=".csv,.xlsx,.xls" style="display:none"
                onchange="onBatchFileSelected(this)">
@@ -987,23 +1047,6 @@
           </table>
         </div>
 
-        <div class="sec-label" style="margin:16px 0 10px">Scene Breakdown</div>
-        <div class="batch-dept-summary-wrap">
-          <table class="batch-dept-summary" id="batch-scene-summary-table">
-            <thead>
-              <tr>
-                <th>Scene</th>
-                <th style="text-align:right">Shots</th>
-                <th style="text-align:right">Total Days</th>
-                <th style="text-align:right">Total Cost</th>
-                <th style="text-align:right">% of Bid</th>
-              </tr>
-            </thead>
-            <tbody id="batch-scene-summary-body"></tbody>
-            <tfoot id="batch-scene-summary-foot"></tfoot>
-          </table>
-        </div>
-
       </div>
     </div>
 
@@ -1192,24 +1235,61 @@
     </div>
 
     <div id="resource-planning-card" class="card hidden" style="margin-top:16px">
-      <div class="sec-label" style="margin-bottom:12px">📅 Resource Planning</div>
-
-      <div class="rp-mode-row">
-        <label class="rp-mode-label">
-          <input type="radio" name="rp-mode" value="forward" checked onchange="setRpMode('forward')">
-          I need it done in:
-          <input type="number" id="rp-target-weeks" value="12" min="1" max="200" step="1"
-                 style="width:60px;margin:0 6px" onclick="event.stopPropagation()">
-          weeks
-        </label>
-        <label class="rp-mode-label" style="margin-top:8px">
-          <input type="radio" name="rp-mode" value="reverse" onchange="setRpMode('reverse')">
-          I have this many artists:
-        </label>
+      <div class="sec-label" style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg>
+        Resource Planning
       </div>
 
-      <div id="rp-artists-grid" class="hidden"
-           style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+      <div class="rp-mode-tabs">
+        <button type="button" class="rp-tab active" id="rp-tab-weeks" onclick="setRpMode('weeks')">
+          I have X weeks
+        </button>
+        <button type="button" class="rp-tab" id="rp-tab-artists" onclick="setRpMode('artists')">
+          I have X artists
+        </button>
+        <button type="button" class="rp-tab" id="rp-tab-dates" onclick="setRpMode('dates')">
+          Start → End dates
+        </button>
+      </div>
+
+      <div id="rp-panel-weeks" class="rp-panel">
+        <div class="rp-input-row">
+          <label for="rp-target-weeks">Target duration</label>
+          <input type="number" id="rp-target-weeks" value="12" min="1" max="200" step="1" style="width:70px">
+          <span>weeks</span>
+        </div>
+        <p class="muted" style="font-size:11px;margin:8px 0 0">
+          Calculates the artists needed per department so the entire sequential pipeline fits this timeline.
+        </p>
+      </div>
+
+      <div id="rp-panel-artists" class="rp-panel hidden">
+        <p style="font-size:13px;margin:0 0 10px">Enter how many artists you have per department:</p>
+        <div id="rp-artists-grid"
+             style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+        </div>
+        <p class="muted" style="font-size:11px;margin:8px 0 0">
+          Calculates each department's duration and the total sequential production timeline.
+        </p>
+      </div>
+
+      <div id="rp-panel-dates" class="rp-panel hidden">
+        <div class="rp-input-row" style="gap:12px">
+          <div>
+            <label class="lbl" for="rp-start-date">Start date</label>
+            <input type="date" id="rp-start-date" onchange="updateDatesWeeksDisplay()" style="padding:6px 8px">
+          </div>
+          <div>
+            <label class="lbl" for="rp-end-date">Target finish date</label>
+            <input type="date" id="rp-end-date" onchange="updateDatesWeeksDisplay()" style="padding:6px 8px">
+          </div>
+        </div>
+        <div id="rp-dates-weeks-display" class="muted" style="font-size:12px;margin-top:8px">
+          Select both dates to calculate working weeks.
+        </div>
+        <p class="muted" style="font-size:11px;margin:6px 0 0">
+          Calculates artists needed to finish all production stages between these dates.
+        </p>
       </div>
 
       <button type="button" class="btn-blue" style="margin-top:14px" onclick="runResourcePlan()">
@@ -1217,10 +1297,14 @@
       </button>
 
       <div id="rp-results" class="hidden" style="margin-top:16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px">
           <div class="stat-block">
             <div class="n" id="rp-total-weeks">—</div>
             <div class="l">Estimated production weeks</div>
+          </div>
+          <div class="stat-block">
+            <div class="n" id="rp-total-artists">—</div>
+            <div class="l">Total artists needed</div>
           </div>
           <div class="stat-block">
             <div class="n" id="rp-bottleneck-dept">—</div>
@@ -1233,21 +1317,18 @@
             <thead>
               <tr>
                 <th>Department</th>
-                <th>Type</th>
                 <th class="num">Bid Days</th>
                 <th class="num">Artists</th>
-                <th class="num">Calendar Weeks</th>
+                <th class="num" title="Duration for this department; departments in one stage run in parallel">Weeks (this dept)</th>
               </tr>
             </thead>
             <tbody id="rp-table-body"></tbody>
+            <tfoot id="rp-table-foot"></tfoot>
           </table>
         </div>
 
-        <p class="muted" style="font-size:11px;margin-top:10px;line-height:1.5">
-          ⓘ Estimates assume 5-day working weeks. Asset build departments (Modelling, Rigging, Lookdev, etc.)
-          are included alongside shot departments. Departments within the same pipeline stage run in parallel;
-          each stage must complete before the next begins.<br>
-          <em>These are estimates — real schedules vary based on revisions, artist availability, and client feedback.</em>
+        <p id="rp-note" class="muted" style="font-size:11px;margin-top:10px;line-height:1.5">
+          Departments in one stage run in parallel; stages run sequentially.
         </p>
       </div>
     </div>
@@ -1257,17 +1338,109 @@
                 border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;
                 flex-wrap:wrap;gap:12px">
       <div id="global-action-summary" style="font-size:13px;color:var(--muted)"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button type="button" class="btn-green with-icon" onclick="saveAllCorrections()">
-          <svg class="icon"><use href="#i-check"></use></svg>
-          Save All Corrections
-        </button>
-        <button type="button" class="btn-blue with-icon" onclick="exportBidExcel()">
-          <svg class="icon"><use href="#i-download"></use></svg>
-          Export Excel
-        </button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="btn-ghost with-icon" onclick="toggleCompanyProfilePanel()">
+        Company Profile
+      </button>
+      <button type="button" class="btn-ghost with-icon" onclick="saveCurrentCurrencySnapshot()">
+        💾 Save in <span id="save-currency-label">USD</span>
+      </button>
+      <button type="button" class="btn-green with-icon" onclick="saveAllCorrections()">
+        <svg class="icon"><use href="#i-check"></use></svg>
+        Save All Corrections
+      </button>
+      <label class="check-label" style="margin:0;padding:0 4px;white-space:nowrap" title="Include styled cover page as the first Excel sheet">
+        <input type="checkbox" id="export-include-cover" checked>
+        Include cover page
+      </label>
+      <button type="button" class="btn-blue with-icon" onclick="exportBidExcel()">
+        <svg class="icon"><use href="#i-download"></use></svg>
+        Export Excel
+      </button>
+    </div>
+  </div>
+
+  <div id="company-profile-panel" class="card hidden" style="margin-top:16px">
+    <div class="sec-label" style="margin-bottom:10px">Company Profile (Cover Page)</div>
+    <p class="muted" style="font-size:12px;margin-bottom:12px;max-width:42rem;line-height:1.5">
+      Letterhead used on Cover Page exports. Saved in this browser and snapshotted into each
+      currency variant so historical bids keep the letterhead used at save time.
+    </p>
+    <div class="cover-section">
+      <div class="sec-label" style="margin-bottom:8px">Company Logo</div>
+      <div id="logo-upload-zone"
+           style="border:2px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer"
+           onclick="document.getElementById('logo-file-input').click()">
+        <div id="logo-preview-wrap" style="display:none">
+          <img id="logo-preview" alt="Company logo preview"
+               style="max-height:80px;max-width:200px;object-fit:contain">
+          <button type="button" onclick="clearLogo(event)"
+                  style="display:block;margin:8px auto 0"
+                  class="btn-ghost btn-sm">Remove logo</button>
+        </div>
+        <div id="logo-upload-hint">
+          <div style="font-size:28px;color:var(--muted)">🏢</div>
+          <div class="muted" style="font-size:13px;margin-top:4px">
+            Click to upload your company logo
+          </div>
+          <div class="muted" style="font-size:11px">PNG, JPG, SVG, or WebP · Max 2MB</div>
+        </div>
+        <input type="file" id="logo-file-input"
+               accept="image/png,image/jpeg,image/svg+xml,image/webp"
+               class="hidden" onchange="handleLogoUpload(this)">
       </div>
     </div>
+    <div class="cover-section" style="margin-top:16px">
+      <div class="sec-label" style="margin-bottom:8px">Brand Colors</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="lbl" for="cover-color-primary">Primary Color</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="color" id="cover-color-primary" value="#4f8ef7"
+                   style="width:44px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);cursor:pointer"
+                   oninput="updateCoverColorPreview()">
+            <input type="text" id="cover-color-primary-hex" value="#4f8ef7" maxlength="7"
+                   style="width:80px;font-size:12px"
+                   oninput="syncColorHex('primary', this.value)">
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Used for headers and accents</div>
+        </div>
+        <div>
+          <label class="lbl" for="cover-color-secondary">Secondary Color</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="color" id="cover-color-secondary" value="#1a2030"
+                   style="width:44px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);cursor:pointer"
+                   oninput="updateCoverColorPreview()">
+            <input type="text" id="cover-color-secondary-hex" value="#1a2030" maxlength="7"
+                   style="width:80px;font-size:12px"
+                   oninput="syncColorHex('secondary', this.value)">
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Used for backgrounds and borders</div>
+        </div>
+      </div>
+      <div id="cover-color-preview"
+           style="margin-top:12px;height:32px;border-radius:6px;overflow:hidden;display:flex">
+        <div id="cover-preview-primary" style="flex:1;background:#4f8ef7"></div>
+        <div id="cover-preview-secondary" style="flex:1;background:#1a2030"></div>
+      </div>
+    </div>
+    <div class="resource-schedule-grid" style="margin-top:16px;margin-bottom:0">
+      <label>Company name<input type="text" id="co-name" placeholder="Your Company Name" oninput="persistCompanyProfile()"></label>
+      <label>Website<input type="text" id="co-website" placeholder="www.yourstudio.com" oninput="persistCompanyProfile()"></label>
+      <label>Email<input type="text" id="co-email" placeholder="email@yourstudio.com" oninput="persistCompanyProfile()"></label>
+      <label>Phone<input type="text" id="co-phone" placeholder="+1 (000) 000-0000" oninput="persistCompanyProfile()"></label>
+      <label class="span-2">Address / suite<input type="text" id="co-address" placeholder="Studio Address · City, Province/State" oninput="persistCompanyProfile()"></label>
+      <label class="span-2">Locations line<input type="text" id="co-locations" placeholder="Your Studio" oninput="persistCompanyProfile()"></label>
+      <label>Prepared by<input type="text" id="co-prepared-by" placeholder="Supervisor Name" oninput="persistCompanyProfile()"></label>
+      <label>Client (cover)<input type="text" id="co-client" placeholder="Client name" oninput="persistCompanyProfile()"></label>
+      <label>On-set supervision $/day<input type="number" id="co-onset-rate" value="0" min="0" step="50" oninput="persistCompanyProfile()"></label>
+      <label>On-set days<input type="number" id="co-onset-days" value="0" min="0" step="1" oninput="persistCompanyProfile()"></label>
+      <label>Lidar / data processing<input type="number" id="co-lidar" value="0" min="0" step="100" oninput="persistCompanyProfile()"></label>
+      <label>Quote valid (days)<input type="number" id="co-valid-days" value="60" min="1" step="1" oninput="persistCompanyProfile()"></label>
+    </div>
+    <label class="lbl" style="margin-top:12px">Terms &amp; Conditions</label>
+    <textarea id="co-terms" rows="6" style="width:100%;resize:vertical" oninput="persistCompanyProfile()"></textarea>
+  </div>
 
 </div><!-- /wrap -->
 
@@ -1342,16 +1515,16 @@ const DISPLAY_CURRENCY_STORAGE_KEY = 'vfx_estimator_display_currency';
 const BASE_CURRENCY = 'USD';
 const DISPLAY_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD'];
 const CURRENCY_SYMBOLS = { USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$' };
-const ALLOTMENT_EFFICIENCY = 0.88;
+const SHOT_EFFICIENCY_FACTOR = 0.30;
 const RATE_DEPARTMENTS = [
   'animation', 'fx', 'lighting', 'compositing', 'comp_paint', 'comp_roto',
-  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'crowds', 'enviro', 'ai',
+  'layout', 'cfx', 'dmp', 'camera_track', 'matchmove', 'prep', 'ai',
 ];
 const BID_TO_INTERNAL = {
   CAMERA: 'camera_track', MATCHMOVE: 'matchmove', LAYOUT: 'layout',
   ANIM: 'animation', CFX: 'cfx', FX: 'fx', LGT: 'lighting',
   DMP: 'dmp', 'COMP PAINT': 'comp_paint', 'COMP ROTO': 'comp_roto', COMP: 'compositing',
-  CROWDS: 'crowds', ENVIRO: 'enviro', AI: 'ai',
+  AI: 'ai',
 };
 let _deptRates = {};
 let _fallbackDayRate = 700;
@@ -1434,19 +1607,19 @@ const DEPT_LABELS = {
   camera_track:'Camera Track', matchmove:'Matchmove', layout:'Layout',
   animation:'Animation', cfx:'CFX', fx:'FX', lighting:'Lighting',
   dmp:'DMP', comp_paint:'Comp / Paint', comp_roto:'Comp / Roto',
-  compositing:'Compositing', prep:'Prep', crowds:'Crowds', enviro:'Environment', ai:'AI / Generative',
+  compositing:'Compositing', prep:'Prep', ai:'AI / Generative',
 };
 
 const ASSET_DEPTS = [
-  'MODELLING', 'TEXTURING', 'RIGGING', 'CFX', 'FX', 'DMP', 'LOOKDEV', 'COMP DEV',
+  'MODELLING', 'TEXTURING', 'RIGGING', 'CFX', 'FX', 'LGT', 'DMP', 'LOOKDEV', 'COMP DEV',
 ];
 const ASSET_DEPT_SHORT = {
   MODELLING: 'MODEL', TEXTURING: 'TEX', RIGGING: 'RIG', CFX: 'CFX', FX: 'FX',
-  DMP: 'DMP', LOOKDEV: 'LKDV', 'COMP DEV': 'CDEV',
+  LGT: 'LGT', DMP: 'DMP', LOOKDEV: 'LKDV', 'COMP DEV': 'CDEV',
 };
 const ASSET_DEPT_DEFAULTS = {
   MODELLING: true, TEXTURING: true, RIGGING: true, CFX: true, FX: true,
-  DMP: true, LOOKDEV: true, 'COMP DEV': true,
+  LGT: false, DMP: true, LOOKDEV: true, 'COMP DEV': true,
 };
 const DEFAULT_ASSET_DEPT_RATES = {
   modelling: 750,
@@ -1454,6 +1627,7 @@ const DEFAULT_ASSET_DEPT_RATES = {
   rigging: 800,
   cfx: 800,
   fx: 850,
+  lighting: 750,
   dmp: 800,
   lookdev: 750,
   comp_dev: 700,
@@ -1464,6 +1638,7 @@ const ASSET_DEPT_LABELS = {
   rigging: 'Rigging',
   cfx: 'CFX',
   fx: 'FX Dev',
+  lighting: 'Lighting',
   dmp: 'DMP',
   lookdev: 'Lookdev',
   comp_dev: 'Comp Dev',
@@ -1674,6 +1849,8 @@ function updateRatesCurrencyLabels() {
   if (assetLbl) assetLbl.textContent = _displayCurrency;
   const assetCur = document.getElementById('asset-rates-currency');
   if (assetCur) assetCur.textContent = _displayCurrency;
+  const saveCurrencyLabel = document.getElementById('save-currency-label');
+  if (saveCurrencyLabel) saveCurrencyLabel.textContent = _displayCurrency;
   const sym = CURRENCY_SYMBOLS[_displayCurrency] || '$';
   const overrideSym = document.getElementById('rates-override-sym');
   if (overrideSym) overrideSym.textContent = sym;
@@ -1951,11 +2128,26 @@ function methodologyImpliesCgAsset(methodology) {
 }
 
 function suggestedAssetCellHtml(asset, shotIdx) {
-  if (!asset) return '';
-  if (asset.loading) {
-    return `<div class="suggested-asset-loading">Finding CG build…</div>`;
+  if (!asset) {
+    return `<button type="button" class="row-mini-btn"
+      onclick="suggestAssetForShotRow(${shotIdx}, true)">✨ Suggest</button>`;
   }
-  if (!asset.asset_name) return '';
+  if (asset.adding) {
+    return `<div class="suggestion-loading">
+      <span class="spinner-sm" aria-hidden="true"></span>
+      <span style="font-size:11px;color:var(--muted)">Adding to assets...</span>
+    </div>`;
+  }
+  if (asset.loading) {
+    return `<div class="suggestion-loading">
+      <span class="spinner-sm" aria-hidden="true"></span>
+      <span style="font-size:11px;color:var(--muted)">Finding CG asset...</span>
+    </div>`;
+  }
+  if (!asset.asset_name) {
+    return `<button type="button" class="row-mini-btn"
+      onclick="suggestAssetForShotRow(${shotIdx}, true)">✨ Suggest</button>`;
+  }
   const added = !!asset.added;
   return `<div class="suggested-asset-pill" title="${escAttr(asset.reason || asset.description || '')}">
     <span class="asset-pill-name">${escHtml(asset.asset_name)}</span>
@@ -1968,16 +2160,21 @@ function suggestedAssetCellHtml(asset, shotIdx) {
 }
 
 function renderSuggestedAssetCell(idx, asset) {
-  const el = document.getElementById(`suggested-asset-${idx}`);
-  if (!el) return;
-  el.innerHTML = suggestedAssetCellHtml(asset, idx);
+  const tr = document.querySelector(`#batch-table-body tr.batch-data-row[data-idx="${idx}"]`);
+  const cell = tr?.querySelector('.suggested-asset-cell')
+    || document.getElementById(`suggested-asset-${idx}`);
+  if (!cell) {
+    console.warn('[Asset Suggestions] Missing suggestion cell for row:', idx);
+    return;
+  }
+  cell.innerHTML = suggestedAssetCellHtml(asset, idx);
 }
 
-async function suggestAssetForShotRow(idx) {
+async function suggestAssetForShotRow(idx, force=false) {
   const row = _batchResult?.shots?.[idx];
   if (!row) return;
   const method = (row.methodology || '').trim();
-  if (!methodologyImpliesCgAsset(method)) {
+  if (!force && !methodologyImpliesCgAsset(method)) {
     if (!row.suggestedAsset?.added) {
       row.suggestedAsset = null;
       renderSuggestedAssetCell(idx, null);
@@ -1998,7 +2195,10 @@ async function suggestAssetForShotRow(idx) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        shot_descriptions: [combined],
+        shots: [{
+          description: combined,
+          shot_code: row.shot_code || `Shot ${idx + 1}`,
+        }],
         project_name: getBatchProject() || null,
       }),
     });
@@ -2010,48 +2210,163 @@ async function suggestAssetForShotRow(idx) {
       renderSuggestedAssetCell(idx, null);
       return;
     }
-    row.suggestedAsset = { ...asset, added: false };
+    row.suggestedAsset = {
+      ...asset,
+      associated_shot_codes: asset.associated_shot_codes || [row.shot_code || `Shot ${idx + 1}`],
+      added: false,
+    };
     _visibleCols['SUGGESTED ASSET'] = true;
     saveVisibleCols();
     renderSuggestedAssetCell(idx, row.suggestedAsset);
     applyColVisibility();
     buildColCheckboxes();
-  } catch {
+  } catch (error) {
+    console.warn('[Asset Suggestions] Suggestion failed for row:', idx, error);
     row.suggestedAsset = null;
     renderSuggestedAssetCell(idx, null);
+    if (force) toast('Could not suggest an asset for this shot.', 'warn');
+  }
+}
+
+async function suggestAssetsFromShots() {
+  const candidates = (_batchResult?.shots || [])
+    .map((shot, idx) => ({ shot, idx }))
+    .filter(({ shot }) =>
+      shot && isIncludedShot(shot)
+      && methodologyImpliesCgAsset((shot.methodology || '').trim())
+    );
+  if (!candidates.length) return;
+
+  candidates.forEach(({ shot, idx }) => {
+    if (shot.suggestedAsset?.added) return;
+    shot.suggestedAsset = { loading: true };
+    renderSuggestedAssetCell(idx, shot.suggestedAsset);
+  });
+
+  try {
+    const response = await fetch(`${API}/suggest-assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shots: candidates.map(({ shot, idx }) => ({
+          description: combinedRowDescription(shot),
+          shot_code: shot.shot_code || `Shot ${idx + 1}`,
+        })),
+        project_name: getBatchProject() || null,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const suggestions = Array.isArray(data.suggested_assets) ? data.suggested_assets : [];
+    const byCode = new Map(
+      candidates.map(({ shot, idx }) => [shot.shot_code || `Shot ${idx + 1}`, { shot, idx }])
+    );
+    let assigned = 0;
+
+    suggestions.forEach(suggestion => {
+      const codes = Array.isArray(suggestion.associated_shot_codes)
+        ? suggestion.associated_shot_codes.filter(Boolean)
+        : [];
+      codes.forEach(code => {
+        const match = byCode.get(code);
+        if (!match || match.shot.suggestedAsset?.added) return;
+        match.shot.suggestedAsset = {
+          ...suggestion,
+          associated_shot_codes: codes,
+          added: false,
+        };
+        renderSuggestedAssetCell(match.idx, match.shot.suggestedAsset);
+        assigned += 1;
+      });
+    });
+
+    candidates.forEach(({ shot, idx }) => {
+      if (shot.suggestedAsset?.loading) {
+        shot.suggestedAsset = null;
+        renderSuggestedAssetCell(idx, null);
+      }
+    });
+    if (assigned > 0) {
+      _visibleCols['SUGGESTED ASSET'] = true;
+      saveVisibleCols();
+      applyColVisibility();
+      buildColCheckboxes();
+    }
+  } catch (error) {
+    console.warn('[Asset Suggestions] Batch suggestion failed:', error);
+    candidates.forEach(({ shot, idx }) => {
+      if (shot.suggestedAsset?.loading) shot.suggestedAsset = null;
+      renderSuggestedAssetCell(idx, shot.suggestedAsset);
+    });
   }
 }
 
 function maybeSuggestAssetsForBatchShots() {
-  (_batchResult?.shots || []).forEach((shot, idx) => {
-    if (!shot) return;
-    if ((shot.methodology || '').trim()) {
-      suggestAssetForShotRow(idx);
-    }
-  });
+  suggestAssetsFromShots();
+}
+
+function nextAssetItemNumber() {
+  const renderedRows = document.querySelectorAll('#asset-tbody tr.asset-data-row').length;
+  const storedRows = (_assetInputs || []).filter(Boolean).length;
+  return String(Math.max(renderedRows, storedRows) + 1);
 }
 
 async function addSuggestedAssetToSection(shotIdx) {
   const shot = _batchResult?.shots?.[shotIdx];
   const asset = shot?.suggestedAsset;
-  if (!asset?.asset_name || asset.added) return;
+  if (!asset || asset.added) return;
+  const shotCode = shot?.shot_code || `Shot ${shotIdx + 1}`;
+  const assetName = String(asset.asset_name || '').trim()
+    || String(asset.description || '').split('|')[0].trim()
+    || 'CG Asset';
+  const associatedShots = [...new Set([
+    ...(Array.isArray(asset.associated_shot_codes) ? asset.associated_shot_codes : []),
+    shotCode,
+  ].filter(Boolean))];
+  const existingIdx = (_assetInputs || []).findIndex(
+    entry => String(entry?.asset_name || '').trim().toLowerCase() === assetName.toLowerCase()
+  );
 
+  if (existingIdx >= 0) {
+    const existing = _assetInputs[existingIdx];
+    existing.associated_shots = [...new Set([
+      ...(existing.associated_shots || []),
+      ...associatedShots,
+    ])];
+    const assocInput = document.querySelector(
+      `#asset-tbody tr[data-asset-idx="${existingIdx}"] .asset-assoc-inp`
+    );
+    if (assocInput) assocInput.value = existing.associated_shots.join(', ');
+    asset.added = true;
+    shot.suggestedAsset = asset;
+    renderSuggestedAssetCell(shotIdx, asset);
+    toast(`"${assetName}" already exists — associated shots updated`, 'ok');
+    scheduleAutosave();
+    return;
+  }
+
+  asset.adding = true;
+  shot.suggestedAsset = asset;
+  renderSuggestedAssetCell(shotIdx, asset);
+  toast('Adding asset to breakdown below — estimating build days...', 'info');
   document.getElementById('asset-card')?.scrollIntoView({ behavior: 'smooth' });
   document.getElementById('asset-results')?.classList.remove('hidden');
 
-  await estimateSingleSuggestedAsset({
-    item_number: String(Date.now()),
-    asset_name: asset.asset_name,
-    description: asset.description || asset.asset_name,
+  const added = await estimateSingleSuggestedAsset({
+    item_number: nextAssetItemNumber(),
+    asset_name: assetName,
+    description: asset.description || assetName,
     variations: 1,
     assumptions: asset.reason || `Implied by shot ${shotIdx + 1}`,
     asset_type: asset.asset_type || '',
+    associated_shots: associatedShots,
   });
 
-  asset.added = true;
+  asset.adding = false;
+  asset.added = !!added;
   shot.suggestedAsset = asset;
   renderSuggestedAssetCell(shotIdx, asset);
-  toast(`"${asset.asset_name}" added to Asset Breakdown`);
+  if (added) toast(`"${assetName}" added to Asset Breakdown`, 'ok');
 }
 
 async function estimateSingleSuggestedAsset(asset) {
@@ -2067,6 +2382,7 @@ async function estimateSingleSuggestedAsset(asset) {
   const idx = _assetInputs.length;
   _assetInputs[idx] = asset;
   _assetResults[idx] = null;
+  let completed = false;
 
   const tier = asset.asset_type?.includes('background') ? 'background' : 'secondary';
 
@@ -2104,6 +2420,7 @@ async function estimateSingleSuggestedAsset(asset) {
           const msg = JSON.parse(line.slice(6));
           if (msg.type === 'result') {
             appendAssetResultRow(idx, asset, msg.data);
+            completed = true;
             updateAssetSummary();
             updateCombinedSummary();
             sizeTableWrappers();
@@ -2112,8 +2429,15 @@ async function estimateSingleSuggestedAsset(asset) {
       }
     }
   } catch (e) {
-    toast('Asset estimate failed: ' + (e.message || e), 'error');
+    _assetInputs.splice(idx, 1);
+    _assetResults.splice(idx, 1);
+    toast('Asset estimate failed: ' + (e.message || e), 'err');
   }
+  if (!completed && _assetInputs[idx] === asset) {
+    _assetInputs.splice(idx, 1);
+    _assetResults.splice(idx, 1);
+  }
+  return completed;
 }
 
 function getDeptRates() {
@@ -2169,15 +2493,21 @@ function sequenceCostForRow(row) {
   const n = parseInt(row?.number_of_shots ?? 1, 10);
   const perShot = parseFloat(row?.cost_per_shot) || 0;
   if (!Number.isFinite(n) || n <= 1 || perShot <= 0) return null;
-  return Math.round(perShot * (1 + (n - 1) * ALLOTMENT_EFFICIENCY) * 100) / 100;
+  return Math.round(perShot * calcShotMultiplier(n) * 100) / 100;
 }
 
 function batchCostCellHtml(row) {
   const perShot = parseFloat(row?.cost_per_shot) || 0;
-  const n = parseInt(row?.number_of_shots ?? 1, 10);
-  const seqCost = sequenceCostForRow(row);
-  if (seqCost == null) return money(perShot);
-  return `<div>Per shot: ${money(perShot)}</div><div class="muted" style="font-size:10px">Sequence (×${n}): ${money(seqCost)}</div>`;
+  return money(perShot);
+}
+
+function calcShotMultiplier(n) {
+  const shots = Math.max(1, parseInt(n, 10) || 1);
+  return 1 + (shots - 1) * SHOT_EFFICIENCY_FACTOR;
+}
+
+function calcTotalShotDays(baseDays, n) {
+  return (parseFloat(baseDays) || 0) * calcShotMultiplier(n);
 }
 
 function escHtml(s) {
@@ -2376,12 +2706,12 @@ let _pendingHistorySaveShots = null;
 
 const BID_DEPTS = [
   'CAMERA', 'MATCHMOVE', 'LAYOUT', 'ANIM', 'CFX', 'FX',
-  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP', 'CROWDS', 'ENVIRO', 'AI',
+  'LGT', 'DMP', 'COMP PAINT', 'COMP ROTO', 'COMP', 'AI',
 ];
 const BID_DEPT_SHORT = {
   CAMERA: 'CAM', MATCHMOVE: 'MM', LAYOUT: 'LAY', ANIM: 'ANIM', CFX: 'CFX', FX: 'FX',
   LGT: 'LGT', DMP: 'DMP', 'COMP PAINT': 'CP', 'COMP ROTO': 'CR', COMP: 'COMP',
-  CROWDS: 'CROWDS', ENVIRO: 'ENV', AI: 'AI', METHODOLOGY: 'METHOD',
+  AI: 'AI', METHODOLOGY: 'METHOD',
   'SUGGESTED ASSET': 'CG BUILD',
 };
 
@@ -2415,7 +2745,7 @@ const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
 const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', ...BID_DEPTS];
 const COL_DEFAULTS = {
   METHODOLOGY: false,
-  'SUGGESTED ASSET': false,
+  'SUGGESTED ASSET': true,
   CAMERA: true,
   MATCHMOVE: false,
   LAYOUT: true,
@@ -2427,8 +2757,6 @@ const COL_DEFAULTS = {
   'COMP PAINT': false,
   'COMP ROTO': false,
   COMP: true,
-  CROWDS: false,
-  ENVIRO: false,
   AI: false,
 };
 let _visibleCols = loadVisibleCols();
@@ -2481,13 +2809,13 @@ function presetRowPayload(shotType) {
   return payload;
 }
 
-function presetInput(value, field, shotType, extraClass='') {
+function presetInput(value, field, shotType, extraClass='', disabled=false) {
   const val = typeof value === 'number' ? value : (value || '');
   const type = field === 'description' ? 'text' : 'number';
   const numericAttrs = field === 'description' ? '' : ' step="0.5" min="0"';
   return `<input type="${type}" class="${extraClass}" data-field="${field}" data-shot-type="${escAttr(shotType)}"
     value="${escAttr(String(val))}"${numericAttrs}
-    oninput="onShotPresetInputChange(this)">`;
+    ${disabled ? 'disabled' : ''} oninput="onShotPresetInputChange(this)">`;
 }
 
 function onShotPresetInputChange(input) {
@@ -2503,44 +2831,110 @@ function onShotPresetInputChange(input) {
   if (totalInp) totalInp.value = Math.round(sum * 2) / 2;
 }
 
+function presetMetadata(shotType) {
+  const key = String(shotType || '').toLowerCase();
+  const match = key.match(/^(.*)_(low|medium|high|hero)_(sh\d+)$/);
+  const categoryKey = match ? match[1] : key.split('_')[0];
+  const title = value => String(value || '')
+    .split('_').filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+  return {
+    categoryKey,
+    category: title(categoryKey) || 'Other',
+    difficulty: match ? title(match[2]) : '—',
+  };
+}
+
+function filterPresets(searchText) {
+  const searchInput = document.getElementById('presets-search');
+  const search = String(
+    searchText === undefined ? searchInput?.value || '' : searchText
+  ).trim().toLowerCase();
+  const category = document.getElementById('presets-category-filter')?.value || '';
+  const visibleCategories = new Set();
+
+  document.querySelectorAll('#presets-body tr[data-preset]').forEach(row => {
+    const key = String(row.dataset.preset || '').toLowerCase();
+    const description = row.querySelector('.preset-desc')?.value?.toLowerCase() || '';
+    const rowCategory = row.dataset.category || '';
+    const difficulty = row.dataset.difficulty || '';
+    const haystack = `${key.replaceAll('_', ' ')} ${description} ${rowCategory.replaceAll('_', ' ')} ${difficulty}`;
+    const matchesSearch = !search
+      || search.split(/\s+/).filter(Boolean).every(term => haystack.includes(term));
+    const matchesCategory = !category || rowCategory === category;
+    const visible = matchesSearch && matchesCategory;
+    row.style.display = visible ? '' : 'none';
+    if (visible) visibleCategories.add(rowCategory);
+  });
+
+  document.querySelectorAll('#presets-body tr.preset-category-header').forEach(row => {
+    row.style.display = visibleCategories.has(row.dataset.category || '') ? '' : 'none';
+  });
+}
+
 function renderPresets() {
   const body = document.getElementById('presets-body');
   if (!body) return;
   const entries = Object.entries(_presets).sort(([a], [b]) => a.localeCompare(b));
   if (!entries.length) {
-    body.innerHTML = '<tr><td colspan="14" style="color:var(--muted)">No presets available.</td></tr>';
+    body.innerHTML = '<tr><td colspan="17" style="color:var(--muted)">No presets available.</td></tr>';
     return;
   }
-  body.innerHTML = entries.map(([shotType, p]) => {
+  const grouped = {};
+  entries.forEach(entry => {
+    const meta = presetMetadata(entry[0]);
+    (grouped[meta.categoryKey] ||= []).push({ entry, meta });
+  });
+  body.innerHTML = Object.keys(grouped).sort().map(categoryKey => {
+    const items = grouped[categoryKey];
+    const categoryLabel = items[0]?.meta.category || 'Other';
+    const rows = items.map(({ entry: [shotType, p], meta }) => {
     const source = p.source || 'system';
     const isStudio = source === 'studio';
+    const isReference = source === 'reference';
     const deptCells = PRESET_DEPTS.map(([, key]) =>
-      `<td>${presetInput(p[key] || 0, key, shotType)}</td>`
+      `<td>${presetInput(p[key] || 0, key, shotType, '', isReference)}</td>`
     ).join('');
     const resetBtn = isStudio
       ? `<button type="button" class="btn-history danger" onclick="resetPreset('${escAttr(shotType)}')">Reset</button>`
       : '';
-    return `<tr class="${isStudio ? 'studio' : ''}" data-preset="${escAttr(shotType)}">
+    const sourceBadge = isStudio
+      ? '<span class="preset-badge">custom</span>'
+      : isReference
+        ? '<span class="preset-badge reference">📋 Reference</span>'
+        : '<span class="preset-badge system">Built-in</span>';
+    return `<tr class="${isStudio ? 'studio' : ''}"
+      data-preset="${escAttr(shotType)}"
+      data-category="${escAttr(meta.categoryKey)}"
+      data-difficulty="${escAttr(meta.difficulty.toLowerCase())}">
       <td>
         <div class="preset-type-cell">
           <span class="preset-type-name">${escHtml(shotType)}</span>
-          ${isStudio ? '<span class="preset-badge">custom</span>' : ''}
-          <span class="preset-row-actions">
-            <button type="button" class="btn-history" onclick="savePresetFromRow('${escAttr(shotType)}')">Save</button>
-            ${resetBtn}
-          </span>
+          ${isReference ? '' : `<span class="preset-row-actions">
+              <button type="button" class="btn-history" onclick="savePresetFromRow('${escAttr(shotType)}')">Save</button>
+              ${resetBtn}
+            </span>`}
         </div>
       </td>
-      <td>${presetInput(p.description || '', 'description', shotType, 'preset-desc')}</td>
+      <td class="preset-meta">${escHtml(meta.category)}</td>
+      <td class="preset-meta">${escHtml(meta.difficulty)}</td>
+      <td>${presetInput(p.description || '', 'description', shotType, 'preset-desc', isReference)}</td>
+      <td>${sourceBadge}</td>
       ${deptCells}
-      <td>${presetInput(p.total || 0, 'total', shotType)}</td>
+      <td>${presetInput(p.total || 0, 'total', shotType, '', isReference)}</td>
     </tr>`;
+    }).join('');
+    return `<tr class="preset-category-header" data-category="${escAttr(categoryKey)}">
+      <td colspan="17">${escHtml(categoryLabel)} · ${items.length} presets</td>
+    </tr>${rows}`;
   }).join('');
+  filterPresets();
 }
 
 async function loadPresets() {
   const body = document.getElementById('presets-body');
-  if (body) body.innerHTML = '<tr><td colspan="14" style="color:var(--muted)">Loading presets...</td></tr>';
+  if (body) body.innerHTML = '<tr><td colspan="17" style="color:var(--muted)">Loading presets...</td></tr>';
   try {
     const r = await fetch(`${API}/presets`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -2548,7 +2942,7 @@ async function loadPresets() {
     _presets = data.presets || {};
     renderPresets();
   } catch (e) {
-    if (body) body.innerHTML = `<tr><td colspan="14" style="color:var(--red)">Could not load presets: ${escHtml(e.message)}</td></tr>`;
+    if (body) body.innerHTML = `<tr><td colspan="17" style="color:var(--red)">Could not load presets: ${escHtml(e.message)}</td></tr>`;
   }
 }
 
@@ -2910,8 +3304,6 @@ function clearBatchResults() {
   document.getElementById('batch-bid-summary-stats').innerHTML = '';
   document.getElementById('batch-dept-summary-body').innerHTML = '';
   document.getElementById('batch-dept-summary-foot').innerHTML = '';
-  document.getElementById('batch-scene-summary-body').innerHTML = '';
-  document.getElementById('batch-scene-summary-foot').innerHTML = '';
 }
 
 function appendBatchResultRow(i, row) {
@@ -2979,10 +3371,25 @@ function appendBatchResultRow(i, row) {
 
   const shotCost = row.cost_per_shot ?? computeClientShotCost(depts, getDeptRates(), { mandaysFallback: row.total_mandays });
   row.cost_per_shot = shotCost;
+  const baseDays = parseFloat(row.total_mandays) || 0;
+  const shotCount = Math.max(1, parseInt(row.number_of_shots, 10) || 1);
+  const shotFactor = calcShotMultiplier(shotCount);
+  const allShotDays = calcTotalShotDays(baseDays, shotCount);
 
   cells += `
-    <td class="batch-row-days" style="font-weight:700">${fmt(row.total_mandays)}</td>
+    <td class="batch-row-days" style="font-weight:700">${fmt(baseDays)}</td>
     <td class="batch-row-cost" style="font-weight:700;color:var(--green)">${batchCostCellHtml(row)}</td>
+    <td><input type="number" class="shot-count-inp" value="${shotCount}"
+      min="1" max="100" step="1" style="width:52px;text-align:center"
+      data-row-idx="${i}" data-base-days="${baseDays}"
+      ${isExcludedShot(row) ? 'disabled' : ''}
+      oninput="updateShotMultiplierCells(this)"></td>
+    <td class="shot-factor-cell" style="color:var(--muted);font-size:12px;text-align:right">
+      ${shotFactor.toFixed(2)}×
+    </td>
+    <td class="shot-total-days-cell" style="font-weight:700;text-align:right">
+      ${fmt(allShotDays)}
+    </td>
     <td>${isExcludedShot(row) ? '<span class="conf-badge lo">Excluded</span>' : confBadge(row.confidence)}</td>`;
 
   tr.innerHTML = cells;
@@ -3142,56 +3549,6 @@ function collectBatchRowsFromTable() {
   return rows;
 }
 
-function parseSceneKey(shotCode, itemNumber) {
-  const code = String(shotCode || '').trim();
-  if (code) {
-    const lvl = code.match(/^[A-Za-z]+_(\d+)_\d+$/);
-    if (lvl) {
-      const n = parseInt(lvl[1], 10);
-      return { key: String(n), label: `Scene ${n}` };
-    }
-    const tagged = code.match(/(?:^|[_-])sc(?:ene)?[_-]?0*(\d+)/i);
-    if (tagged) {
-      const n = parseInt(tagged[1], 10);
-      return { key: String(n), label: `Scene ${n}` };
-    }
-  }
-  const item = String(itemNumber || '').trim();
-  if (item) {
-    const dotted = item.match(/^(\d+)\.\d+$/);
-    if (dotted) {
-      const n = parseInt(dotted[1], 10);
-      return { key: String(n), label: `Scene ${n}` };
-    }
-  }
-  return { key: '_other', label: 'Unassigned' };
-}
-
-function computeSceneGroups(rows, totalCost) {
-  const groups = {};
-  (rows || []).forEach(row => {
-    if (!row) return;
-    const { key, label } = parseSceneKey(row.shot_code, row.item_number);
-    if (!key || key.toLowerCase() === 'unassigned' || key === '_other') return;
-    if (!groups[key]) groups[key] = { key, label, shotCount: 0, totalDays: 0, totalCost: 0 };
-    groups[key].shotCount += 1;
-    groups[key].totalDays += parseFloat(row.total_mandays) || 0;
-    groups[key].totalCost += parseFloat(row.cost_per_shot) || 0;
-  });
-  return Object.values(groups)
-    .map(g => {
-      const days = Math.round(g.totalDays * 2) / 2;
-      const cost = Math.round(g.totalCost * 100) / 100;
-      const pct = totalCost > 0 ? Math.round((cost / totalCost) * 1000) / 10 : 0;
-      return { ...g, totalDays: days, totalCost: cost, pct };
-    })
-    .sort((a, b) => {
-      if (a.key === '_other') return 1;
-      if (b.key === '_other') return -1;
-      return b.totalCost - a.totalCost;
-    });
-}
-
 function computeBatchBidStats(rows) {
   const rates = getDeptRates();
   let totalDays = 0;
@@ -3325,8 +3682,6 @@ function renderBatchBidSummary(stats) {
   if (!panel || !stats || stats.shotCount <= 0) {
     panel?.classList.add('hidden');
     document.getElementById('fx-multi-summary')?.replaceChildren();
-    document.getElementById('batch-scene-summary-body')?.replaceChildren();
-    document.getElementById('batch-scene-summary-foot')?.replaceChildren();
     return;
   }
 
@@ -3359,38 +3714,6 @@ function renderBatchBidSummary(stats) {
       <td class="num">${fmt(stats.deptDaysTotal)}</td>
       <td class="num">—</td>
       <td class="num cost">${money(stats.deptCostTotal)}</td>
-    </tr>`;
-  }
-
-  const sceneBody = document.getElementById('batch-scene-summary-body');
-  const sceneFoot = document.getElementById('batch-scene-summary-foot');
-  const sceneGroups = computeSceneGroups(collectBatchRowsFromTable(), stats.totalCost);
-  if (!sceneGroups.length) {
-    sceneBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);font-style:italic">No scene data available.</td></tr>`;
-    sceneFoot.innerHTML = `<tr>
-      <td>All Scenes</td>
-      <td class="num">${stats.shotCount}</td>
-      <td class="num">${fmt(stats.totalDays)}</td>
-      <td class="num cost">${money(stats.totalCost)}</td>
-      <td class="num">100%</td>
-    </tr>`;
-  } else {
-    sceneBody.innerHTML = sceneGroups.map(r => `<tr>
-      <td>${escHtml(r.label)}</td>
-      <td class="num">${r.shotCount}</td>
-      <td class="num">${fmt(r.totalDays)}</td>
-      <td class="num cost">${money(r.totalCost)}</td>
-      <td class="num scene-pct-cell">${r.pct}%
-        <div class="scene-pct-bar"><div style="width:${Math.min(100, r.pct)}%"></div></div>
-      </td>
-    </tr>`).join('');
-    const sceneShots = sceneGroups.reduce((s, r) => s + r.shotCount, 0);
-    sceneFoot.innerHTML = `<tr>
-      <td>All Scenes</td>
-      <td class="num">${sceneShots}</td>
-      <td class="num">${fmt(stats.totalDays)}</td>
-      <td class="num cost">${money(stats.totalCost)}</td>
-      <td class="num">100%</td>
     </tr>`;
   }
 
@@ -3640,12 +3963,6 @@ const DEPT_ALIASES = {
   ],
   COMP: [
     'comp', 'compositing', 'composite', '2d compositing',
-  ],
-  CROWDS: [
-    'crowds', 'crowd', 'crowd sim', 'crowd animation',
-  ],
-  ENVIRO: [
-    'enviro', 'environment', 'cg environment', 'bg environment',
   ],
 };
 
@@ -4106,7 +4423,12 @@ function mapRowsToShots(rows, headerIdx, colMap) {
 }
 
 function buildBatchExportCsvBase64() {
-  const header = ['ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES', ...BID_DEPTS, 'TOTAL PRODUCTION DAYS', 'PER SHOT COST', 'SEQUENCE COST'];
+  const header = [
+    'ITEM#', 'VFX SHOT CODE', 'DESCRIPTION', 'METHODOLOGY', 'VFX NOTES',
+    ...BID_DEPTS,
+    'TOTAL PRODUCTION DAYS', 'PER SHOT COST',
+    'SHOTS', '× FACTOR', 'TOTAL PROD DAYS (ALL SHOTS)',
+  ];
   const esc = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
   const lines = [header.join(',')];
   (_batchResult?.shots || []).forEach(row => {
@@ -4121,7 +4443,9 @@ function buildBatchExportCsvBase64() {
       ...BID_DEPTS.map(d => depts[d] ?? 0),
       row.total_mandays ?? 0,
       row.cost_per_shot ?? 0,
-      sequenceCostForRow(row) ?? '',
+      Math.max(1, parseInt(row.number_of_shots, 10) || 1),
+      calcShotMultiplier(row.number_of_shots).toFixed(2),
+      Math.round(calcTotalShotDays(row.total_mandays, row.number_of_shots) * 10) / 10,
     ].join(','));
   });
   const csv = '\uFEFF' + lines.join('\n');
@@ -4201,6 +4525,19 @@ function readAssetDeptDaysValue(raw) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function assetDeptHasPopulatedData(bidDept) {
+  const key = assetInternalKey(bidDept);
+  return (_assetResults || []).some(result =>
+    readAssetDeptDaysValue(result?.departments?.[key]) > 0
+  );
+}
+
+function getVisibleAssetDepts() {
+  return ASSET_DEPTS.filter(
+    bidDept => ASSET_DEPT_DEFAULTS[bidDept] || assetDeptHasPopulatedData(bidDept)
+  );
+}
+
 function assetShouldUseDmp(asset, result) {
   const text = [
     asset?.asset_name,
@@ -4210,7 +4547,7 @@ function assetShouldUseDmp(asset, result) {
     result?.asset_type,
     result?.reasoning,
   ].filter(Boolean).join(' ').toLowerCase();
-  const dmpSignals = /\b(environment|enviro|matte|dmp|set extension|vista|landscape|city|castle|terrain|sky|mountain|establishing|background plate)\b/;
+  const dmpSignals = /\b(environment|matte|dmp|set extension|vista|landscape|city|castle|terrain|sky|mountain|establishing|background plate)\b/;
   const nonDmpSignals = /\b(creature|character|dragon|monster|animal|person|face|prop|weapon|vehicle|ship|car|rig|cloth|groom)\b/;
   return dmpSignals.test(text) && !nonDmpSignals.test(text);
 }
@@ -4433,13 +4770,15 @@ function toggleAssetContext() {
 
 function buildAssetTableHeader() {
   const thead = document.getElementById('asset-thead');
-  const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const cols = ['', '', '#', 'ASSET', 'NOTES', 'VARS', ...visibleDepts.map(d => ASSET_DEPT_SHORT[d]), 'DAYS', 'COST', 'CONF'];
-  thead.innerHTML = `<tr>${cols.map(c =>
-    c === 'DAYS'
-      ? '<th title="Base build days × 30% per additional variation. For a completely different asset, add a new row instead.">DAYS</th>'
-      : `<th>${c}</th>`
-  ).join('')}</tr>`;
+  const visibleDepts = getVisibleAssetDepts();
+  const fixedStart = ['', '', '#', 'ASSET', 'NOTES', 'ASSOC. SHOTS', 'VARS']
+    .map(c => `<th>${c}</th>`).join('');
+  const deptHeaders = visibleDepts.map(
+    dept => `<th data-asset-dept="${escAttr(dept)}">${ASSET_DEPT_SHORT[dept]}</th>`
+  ).join('');
+  thead.innerHTML = `<tr>${fixedStart}${deptHeaders}
+    <th title="Base build days × 30% per additional variation. For a completely different asset, add a new row instead.">DAYS</th>
+    <th>COST</th><th>CONF</th></tr>`;
   document.getElementById('asset-tbody').innerHTML = '';
   setupAssetTableDragDrop();
 }
@@ -4492,13 +4831,32 @@ function toggleAssetRow(btn) {
   updateCombinedSummary();
 }
 
+function normalizeAssociatedShots(value) {
+  const items = Array.isArray(value) ? value : String(value || '').split(',');
+  return [...new Set(items.map(item => String(item).trim()).filter(Boolean))];
+}
+
+function updateAssetAssociatedShots(input) {
+  const idx = parseInt(input?.dataset.assetIdx, 10);
+  if (!Number.isFinite(idx) || !_assetInputs?.[idx]) return;
+  _assetInputs[idx].associated_shots = normalizeAssociatedShots(input.value);
+  scheduleAutosave();
+}
+
 function appendAssetResultRow(idx, asset, result) {
   const tbody = document.getElementById('asset-tbody');
   _assetInputs[idx] = asset;
   result = normalizeAssetDmp(asset, result);
   _assetResults[idx] = result;
   const depts = result.departments || {};
-  const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
+  const visibleDepts = getVisibleAssetDepts();
+  const revealedDept = visibleDepts.find(
+    dept => !document.querySelector(`#asset-thead th[data-asset-dept="${dept}"]`)
+  );
+  if (revealedDept) {
+    applyAssetColVisibility();
+    return;
+  }
   const deptCells = visibleDepts.map(bidDept => {
     const key = assetInternalKey(bidDept);
     const raw = depts[key];
@@ -4556,6 +4914,15 @@ function appendAssetResultRow(idx, asset, result) {
                 rows="1"
                 data-asset-idx="${idx}"
                 oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    </td>
+    <td class="asset-assoc-shots-cell" style="font-size:11px;color:var(--muted);max-width:120px">
+      <input type="text"
+             class="asset-assoc-inp"
+             value="${escAttr(normalizeAssociatedShots(asset.associated_shots).join(', '))}"
+             placeholder="e.g. IVL_001, IVL_002"
+             style="width:100%;font-size:11px"
+             data-asset-idx="${idx}"
+             oninput="updateAssetAssociatedShots(this)">
     </td>
     <td>
       <input type="number"
@@ -4675,7 +5042,7 @@ function renderAssetDeptSummary() {
     return;
   }
 
-  const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
+  const visibleDepts = getVisibleAssetDepts();
   const deptTotals = {};
   let grandDays = 0;
   let grandCost = 0;
@@ -4766,6 +5133,7 @@ function updateCombinedSummary(shotStats) {
   updateFxStatusNote();
   maybeShowResourcePlanning();
   updateGlobalActionBar();
+  scheduleAutosave();
   return { shotCost, assetCost: assetStats.totalCost, grossCost, net: netSummary.net };
 }
 
@@ -4787,12 +5155,12 @@ const DEPT_DISPLAY_NAMES = {
   comp_roto: 'Comp Roto', modelling: 'Modelling',
   texturing: 'Texturing', rigging: 'Rigging',
   lookdev: 'Lookdev', comp_dev: 'Comp Dev',
-  prep: 'Prep', crowds: 'Crowds', enviro: 'Environment', ai: 'AI / Generative',
+  prep: 'Prep', ai: 'AI / Generative',
 };
 
 const ASSET_ONLY_DEPTS = new Set(['modelling', 'texturing', 'rigging', 'lookdev', 'comp_dev']);
 const WORKING_DAYS_PER_WEEK = 5;
-let _rpMode = 'forward';
+let _rpMode = 'weeks';
 
 function collectAllDeptDays() {
   const combined = {};
@@ -4807,9 +5175,14 @@ function collectAllDeptDays() {
   });
 
   document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])').forEach(tr => {
-    tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+    const vars = Math.max(1, parseInt(tr.querySelector('.asset-vars-inp')?.value, 10) || 1);
+    const deptInputs = [...tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]')];
+    const baseSum = deptInputs.reduce((s, inp) => s + (parseFloat(inp.value) || 0), 0);
+    const scaledTotal = calcVariationMandays(baseSum, vars);
+    const scale = baseSum > 0 ? scaledTotal / baseSum : 1;
+    deptInputs.forEach(inp => {
       const key = assetInternalKey(inp.dataset.assetDept);
-      const days = parseFloat(inp.value) || 0;
+      const days = (parseFloat(inp.value) || 0) * scale;
       if (days > 0) combined[key] = (combined[key] || 0) + days;
     });
   });
@@ -4817,20 +5190,101 @@ function collectAllDeptDays() {
   Object.keys(combined).forEach(k => {
     combined[k] = Math.round(combined[k] * 2) / 2;
   });
+
+  const rpTotal = Object.values(combined).reduce((sum, days) => sum + days, 0);
+  const summaryText = document.getElementById('cs-total-days')?.textContent || '';
+  const summaryTotal = parseFloat(summaryText.replace(/[^0-9.-]/g, '')) || 0;
+  if (summaryTotal > 0 && Math.abs(rpTotal - summaryTotal) / summaryTotal > 0.05) {
+    console.warn(
+      '[Resource Planning] Department total differs from Bid Summary:',
+      { resourceDays: rpTotal, summaryDays: summaryTotal }
+    );
+  }
   return combined;
 }
 
+function getDeptStage(dept) {
+  for (let i = 0; i < DEPT_PIPELINE_STAGES.length; i++) {
+    if (DEPT_PIPELINE_STAGES[i].includes(dept)) return i;
+  }
+  return DEPT_PIPELINE_STAGES.length;
+}
+
+function activeResourceStages(allDeptDays) {
+  const groups = [];
+  DEPT_PIPELINE_STAGES.forEach((stageDepts, stage) => {
+    const depts = stageDepts.filter(dept => (allDeptDays[dept] || 0) > 0);
+    if (depts.length) groups.push({ stage, depts });
+  });
+  const pipelineDepts = new Set(DEPT_PIPELINE_STAGES.flat());
+  const unplaced = Object.keys(allDeptDays).filter(
+    dept => (allDeptDays[dept] || 0) > 0 && !pipelineDepts.has(dept)
+  );
+  if (unplaced.length) groups.push({ stage: DEPT_PIPELINE_STAGES.length, depts: unplaced });
+  return groups;
+}
+
+function allocateStageDayBudgets(allDeptDays, targetDays) {
+  const groups = activeResourceStages(allDeptDays);
+  if (!groups.length) return new Map();
+
+  const availableDays = Math.max(groups.length, Math.floor(targetDays));
+  const weighted = groups.map(group => ({
+    ...group,
+    // Departments in a stage run in parallel, so the largest workload drives its budget.
+    weight: Math.max(...group.depts.map(dept => allDeptDays[dept] || 0)),
+  }));
+  const weightTotal = weighted.reduce((sum, group) => sum + group.weight, 0) || 1;
+  const allocations = weighted.map(group => {
+    const exact = availableDays * group.weight / weightTotal;
+    return { ...group, exact, days: Math.max(1, Math.floor(exact)) };
+  });
+
+  let allocated = allocations.reduce((sum, group) => sum + group.days, 0);
+  while (allocated > availableDays) {
+    const reducible = allocations
+      .filter(group => group.days > 1)
+      .sort((a, b) => (b.days - b.exact) - (a.days - a.exact))[0];
+    if (!reducible) break;
+    reducible.days -= 1;
+    allocated -= 1;
+  }
+  while (allocated < availableDays) {
+    const recipient = allocations
+      .slice()
+      .sort((a, b) => (b.exact - b.days) - (a.exact - a.days))[0];
+    recipient.days += 1;
+    allocated += 1;
+  }
+
+  return new Map(allocations.map(group => [group.stage, group.days]));
+}
+
 function calcResourcePlan(allDeptDays, mode, param) {
+  if (!allDeptDays || !Object.keys(allDeptDays).length) {
+    return {
+      results: [], totalCalendarWeeks: 0, totalDays: 0,
+      totalArtists: 0, bottleneck: null, targetWeeks: null,
+    };
+  }
+
   const results = [];
+  const isTargetMode = mode === 'weeks' || mode === 'dates';
+  const targetWeeks = isTargetMode ? Math.max(0.2, parseFloat(param) || 12) : null;
+  const targetDays = targetWeeks == null ? null : targetWeeks * WORKING_DAYS_PER_WEEK;
+  const stageBudgets = isTargetMode
+    ? allocateStageDayBudgets(allDeptDays, targetDays)
+    : new Map();
 
   Object.entries(allDeptDays || {}).forEach(([dept, days]) => {
     if (!days || days <= 0) return;
 
+    const stage = getDeptStage(dept);
     let artists;
     let calendarDays;
-    if (mode === 'forward') {
-      const targetDays = Math.max(1, (parseFloat(param) || 12) * WORKING_DAYS_PER_WEEK);
-      artists = Math.max(1, Math.ceil(days / targetDays));
+    if (isTargetMode) {
+      const stageDays = Math.max(1, stageBudgets.get(stage) || 1);
+      artists = Math.max(1, Math.ceil(days / stageDays));
       calendarDays = Math.ceil(days / artists);
     } else {
       artists = Math.max(1, parseInt(param?.[dept], 10) || 1);
@@ -4845,53 +5299,99 @@ function calcResourcePlan(allDeptDays, mode, param) {
       calendarDays,
       calendarWeeks: calendarDays / WORKING_DAYS_PER_WEEK,
       isAssetDept: ASSET_ONLY_DEPTS.has(dept),
+      stage,
+      stageBudgetDays: stageBudgets.get(stage) || null,
     });
   });
 
-  results.sort((a, b) => {
-    const stageOf = d => {
-      for (let i = 0; i < DEPT_PIPELINE_STAGES.length; i++) {
-        if (DEPT_PIPELINE_STAGES[i].includes(d)) return i;
-      }
-      return DEPT_PIPELINE_STAGES.length;
-    };
-    const sa = stageOf(a.dept);
-    const sb = stageOf(b.dept);
-    if (sa !== sb) return sa - sb;
-    return a.label.localeCompare(b.label);
-  });
+  results.sort((a, b) => a.stage - b.stage || a.label.localeCompare(b.label));
 
-  let totalCalendarWeeks = 0;
-  DEPT_PIPELINE_STAGES.forEach(stage => {
-    const stageDepts = results.filter(r => stage.includes(r.dept));
-    if (!stageDepts.length) return;
-    totalCalendarWeeks += Math.max(...stageDepts.map(r => r.calendarWeeks));
+  const stageDurations = new Map();
+  results.forEach(result => {
+    stageDurations.set(
+      result.stage,
+      Math.max(stageDurations.get(result.stage) || 0, result.calendarDays)
+    );
   });
-
-  const pipelineFlat = DEPT_PIPELINE_STAGES.flat();
-  const unplacedDepts = results.filter(r => !pipelineFlat.includes(r.dept));
-  if (unplacedDepts.length) {
-    totalCalendarWeeks += Math.max(...unplacedDepts.map(r => r.calendarWeeks));
-  }
+  const totalCalendarDays = [...stageDurations.values()].reduce((sum, days) => sum + days, 0);
+  const totalCalendarWeeks = Math.round((totalCalendarDays / WORKING_DAYS_PER_WEEK) * 10) / 10;
 
   const bottleneck = results.reduce(
     (a, b) => (b.calendarWeeks > a.calendarWeeks ? b : a),
-    results[0] || { dept: '', label: '—', calendarWeeks: 0 }
+    results[0] || null
   );
+  const totalDays = Math.round(
+    results.reduce((sum, result) => sum + result.days, 0) * 10
+  ) / 10;
+  const totalArtists = results.reduce((sum, result) => sum + result.artists, 0);
 
-  return { results, totalCalendarWeeks, bottleneck };
+  return {
+    results,
+    totalCalendarWeeks,
+    totalCalendarDays,
+    totalDays,
+    totalArtists,
+    bottleneck,
+    targetWeeks,
+    fitsTarget: targetWeeks == null || totalCalendarWeeks <= targetWeeks + 0.001,
+  };
 }
 
 function setRpMode(mode) {
-  _rpMode = mode === 'reverse' ? 'reverse' : 'forward';
-  const artistsGrid = document.getElementById('rp-artists-grid');
-  if (!artistsGrid) return;
-  if (_rpMode === 'reverse') {
-    artistsGrid.classList.remove('hidden');
-    buildRpArtistInputs();
-  } else {
-    artistsGrid.classList.add('hidden');
+  _rpMode = ['weeks', 'artists', 'dates'].includes(mode) ? mode : 'weeks';
+  ['weeks', 'artists', 'dates'].forEach(panelMode => {
+    document.getElementById(`rp-panel-${panelMode}`)
+      ?.classList.toggle('hidden', panelMode !== _rpMode);
+    document.getElementById(`rp-tab-${panelMode}`)
+      ?.classList.toggle('active', panelMode === _rpMode);
+  });
+  if (_rpMode === 'artists') buildRpArtistInputs();
+  if (_rpMode === 'dates') updateDatesWeeksDisplay();
+  document.getElementById('rp-results')?.classList.add('hidden');
+}
+
+function countWorkingDaysBetween(start, end) {
+  let count = 0;
+  const cursor = new Date(start);
+  cursor.setHours(0, 0, 0, 0);
+  const finish = new Date(end);
+  finish.setHours(0, 0, 0, 0);
+  // End date is the delivery boundary, so count working days before it.
+  while (cursor < finish) {
+    const day = cursor.getDay();
+    if (day !== 0 && day !== 6) count += 1;
+    cursor.setDate(cursor.getDate() + 1);
   }
+  return count;
+}
+
+function updateDatesWeeksDisplay() {
+  const startEl = document.getElementById('rp-start-date');
+  const endEl = document.getElementById('rp-end-date');
+  const display = document.getElementById('rp-dates-weeks-display');
+  if (!startEl || !endEl || !display) return;
+
+  const start = new Date(`${startEl.value}T00:00:00`);
+  const end = new Date(`${endEl.value}T00:00:00`);
+  if (!startEl.value || !endEl.value
+      || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    display.textContent = 'Select both dates to calculate working weeks.';
+    delete display.dataset.weeks;
+    return;
+  }
+  if (end <= start) {
+    display.textContent = 'Target finish date must be after the start date.';
+    delete display.dataset.weeks;
+    return;
+  }
+
+  const daysDiff = Math.round((end - start) / 86400000);
+  const calendarWeeks = Math.round((daysDiff / 7) * 10) / 10;
+  const workingDays = countWorkingDaysBetween(start, end);
+  const workingWeeks = workingDays / WORKING_DAYS_PER_WEEK;
+  display.textContent =
+    `${calendarWeeks.toFixed(1)} calendar weeks (${workingDays} working days)`;
+  display.dataset.weeks = String(workingWeeks);
 }
 
 function buildRpArtistInputs() {
@@ -4912,57 +5412,118 @@ function buildRpArtistInputs() {
           ${escHtml(DEPT_DISPLAY_NAMES[dept] || DEPT_LABELS[dept] || dept)}
           <span class="muted" style="font-size:10px">(${fmt(days)}d)</span>
         </label>
-        <input type="number" id="rp-artists-${escAttr(dept)}" value="${val}" min="1" max="50" step="1" style="width:70px">
+        <input type="number" id="rp-artists-${escAttr(dept)}" value="${val}"
+               min="1" max="50" step="1" style="width:70px"
+               onchange="if (_rpMode === 'artists') runResourcePlan()">
       </div>`;
   }).join('');
 }
 
-function renderRpResults(plan) {
-  const { results, totalCalendarWeeks, bottleneck } = plan;
-  const totalEl = document.getElementById('rp-total-weeks');
+function renderRpResults(plan, mode, param) {
+  const {
+    results, totalCalendarWeeks, totalDays, totalArtists,
+    bottleneck, targetWeeks, fitsTarget,
+  } = plan;
+  if (!results.length) return;
+
+  const totalWeeksEl = document.getElementById('rp-total-weeks');
+  const totalArtistsEl = document.getElementById('rp-total-artists');
   const bottleEl = document.getElementById('rp-bottleneck-dept');
-  const tbody = document.getElementById('rp-table-body');
-  if (totalEl) totalEl.textContent = totalCalendarWeeks.toFixed(1) + ' wks';
+
+  if (totalWeeksEl) totalWeeksEl.textContent = totalCalendarWeeks.toFixed(1) + ' wks';
+  if (totalArtistsEl) totalArtistsEl.textContent = totalArtists;
   if (bottleEl) bottleEl.textContent = bottleneck?.label || '—';
+
+  const tbody = document.getElementById('rp-table-body');
   if (tbody) {
-    tbody.innerHTML = results.map(r => `
-      <tr ${r.dept === bottleneck?.dept ? 'style="background:rgba(226,165,58,.08)"' : ''}>
-        <td>${escHtml(r.label)}
-          ${r.dept === bottleneck?.dept
-            ? '<span class="muted" style="font-size:10px"> ← bottleneck</span>'
-            : ''}
-        </td>
-        <td class="muted" style="font-size:11px">${r.isAssetDept ? 'Asset build' : 'Shot dept'}</td>
-        <td class="num">${fmt(r.days)}</td>
-        <td class="num">${r.artists}</td>
-        <td class="num">${r.calendarWeeks.toFixed(1)}</td>
-      </tr>
-    `).join('');
+    let lastStage = -1;
+    tbody.innerHTML = results.map(result => {
+      let groupHeader = '';
+      if (result.stage !== lastStage) {
+        lastStage = result.stage;
+        const stageLabel = result.stage < DEPT_PIPELINE_STAGES.length
+          ? `Stage ${result.stage + 1} — departments run in parallel`
+          : 'Other departments';
+        groupHeader = `<tr class="rp-stage-header">
+          <td colspan="4">${stageLabel}</td>
+        </tr>`;
+      }
+      const isBottleneck = result.dept === bottleneck?.dept;
+      return `${groupHeader}
+        <tr ${isBottleneck ? 'style="background:rgba(226,165,58,.10)"' : ''}>
+          <td>
+            ${escHtml(result.label)}
+            ${result.isAssetDept
+              ? '<span class="muted" style="font-size:10px"> (asset build)</span>'
+              : ''}
+            ${isBottleneck
+              ? '<span class="muted" style="font-size:10px"> ← bottleneck</span>'
+              : ''}
+          </td>
+          <td class="num">${fmt(result.days)}</td>
+          <td class="num">${result.artists}</td>
+          <td class="num">${result.calendarWeeks.toFixed(1)}</td>
+        </tr>`;
+    }).join('');
   }
+
+  const tfoot = document.getElementById('rp-table-foot');
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr style="background:var(--accent);color:#fff;font-weight:800;font-size:13px">
+        <td>ALL DEPARTMENTS</td>
+        <td class="num">${fmt(totalDays)}</td>
+        <td class="num">${totalArtists}</td>
+        <td class="num">${totalCalendarWeeks.toFixed(1)} wks total</td>
+      </tr>
+    `;
+  }
+
+  const note = document.getElementById('rp-note');
+  if (note) {
+    const targetNote = targetWeeks == null
+      ? ''
+      : ` The ${targetWeeks.toFixed(1)}-week target is ${fitsTarget ? 'covered' : 'not achievable'} by this plan.`;
+    note.innerHTML = `
+      ⓘ <strong>How to read this:</strong> Departments within a stage run
+      <em>in parallel</em>, so only that stage's slowest department contributes
+      to the schedule. Stages run <em>sequentially</em>. Total:
+      ${totalCalendarWeeks.toFixed(1)} weeks.${targetNote}
+      <br><em>Assumes ${WORKING_DAYS_PER_WEEK}-day working weeks; revisions and
+      artist availability can change the result.</em>`;
+  }
+
   document.getElementById('rp-results')?.classList.remove('hidden');
-  fitStatNumbers(document.getElementById('resource-planning-card') || document);
+  fitStatNumbers?.(document.getElementById('resource-planning-card') || document);
 }
 
 function runResourcePlan() {
   const allDeptDays = collectAllDeptDays();
   if (!Object.keys(allDeptDays).length) {
-    toast('Run a shot or asset estimate first', 'warn');
+    toast('Run a shot or asset estimate first.', 'warn');
     return;
   }
 
   let param;
-  if (_rpMode === 'forward') {
+  if (_rpMode === 'weeks') {
     param = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
+  } else if (_rpMode === 'dates') {
+    param = parseFloat(document.getElementById('rp-dates-weeks-display')?.dataset.weeks);
+    if (!Number.isFinite(param) || param <= 0) {
+      toast('Select a valid start and finish date first.', 'warn');
+      return;
+    }
   } else {
     param = {};
+    buildRpArtistInputs();
     Object.keys(allDeptDays).forEach(dept => {
       const inp = document.getElementById(`rp-artists-${dept}`);
-      param[dept] = parseInt(inp?.value || '2', 10) || 2;
+      param[dept] = Math.max(1, parseInt(inp?.value, 10) || 1);
     });
   }
 
   const plan = calcResourcePlan(allDeptDays, _rpMode, param);
-  renderRpResults(plan);
+  renderRpResults(plan, _rpMode, param);
   document.getElementById('resource-planning-card')?.classList.remove('hidden');
 }
 
@@ -5045,9 +5606,9 @@ async function runAssetEstimate() {
   document.getElementById('asset-progress').classList.remove('hidden');
   document.getElementById('asset-results').classList.add('hidden');
   updateAssetProgress(0, assets.length, `Starting asset estimate… (0/${assets.length})`);
-  buildAssetTableHeader();
   _assetInputs = assets;
   _assetResults = [];
+  buildAssetTableHeader();
 
   const runBtn = document.getElementById('asset-est-btn');
   const stopBtn = document.getElementById('asset-stop-btn');
@@ -5118,8 +5679,11 @@ async function runAssetEstimate() {
 }
 
 function exportAssetCsv() {
-  const visibleDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
-  const rows = [['ITEM#', 'ASSET DESCRIPTION', 'NUMBER OF VARIATIONS', ...visibleDepts, 'TOTAL PRODUCTION DAYS', 'NOTES']];
+  const visibleDepts = getVisibleAssetDepts();
+  const rows = [[
+    'ITEM#', 'ASSET DESCRIPTION', 'NOTES', 'ASSOCIATED SHOTS',
+    'NUMBER OF VARIATIONS', ...visibleDepts, 'TOTAL PRODUCTION DAYS',
+  ]];
   document.querySelectorAll('#asset-tbody tr').forEach((tr, i) => {
     if (!isIncludedAssetRow(tr)) return;
     const idx = parseInt(tr.dataset.assetIdx, 10);
@@ -5129,7 +5693,11 @@ function exportAssetCsv() {
     const total = parseFloat(tr.querySelector('.batch-row-days')?.dataset.totalDays)
       || calcVariationMandays(days.reduce((s, d) => s + d, 0), vars);
     const notes = tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '';
-    rows.push([asset.item_number || String(i + 1), asset.asset_name || '', vars, ...days, fmt(total), notes]);
+    const associatedShots = tr.querySelector('.asset-assoc-inp')?.value.trim() || '';
+    rows.push([
+      asset.item_number || String(i + 1), asset.asset_name || '',
+      notes, associatedShots, vars, ...days, fmt(total),
+    ]);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -5164,6 +5732,9 @@ function collectAssetRows() {
       cost: costUsd,
       confidence: conf,
       notes: tr.querySelector('textarea.asset-notes-inp')?.value.trim() || '',
+      associated_shots: normalizeAssociatedShots(
+        tr.querySelector('.asset-assoc-inp')?.value || asset.associated_shots
+      ),
     });
   });
   return rows;
@@ -5412,7 +5983,7 @@ function buildBatchTableHeader() {
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
-  html += '<th>DAYS</th><th>COST</th><th>CONF</th>';
+  html += '<th>DAYS</th><th>COST</th><th>SHOTS</th><th>× FACTOR</th><th>TOTAL DAYS</th><th>CONF</th>';
   document.getElementById('batch-thead-row').innerHTML = html;
   setupBatchTableDragDrop();
   applyColVisibility();
@@ -5915,6 +6486,7 @@ async function suggestMethodology(idx, btn) {
   closeMethodologySuggestions();
   btn.disabled = true;
   btn.textContent = '...';
+  setMethodologyLoading(idx, true);
   try {
     const suggestions = await fetchMethodologySuggestions(row);
     const wrap = document.createElement('div');
@@ -5935,9 +6507,23 @@ async function suggestMethodology(idx, btn) {
   } catch (e) {
     toast(`Methodology suggestion failed: ${e.message}`, 'err');
   } finally {
+    setMethodologyLoading(idx, false);
     btn.disabled = false;
     btn.textContent = '✨ Suggest';
   }
+}
+
+function setMethodologyLoading(idx, on) {
+  document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"] .method-cell`).forEach(cell => {
+    cell.classList.toggle('method-loading', !!on);
+    cell.querySelector('.method-loading-dial')?.remove();
+    if (on) {
+      const dial = document.createElement('div');
+      dial.className = 'method-loading-dial';
+      dial.innerHTML = '<span class="dial" aria-hidden="true"></span><span>Generating…</span>';
+      cell.appendChild(dial);
+    }
+  });
 }
 
 async function generateMethodology(idx, btn, silent=false) {
@@ -5947,6 +6533,7 @@ async function generateMethodology(idx, btn, silent=false) {
     btn.disabled = true;
     btn.textContent = '...';
   }
+  setMethodologyLoading(idx, true);
   try {
     const suggestions = await fetchMethodologySuggestions(row);
     const first = suggestions.find(s => (s.methodology || '').trim());
@@ -5959,6 +6546,7 @@ async function generateMethodology(idx, btn, silent=false) {
     if (!silent) toast(`Methodology generation failed: ${e.message}`, 'err');
     return false;
   } finally {
+    setMethodologyLoading(idx, false);
     if (btn) {
       btn.disabled = false;
       btn.textContent = '✨ Generate';
@@ -6069,6 +6657,35 @@ function updateBatchRowNotes(input) {
   _batchResult.export_csv_base64 = null;
 }
 
+function updateShotMultiplierCells(input) {
+  const tr = input?.closest('tr.batch-data-row');
+  if (!tr) return;
+  const shots = Math.min(100, Math.max(1, parseInt(input.value, 10) || 1));
+  const baseDays = parseFloat(input.dataset.baseDays) || 0;
+  const factor = calcShotMultiplier(shots);
+  const totalDays = calcTotalShotDays(baseDays, shots);
+  const factorCell = tr.querySelector('.shot-factor-cell');
+  const totalCell = tr.querySelector('.shot-total-days-cell');
+  if (factorCell) factorCell.textContent = factor.toFixed(2) + '×';
+  if (totalCell) totalCell.textContent = fmt(totalDays);
+
+  const idx = batchRowIndex(tr);
+  if (Number.isFinite(idx) && _batchResult?.shots?.[idx]) {
+    _batchResult.shots[idx].number_of_shots = shots;
+    _batchResult.export_csv_base64 = null;
+  }
+  scheduleAutosave();
+}
+
+function refreshShotMultiplier(tr) {
+  const daysCell = tr?.querySelector('.batch-row-days');
+  const shotInput = tr?.querySelector('.shot-count-inp');
+  if (!daysCell || !shotInput) return;
+  const newBase = parseFloat(daysCell.textContent.replace(/,/g, '')) || 0;
+  shotInput.dataset.baseDays = String(newBase);
+  updateShotMultiplierCells(shotInput);
+}
+
 function updateBatchRowTotals(tr, skipRefresh) {
   const idx = batchRowIndex(tr);
   if (!Number.isFinite(idx)) return;
@@ -6077,6 +6694,7 @@ function updateBatchRowTotals(tr, skipRefresh) {
   days = Math.round(days * 2) / 2;
   const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
   tr.querySelector('.batch-row-days').textContent = fmt(days);
+  refreshShotMultiplier(tr);
   const costEl = tr.querySelector('.batch-row-cost');
   if (_batchResult?.shots[idx]) {
     _batchResult.shots[idx].dept_days = depts;
@@ -6121,7 +6739,14 @@ function collectBatchRowsForExport() {
     const depts = readRowDepts(tr);
     const days = parseFloat(tr.querySelector('.batch-row-days')?.textContent) || 0;
     const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
-    const nShots = parseInt(shot?.number_of_shots ?? 1, 10) || 1;
+    const shotInput = tr.querySelector('.shot-count-inp');
+    const factorCell = tr.querySelector('.shot-factor-cell');
+    const totalCell = tr.querySelector('.shot-total-days-cell');
+    const nShots = Math.max(1, parseInt(shotInput?.value, 10) || 1);
+    const shotFactor = parseFloat(factorCell?.textContent) || calcShotMultiplier(nShots);
+    const allShotDays = parseFloat(
+      String(totalCell?.textContent || '').replace(/,/g, '')
+    ) || calcTotalShotDays(days, nShots);
     const seqCost = sequenceCostForRow({
       cost_per_shot: cost,
       number_of_shots: nShots,
@@ -6142,6 +6767,8 @@ function collectBatchRowsForExport() {
       total_mandays: days,
       cost,
       cost_per_shot: cost,
+      shot_factor: shotFactor,
+      total_days_all_shots: allShotDays,
       sequence_cost: seqCost ?? cost,
       confidence: shot?.confidence || 0,
       _included: true,
@@ -6159,7 +6786,7 @@ function applySheetColWidths(sheet, widths) {
   sheet['!cols'] = widths.map(wch => ({ wch }));
 }
 
-function exportBidExcel() {
+async function exportBidExcel() {
   if (typeof XLSX === 'undefined') {
     toast('Excel library not loaded — try Export CSV instead.', 'err');
     return;
@@ -6173,14 +6800,29 @@ function exportBidExcel() {
   }
 
   const wb = XLSX.utils.book_new();
-  const visibleAssetDepts = ASSET_DEPTS.filter(d => ASSET_DEPT_DEFAULTS[d]);
+  const visibleAssetDepts = getVisibleAssetDepts();
+  const exportCurrency = (_displayCurrency || 'USD').toUpperCase();
+  const toExportMoney = (usd) => {
+    const v = usdToDisplay(Number(usd) || 0, exportCurrency);
+    return Number.isFinite(v) ? Math.round(v * 100) / 100 : 0;
+  };
+
+  // ── TAB 0: Cover Page (optional, on by default) ────
+  const includeCover = document.getElementById('export-include-cover')?.checked !== false;
+  let coverSnap = null;
+  if (includeCover) {
+    coverSnap = buildCoverPageSnapshot(exportCurrency);
+    const coverSheet = buildStyledCoverSheet(coverSnap);
+    XLSX.utils.book_append_sheet(wb, coverSheet, 'Cover Page');
+  }
 
   // ── TAB 1: Shot Breakdown ──────────────────────────
   const shotHeader = [
     'ITEM#', 'SHOT CODE', 'DESCRIPTION', 'METHODOLOGY',
-    'NOTES', 'SHOTS',
+    'NOTES',
     ...BID_DEPTS,
-    'TOTAL PROD DAYS', 'COST PER SHOT', 'SEQUENCE COST',
+    'TOTAL PROD DAYS', 'COST PER SHOT',
+    'SHOTS', '× FACTOR', 'TOTAL PROD DAYS (ALL SHOTS)',
     'CONFIDENCE',
   ];
   const shotRows = shotRowsData.map(r => [
@@ -6189,24 +6831,25 @@ function exportBidExcel() {
     r.description,
     r.methodology || '',
     r.notes || '',
-    r.number_of_shots || 1,
     ...BID_DEPTS.map(d => r.dept_days?.[d] ?? 0),
     r.total_days,
-    r.cost,
-    r.sequence_cost || r.cost,
+    toExportMoney(r.cost),
+    r.number_of_shots || 1,
+    r.shot_factor || 1,
+    r.total_days_all_shots ?? r.total_days,
     Math.round((r.confidence || 0) * 100) + '%',
   ]);
   const shotSheet = XLSX.utils.aoa_to_sheet([shotHeader, ...shotRows]);
   applySheetColWidths(shotSheet, [
-    10, 14, 40, 28, 20, 8,
+    10, 14, 40, 28, 20,
     ...BID_DEPTS.map(() => 8),
-    12, 12, 12, 10,
+    12, 12, 8, 10, 18, 10,
   ]);
   XLSX.utils.book_append_sheet(wb, shotSheet, 'Shot Breakdown');
 
   // ── TAB 2: Asset Breakdown ─────────────────────────
   const assetHeader = [
-    'ITEM#', 'ASSET NAME', 'NOTES', 'VARIATIONS',
+    'ITEM#', 'ASSET NAME', 'NOTES', 'ASSOCIATED SHOTS', 'VARIATIONS',
     ...visibleAssetDepts,
     'TOTAL PROD DAYS', 'ASSET COST', 'CONFIDENCE',
   ];
@@ -6214,15 +6857,16 @@ function exportBidExcel() {
     r.item_number,
     r.asset_name,
     r.notes || '',
+    (r.associated_shots || []).join(', '),
     r.variations || 1,
     ...visibleAssetDepts.map(d => r.dept_days?.[bidDeptToAssetInternal(d)] ?? 0),
     r.total_days,
-    r.cost,
+    toExportMoney(r.cost),
     Math.round((r.confidence || 0) * 100) + '%',
   ]);
   const assetSheet = XLSX.utils.aoa_to_sheet([assetHeader, ...assetRows]);
   applySheetColWidths(assetSheet, [
-    10, 28, 24, 10,
+    10, 28, 24, 20, 10,
     ...visibleAssetDepts.map(() => 8),
     12, 12, 10,
   ]);
@@ -6244,7 +6888,7 @@ function exportBidExcel() {
       0,
       shotDays,
       rate,
-      Math.round(shotDays * rate),
+      toExportMoney(shotDays * rate),
     ]);
   });
   visibleAssetDepts.forEach(dept => {
@@ -6260,7 +6904,7 @@ function exportBidExcel() {
       assetDays,
       assetDays,
       rate,
-      Math.round(assetDays * rate),
+      toExportMoney(assetDays * rate),
     ]);
   });
   const deptSheet = XLSX.utils.aoa_to_sheet(deptTotalRows);
@@ -6304,50 +6948,67 @@ function exportBidExcel() {
   applySheetColWidths(summarySheet, [28, 22]);
   XLSX.utils.book_append_sheet(wb, summarySheet, 'Bid Summary');
 
-  // ── TAB 5: Scene Breakdown ─────────────────────────
-  const sceneData = computeSceneGroups(shotRowsData, stats.totalCost);
-  const sceneRows = [
-    ['SCENE', 'SHOTS', 'TOTAL PROD DAYS', 'TOTAL COST'],
-    ...sceneData.map(s => [
-      s.label || s.scene || `Scene ${s.key}`,
-      s.shotCount,
-      fmt(s.totalDays),
-      money(s.totalCost),
-    ]),
-  ];
-  const sceneSheet = XLSX.utils.aoa_to_sheet(sceneRows);
-  applySheetColWidths(sceneSheet, [16, 10, 16, 14]);
-  XLSX.utils.book_append_sheet(wb, sceneSheet, 'Scene Breakdown');
-
-  // ── TAB 6: Resource Planning ───────────────────────
+  // ── Resource Planning ──────────────────────────────
   const allDeptDays = collectAllDeptDays();
   if (Object.keys(allDeptDays).length > 0) {
-    const targetWeeks = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
-    const plan = calcResourcePlan(allDeptDays, 'forward', targetWeeks);
+    let exportMode = _rpMode;
+    let resourceParam;
+    if (exportMode === 'artists') {
+      resourceParam = {};
+      Object.keys(allDeptDays).forEach(dept => {
+        resourceParam[dept] = Math.max(
+          1,
+          parseInt(document.getElementById(`rp-artists-${dept}`)?.value, 10) || 1
+        );
+      });
+    } else if (exportMode === 'dates') {
+      resourceParam = parseFloat(
+        document.getElementById('rp-dates-weeks-display')?.dataset.weeks
+      );
+      if (!Number.isFinite(resourceParam) || resourceParam <= 0) {
+        exportMode = 'weeks';
+        resourceParam = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
+      }
+    } else {
+      resourceParam = parseFloat(document.getElementById('rp-target-weeks')?.value) || 12;
+    }
+    const plan = calcResourcePlan(allDeptDays, exportMode, resourceParam);
     const rpHeader = [
-      'Department', 'Type', 'Bid Days', 'Artists Needed', 'Calendar Weeks',
+      'Stage', 'Department', 'Type', 'Bid Days', 'Artists Needed', 'Weeks (This Dept)',
     ];
     const rpRows = plan.results.map(r => [
+      r.stage + 1,
       r.label,
       r.isAssetDept ? 'Asset build' : 'Shot dept',
       r.days,
       r.artists,
       Number(r.calendarWeeks.toFixed(1)),
     ]);
-    rpRows.push(['TOTAL (sequential)', '', '', '', Number(plan.totalCalendarWeeks.toFixed(1))]);
-    rpRows.push([`Target: ${targetWeeks} weeks`, '', '', '', '']);
+    rpRows.push([
+      '', 'TOTAL (sequential)', '', plan.totalDays, plan.totalArtists,
+      Number(plan.totalCalendarWeeks.toFixed(1)),
+    ]);
+    if (plan.targetWeeks != null) {
+      rpRows.push([
+        '', `Target: ${plan.targetWeeks.toFixed(1)} weeks`, '', '', '',
+        plan.fitsTarget ? 'Covered' : 'Not covered',
+      ]);
+    }
     if (plan.bottleneck?.label) {
-      rpRows.push([`Bottleneck: ${plan.bottleneck.label}`, '', '', '', Number(plan.bottleneck.calendarWeeks.toFixed(1))]);
+      rpRows.push([
+        '', `Bottleneck: ${plan.bottleneck.label}`, '', '', '',
+        Number(plan.bottleneck.calendarWeeks.toFixed(1)),
+      ]);
     }
     const rpSheet = XLSX.utils.aoa_to_sheet([rpHeader, ...rpRows]);
-    applySheetColWidths(rpSheet, [22, 14, 12, 14, 14]);
+    applySheetColWidths(rpSheet, [8, 22, 14, 12, 14, 16]);
     XLSX.utils.book_append_sheet(wb, rpSheet, 'Resource Planning');
   }
 
   const project = (getBatchProject() || 'BID').replace(/[^\w\-]+/g, '_');
-  const filename = `${project}_AI_ESTIMATE.xlsx`;
-  XLSX.writeFile(wb, filename);
-  toast(`Downloaded ${filename}`);
+  const filename = `${project}_${exportCurrency}_AI_ESTIMATE.xlsx`;
+  await writeWorkbookWithCoverBranding(wb, filename, coverSnap);
+  toast(`Downloaded ${filename} (${exportCurrency})`);
 }
 
 async function saveAllBatchCorrections(opts = {}) {
@@ -6408,6 +7069,708 @@ async function saveAllBatchCorrections(opts = {}) {
   }
 }
 
+// ── Company profile / cover page / currency variants / autosave ─────────────
+
+const COMPANY_PROFILE_KEY = 'vfx_company_profile';
+const COVER_LOGO_KEY = 'vfx_cover_logo';
+const COVER_COLORS_KEY = 'vfx_cover_colors';
+const DEFAULT_COVER_COLORS = { primary: '#4f8ef7', secondary: '#1a2030' };
+const DEFAULT_COVER_TERMS = `1. This quote is based on the information provided. Any changes to the scope of deliverables may lead to adjustments in pricing.
+2. The quote includes up to three creative revisions per shot. Revisions are non-transferable between shots. Additional revisions beyond this allowance will incur extra charges.
+3. Shots included in the quote but later excluded by the client from the final deliverables may be subject to setup or consultation fees if work has already been initiated.
+4. All prices are quoted in the currency shown on this cover page unless otherwise specified.
+5. Applicable taxes will be added to the quoted amount.
+6. Payment terms: 20% due at project commencement, with the remaining balance payable within 7 days of final delivery.
+7. This quote is valid for 60 days from the date of issue.
+8. Payment of the initial deposit constitutes acceptance of the above terms and conditions.`;
+
+let _autosaveTimer = null;
+let _autosaveBusy = false;
+let _logoDataUrl = null;
+
+function setLogoPreview(dataUrl) {
+  const preview = document.getElementById('logo-preview');
+  const previewWrap = document.getElementById('logo-preview-wrap');
+  const hint = document.getElementById('logo-upload-hint');
+  if (preview) preview.src = dataUrl || '';
+  if (previewWrap) previewWrap.style.display = dataUrl ? 'block' : 'none';
+  if (hint) hint.style.display = dataUrl ? 'none' : 'block';
+}
+
+function convertLogoToPng(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, 800 / Math.max(image.naturalWidth || 1, image.naturalHeight || 1));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round((image.naturalWidth || 400) * scale));
+      canvas.height = Math.max(1, Math.round((image.naturalHeight || 160) * scale));
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('Logo conversion is unavailable'));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    image.onerror = () => reject(new Error('Logo image could not be read'));
+    image.src = dataUrl;
+  });
+}
+
+function handleLogoUpload(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const allowed = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+  if (!allowed.includes(file.type)) {
+    toast('Use a PNG, JPG, SVG, or WebP logo.', 'warn');
+    input.value = '';
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    toast('Logo must be under 2MB', 'warn');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async event => {
+    try {
+      const source = String(event.target?.result || '');
+      _logoDataUrl = ['image/svg+xml', 'image/webp'].includes(file.type)
+        ? await convertLogoToPng(source)
+        : source;
+      setLogoPreview(_logoDataUrl);
+      try { localStorage.setItem(COVER_LOGO_KEY, _logoDataUrl); } catch {}
+      scheduleAutosave();
+    } catch (error) {
+      toast(error.message || 'Logo could not be loaded.', 'warn');
+    }
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function clearLogo(event) {
+  event?.stopPropagation();
+  _logoDataUrl = null;
+  setLogoPreview(null);
+  try { localStorage.removeItem(COVER_LOGO_KEY); } catch {}
+  scheduleAutosave();
+}
+
+function restoreSavedLogo() {
+  try {
+    _logoDataUrl = localStorage.getItem(COVER_LOGO_KEY) || null;
+  } catch {
+    _logoDataUrl = null;
+  }
+  setLogoPreview(_logoDataUrl);
+}
+
+function readCoverColors() {
+  const valid = value => /^#[0-9a-fA-F]{6}$/.test(String(value || ''));
+  const primary = document.getElementById('cover-color-primary')?.value;
+  const secondary = document.getElementById('cover-color-secondary')?.value;
+  return {
+    primary: valid(primary) ? primary : DEFAULT_COVER_COLORS.primary,
+    secondary: valid(secondary) ? secondary : DEFAULT_COVER_COLORS.secondary,
+  };
+}
+
+function updateCoverColorPreview() {
+  const colors = readCoverColors();
+  const primaryPreview = document.getElementById('cover-preview-primary');
+  const secondaryPreview = document.getElementById('cover-preview-secondary');
+  const primaryHex = document.getElementById('cover-color-primary-hex');
+  const secondaryHex = document.getElementById('cover-color-secondary-hex');
+  if (primaryPreview) primaryPreview.style.background = colors.primary;
+  if (secondaryPreview) secondaryPreview.style.background = colors.secondary;
+  if (primaryHex) primaryHex.value = colors.primary;
+  if (secondaryHex) secondaryHex.value = colors.secondary;
+  try { localStorage.setItem(COVER_COLORS_KEY, JSON.stringify(colors)); } catch {}
+  scheduleAutosave();
+}
+
+function syncColorHex(which, hexValue) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hexValue)) return;
+  const picker = document.getElementById(`cover-color-${which}`);
+  if (picker) picker.value = hexValue;
+  updateCoverColorPreview();
+}
+
+function restoreCoverColors() {
+  let colors = { ...DEFAULT_COVER_COLORS };
+  try {
+    const saved = JSON.parse(localStorage.getItem(COVER_COLORS_KEY) || 'null');
+    if (saved && typeof saved === 'object') colors = { ...colors, ...saved };
+  } catch {}
+  ['primary', 'secondary'].forEach(which => {
+    const value = /^#[0-9a-fA-F]{6}$/.test(colors[which])
+      ? colors[which]
+      : DEFAULT_COVER_COLORS[which];
+    const picker = document.getElementById(`cover-color-${which}`);
+    const hex = document.getElementById(`cover-color-${which}-hex`);
+    if (picker) picker.value = value;
+    if (hex) hex.value = value;
+  });
+  updateCoverColorPreview();
+}
+
+function defaultCompanyProfile() {
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem('vfx_user') || 'null'); } catch { return null; }
+  })();
+  return {
+    company_name: user?.org_name || '',
+    website: '',
+    email: user?.email || '',
+    phone: '',
+    address: '',
+    locations: '',
+    prepared_by: user?.name || '',
+    client: '',
+    onset_rate: 0,
+    onset_days: 0,
+    lidar: 0,
+    valid_days: 60,
+    terms: DEFAULT_COVER_TERMS,
+  };
+}
+
+function loadCompanyProfile() {
+  let profile = defaultCompanyProfile();
+  try {
+    const saved = JSON.parse(localStorage.getItem(COMPANY_PROFILE_KEY) || 'null');
+    if (saved && typeof saved === 'object') profile = { ...profile, ...saved };
+  } catch {}
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val ?? '';
+  };
+  set('co-name', profile.company_name);
+  set('co-website', profile.website);
+  set('co-email', profile.email);
+  set('co-phone', profile.phone);
+  set('co-address', profile.address);
+  set('co-locations', profile.locations);
+  set('co-prepared-by', profile.prepared_by);
+  set('co-client', profile.client);
+  set('co-onset-rate', profile.onset_rate);
+  set('co-onset-days', profile.onset_days);
+  set('co-lidar', profile.lidar);
+  set('co-valid-days', profile.valid_days);
+  set('co-terms', profile.terms || DEFAULT_COVER_TERMS);
+  return profile;
+}
+
+function readCompanyProfileFromForm() {
+  const num = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+  return {
+    company_name: (document.getElementById('co-name')?.value || '').trim(),
+    website: (document.getElementById('co-website')?.value || '').trim(),
+    email: (document.getElementById('co-email')?.value || '').trim(),
+    phone: (document.getElementById('co-phone')?.value || '').trim(),
+    address: (document.getElementById('co-address')?.value || '').trim(),
+    locations: (document.getElementById('co-locations')?.value || '').trim(),
+    prepared_by: (document.getElementById('co-prepared-by')?.value || '').trim(),
+    client: (document.getElementById('co-client')?.value || '').trim(),
+    onset_rate: num('co-onset-rate'),
+    onset_days: num('co-onset-days'),
+    lidar: num('co-lidar'),
+    valid_days: Math.max(1, parseInt(document.getElementById('co-valid-days')?.value, 10) || 60),
+    terms: (document.getElementById('co-terms')?.value || DEFAULT_COVER_TERMS).trim(),
+  };
+}
+
+function persistCompanyProfile() {
+  const profile = readCompanyProfileFromForm();
+  try { localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(profile)); } catch {}
+  scheduleAutosave();
+  return profile;
+}
+
+function toggleCompanyProfilePanel() {
+  const panel = document.getElementById('company-profile-panel');
+  if (!panel) return;
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  if (opening) loadCompanyProfile();
+}
+
+function moneyExact(usdAmount, currency) {
+  const c = (currency || _displayCurrency || BASE_CURRENCY).toUpperCase();
+  const converted = usdToDisplay(Number(usdAmount), c);
+  if (!Number.isFinite(converted)) return '—';
+  return currencySymbol(c) + converted.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function buildCoverPageSnapshot(currency) {
+  const cur = (currency || _displayCurrency || 'USD').toUpperCase();
+  const company = readCompanyProfileFromForm();
+  const colors = readCoverColors();
+  const shotStats = currentShotStats();
+  const assetStats = updateAssetSummary();
+  const shotCostUsd = shotStats.totalCost || 0;
+  const assetCostUsd = assetStats.totalCost || 0;
+  const onsetUsd = (company.onset_rate || 0) * (company.onset_days || 0);
+  const lidarUsd = company.lidar || 0;
+  const grossUsd = shotCostUsd + assetCostUsd + onsetUsd + lidarUsd;
+  const net = computeBidNetSummary(grossUsd);
+  const delivery = document.getElementById('rp-end-date')?.value || 'TBD';
+  const quoteDate = new Date().toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  });
+  return {
+    currency: cur,
+    fx_rate: Number(_fxRates[cur] || 1),
+    company,
+    branding: {
+      logo_data_url: _logoDataUrl || null,
+      primary_color: colors.primary,
+      secondary_color: colors.secondary,
+    },
+    project_name: getBatchProject() || '',
+    client: company.client || '',
+    quote_date: quoteDate,
+    delivery_date: delivery,
+    prepared_by: company.prepared_by || '',
+    shot_count: shotStats.shotCount || 0,
+    asset_count: assetStats.count || 0,
+    shot_cost_usd: shotCostUsd,
+    asset_cost_usd: assetCostUsd,
+    onset_cost_usd: onsetUsd,
+    lidar_cost_usd: lidarUsd,
+    gross_usd: grossUsd,
+    tax_credit_pct: _taxCreditPct,
+    tax_credit_usd: net.creditAmt,
+    admin_fee_pct: _adminFeePct,
+    admin_fee_usd: net.adminAmt,
+    net_usd: net.net,
+  };
+}
+
+function coverStyle(opts) {
+  const o = opts || {};
+  const borderColor = typeof o.border === 'string' ? o.border : 'CBD5E1';
+  return {
+    font: {
+      name: 'Calibri',
+      sz: o.sz || 11,
+      bold: !!o.bold,
+      color: { rgb: o.color || '111827' },
+    },
+    fill: o.fill ? { patternType: 'solid', fgColor: { rgb: o.fill } } : undefined,
+    alignment: {
+      horizontal: o.align || 'left',
+      vertical: 'center',
+      wrapText: !!o.wrap,
+    },
+    border: o.border ? {
+      top: { style: 'thin', color: { rgb: borderColor } },
+      bottom: { style: 'thin', color: { rgb: borderColor } },
+      left: { style: 'thin', color: { rgb: borderColor } },
+      right: { style: 'thin', color: { rgb: borderColor } },
+    } : undefined,
+  };
+}
+
+function coverSet(sheet, r, c, value, style) {
+  const ref = XLSX.utils.encode_cell({ r, c });
+  const cell = { v: value == null ? '' : value, t: typeof value === 'number' ? 'n' : 's' };
+  if (style) cell.s = style;
+  sheet[ref] = cell;
+}
+
+function buildStyledCoverSheet(snapshot) {
+  const s = snapshot || buildCoverPageSnapshot();
+  const cur = s.currency || 'USD';
+  const company = s.company || {};
+  const branding = s.branding || {};
+  const money = (usd) => moneyExact(usd, cur);
+  const excelHex = (value, fallback) => {
+    const normalized = String(value || '').replace(/^#/, '').toUpperCase();
+    return /^[0-9A-F]{6}$/.test(normalized) ? normalized : fallback;
+  };
+  const primary = excelHex(branding.primary_color, '4F8EF7');
+  const ink = excelHex(branding.secondary_color, '1A2030');
+  const band = 'E2E8F0';      // cool gray row
+  const white = 'FFFFFF';
+  const mute = '334155';
+
+  const sheet = {};
+  const merges = [];
+  let r = 0;
+
+  const pushMerge = (r1, c1, r2, c2) => merges.push({ s: { r: r1, c: c1 }, e: { r: r2, c: c2 } });
+
+  // Header: company name + contact block
+  coverSet(sheet, r, 0, branding.logo_data_url ? '' : (company.company_name || 'VFX Bid'), coverStyle({
+    bold: true, sz: 22, color: branding.logo_data_url ? white : primary,
+    fill: branding.logo_data_url ? primary : undefined, align: 'left',
+  }));
+  pushMerge(r, 0, r, 2);
+  if (branding.logo_data_url) {
+    for (let c = 1; c <= 2; c++) coverSet(sheet, r, c, '', coverStyle({ fill: primary }));
+  }
+  const contactLines = [
+    company.address || '',
+    company.website || '',
+    [company.email, company.phone].filter(Boolean).join('  |  '),
+  ].filter(Boolean).join('\n');
+  coverSet(sheet, r, 3, contactLines, coverStyle({
+    fill: ink, color: white, sz: 10, wrap: true, align: 'left',
+  }));
+  pushMerge(r, 3, r, 5);
+  sheet['!rows'] = sheet['!rows'] || [];
+  sheet['!rows'][r] = { hpt: branding.logo_data_url ? 64 : 54 };
+  r += 1;
+
+  // spacer
+  r += 1;
+
+  // Meta block
+  const meta = [
+    ['Client', s.client || ''],
+    ['Project', s.project_name || ''],
+    ['Quote Date', s.quote_date || ''],
+    ['Delivery Date', s.delivery_date || 'TBD'],
+    ['Prepared by', s.prepared_by || ''],
+    ['Currency', cur],
+  ];
+  meta.forEach(([label, value]) => {
+    coverSet(sheet, r, 0, label, coverStyle({ bold: true, fill: band, color: mute, border: primary }));
+    coverSet(sheet, r, 1, value, coverStyle({ fill: band, border: primary }));
+    pushMerge(r, 1, r, 5);
+    for (let c = 2; c <= 5; c++) coverSet(sheet, r, c, '', coverStyle({ fill: band, border: primary }));
+    r += 1;
+  });
+
+  r += 1;
+
+  const sectionBar = (title, amount) => {
+    coverSet(sheet, r, 0, title, coverStyle({ bold: true, fill: primary, color: white, sz: 12 }));
+    pushMerge(r, 0, r, amount != null ? 4 : 5);
+    for (let c = 1; c <= (amount != null ? 4 : 5); c++) {
+      coverSet(sheet, r, c, '', coverStyle({ fill: primary, color: white }));
+    }
+    if (amount != null) {
+      coverSet(sheet, r, 5, amount, coverStyle({ bold: true, fill: primary, color: white, align: 'right', sz: 12 }));
+    }
+    r += 1;
+  };
+
+  const lineRow = (label, note, amount) => {
+    coverSet(sheet, r, 0, label, coverStyle({ fill: band, border: ink, bold: true, color: mute }));
+    pushMerge(r, 0, r, 1);
+    coverSet(sheet, r, 1, '', coverStyle({ fill: band, border: ink }));
+    coverSet(sheet, r, 2, note || '', coverStyle({ fill: band, border: ink, color: mute, sz: 10 }));
+    pushMerge(r, 2, r, 4);
+    for (let c = 3; c <= 4; c++) coverSet(sheet, r, c, '', coverStyle({ fill: band, border: ink }));
+    coverSet(sheet, r, 5, amount == null ? '' : amount, coverStyle({
+      fill: band, border: ink, align: 'right', bold: true,
+    }));
+    r += 1;
+  };
+
+  sectionBar('VISUAL EFFECTS TOTAL BID SUMMARY');
+  lineRow('Total VFX Shots', 'See attached Shot Breakdown for details', s.shot_count || 0);
+  lineRow('Total VFX Assets', 'See attached Asset Breakdown for details', s.asset_count || 0);
+  lineRow('Total Cost for VFX Shots', '', money(s.shot_cost_usd || 0));
+  lineRow('Total Cost for VFX Assets', '', money(s.asset_cost_usd || 0));
+  lineRow(
+    'On-Set VFX Supervision',
+    company.onset_rate ? `${moneyExact(company.onset_rate, cur)} / day` : '',
+    money(s.onset_cost_usd || 0)
+  );
+  lineRow('Lidar / Data Processing', '', money(s.lidar_cost_usd || 0));
+
+  r += 1;
+  sectionBar('GROSS TOTAL VFX BID', money(s.gross_usd || 0));
+
+  r += 1;
+  sectionBar('TAX CREDITS');
+  lineRow('Tax Credit', `${s.tax_credit_pct || 0}%`, money(s.tax_credit_usd || 0));
+  lineRow('Admin & Interest Fees', `${s.admin_fee_pct || 0}% of Gross Total`, money(s.admin_fee_usd || 0));
+
+  r += 1;
+  sectionBar('NET TOTAL VFX BID', money(s.net_usd || 0));
+
+  r += 2;
+  sectionBar('TERMS AND CONDITIONS');
+  String(company.terms || DEFAULT_COVER_TERMS).split(/\n/).forEach(line => {
+    if (!line.trim()) return;
+    coverSet(sheet, r, 0, line.trim(), coverStyle({ fill: band, border: ink, sz: 9, wrap: true, color: mute }));
+    pushMerge(r, 0, r, 5);
+    for (let c = 1; c <= 5; c++) coverSet(sheet, r, c, '', coverStyle({ fill: band, border: ink }));
+    sheet['!rows'][r] = { hpt: 28 };
+    r += 1;
+  });
+
+  r += 1;
+  const footer = [
+    company.company_name || '',
+    company.locations || '',
+  ].filter(Boolean).join('  ·  ');
+  coverSet(sheet, r, 0, footer, coverStyle({ sz: 9, color: mute }));
+  pushMerge(r, 0, r, 5);
+
+  sheet['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: Math.max(r, 20), c: 5 } });
+  sheet['!merges'] = merges;
+  sheet['!cols'] = [
+    { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 18 },
+  ];
+  return sheet;
+}
+
+async function writeWorkbookWithCoverBranding(workbook, filename, snapshot) {
+  const logo = snapshot?.branding?.logo_data_url;
+  if (!logo || typeof ExcelJS === 'undefined') {
+    XLSX.writeFile(workbook, filename);
+    return;
+  }
+  try {
+    const extension = logo.startsWith('data:image/jpeg') ? 'jpeg'
+      : logo.startsWith('data:image/png') ? 'png'
+      : null;
+    if (!extension) {
+      XLSX.writeFile(workbook, filename);
+      return;
+    }
+    const source = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const brandedWorkbook = new ExcelJS.Workbook();
+    await brandedWorkbook.xlsx.load(source);
+    const coverSheet = brandedWorkbook.getWorksheet('Cover Page');
+    if (!coverSheet) {
+      XLSX.writeFile(workbook, filename);
+      return;
+    }
+    const imageId = brandedWorkbook.addImage({ base64: logo, extension });
+    coverSheet.addImage(imageId, {
+      tl: { col: 0.15, row: 0.10 },
+      ext: { width: 190, height: 72 },
+      editAs: 'oneCell',
+    });
+    const output = await brandedWorkbook.xlsx.writeBuffer();
+    const url = URL.createObjectURL(new Blob(
+      [output],
+      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+    ));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.warn('[Cover Page] Logo embedding failed; exporting without embedded logo.', error);
+    XLSX.writeFile(workbook, filename);
+  }
+}
+
+function coverPageRows(snapshot) {
+  // Plain AOA fallback (CSV / legacy)
+  const s = snapshot || buildCoverPageSnapshot();
+  const cur = s.currency || 'USD';
+  const company = s.company || {};
+  const money = (usd) => moneyExact(usd, cur);
+  const rows = [
+    [company.company_name || 'VFX Bid', '', '', [company.address, company.website, [company.email, company.phone].filter(Boolean).join(' | ')].filter(Boolean).join('\n'), '', ''],
+    [],
+    ['Client', s.client || '', '', '', '', ''],
+    ['Project', s.project_name || '', '', '', '', ''],
+    ['Quote Date', s.quote_date || '', '', '', '', ''],
+    ['Delivery Date', s.delivery_date || 'TBD', '', '', '', ''],
+    ['Prepared by', s.prepared_by || '', '', '', '', ''],
+    ['Currency', cur, '', '', '', ''],
+    [],
+    ['VISUAL EFFECTS TOTAL BID SUMMARY', '', '', '', '', ''],
+    ['Total VFX Shots', 'See attached Shot Breakdown', s.shot_count || 0, '', '', ''],
+    ['Total VFX Assets', 'See attached Asset Breakdown', s.asset_count || 0, '', '', ''],
+    ['Total Cost for VFX Shots', '', '', '', '', money(s.shot_cost_usd || 0)],
+    ['Total Cost for VFX Assets', '', '', '', '', money(s.asset_cost_usd || 0)],
+    ['On-Set VFX Supervision', company.onset_rate ? `${moneyExact(company.onset_rate, cur)}/Day` : '', '', '', '', money(s.onset_cost_usd || 0)],
+    ['Lidar / Data Processing', '', '', '', '', money(s.lidar_cost_usd || 0)],
+    [],
+    ['GROSS TOTAL VFX BID', '', '', '', '', money(s.gross_usd || 0)],
+    [],
+    ['TAX CREDITS', '', '', '', '', ''],
+    ['Tax Credit', `${s.tax_credit_pct || 0}%`, '', '', '', money(s.tax_credit_usd || 0)],
+    ['Admin & Interest Fees', `${s.admin_fee_pct || 0}% of Gross Total`, '', '', '', money(s.admin_fee_usd || 0)],
+    [],
+    ['NET TOTAL VFX BID', '', '', '', '', money(s.net_usd || 0)],
+    [],
+    ['TERMS AND CONDITIONS', '', '', '', '', ''],
+  ];
+  String(company.terms || DEFAULT_COVER_TERMS).split(/\n/).forEach(line => {
+    if (line.trim()) rows.push([line.trim(), '', '', '', '', '']);
+  });
+  return rows;
+}
+
+
+async function exportCoverPageOnly() {
+  if (typeof XLSX === 'undefined') {
+    toast('Excel library not loaded.', 'err');
+    return;
+  }
+  const snapshot = buildCoverPageSnapshot();
+  if (!(snapshot.shot_count || snapshot.asset_count)) {
+    toast('Run a shot or asset estimate first.', 'warn');
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildStyledCoverSheet(snapshot), 'Cover Page');
+  const project = (snapshot.project_name || 'BID').replace(/[^\\w\\-]+/g, '_');
+  const filename = `BID_${project}_${snapshot.currency}_Cover_Page.xlsx`;
+  await writeWorkbookWithCoverBranding(wb, filename, snapshot);
+  toast(`Downloaded ${filename}`);
+}
+
+function exportCoverPageCsv() {
+  // Kept for history "Cover CSV" actions; plain data export
+  const snapshot = buildCoverPageSnapshot();
+  if (!(snapshot.shot_count || snapshot.asset_count)) {
+    toast('Run a shot or asset estimate first.', 'warn');
+    return;
+  }
+  const rows = coverPageRows(snapshot);
+  const project = (snapshot.project_name || 'BID').replace(/[^\\w\\-]+/g, '_');
+  const filename = `BID_${project}_${snapshot.currency}_Cover_Page.csv`;
+  downloadCsv(filename, rows);
+  toast(`Downloaded ${filename}`);
+}
+
+
+function collectAssetRowsForSave() {
+  return collectAssetRows().map(r => ({
+    item_number: r.item_number,
+    asset_name: r.asset_name,
+    notes: r.notes || '',
+    variations: r.variations || 1,
+    dept_days: r.dept_days || {},
+    total_days: r.total_days,
+    cost: r.cost,
+    confidence: r.confidence,
+    associated_shots: r.associated_shots || [],
+  }));
+}
+
+async function saveBidVariant(opts = {}) {
+  const silent = !!opts.silent;
+  const currency = (opts.currency || _displayCurrency || 'USD').toUpperCase();
+  const projectName = (opts.projectName || getBatchProjectRaw() || '').trim();
+  const shots = (opts.shots || collectBatchRowsForExport()).filter(Boolean);
+  if (!projectName) {
+    if (!silent) toast('Set a project name before saving a currency variant.', 'warn');
+    return null;
+  }
+  if (!shots.length) {
+    if (!silent) toast('Run a shot estimate first.', 'warn');
+    return null;
+  }
+  const cover = buildCoverPageSnapshot(currency);
+  const variantLabel = opts.variantLabel
+    || `${currency} · ${new Date().toLocaleDateString()}`;
+  try {
+    const r = await fetch(`${API}/bid-history`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_name: projectName,
+        project_id: projectIdForSave(),
+        user_id: getSessionUserId() || getUserId(),
+        shots: shots.map(s => ({
+          item_number: s.item_number,
+          shot_code: s.shot_code,
+          description: s.description || s.script_description,
+          script_description: s.script_description,
+          methodology: s.methodology || '',
+          vfx_notes: s._notes ?? s.vfx_notes,
+          total_mandays: s.total_mandays ?? s.total_days,
+          total_days: s.total_mandays ?? s.total_days,
+          dept_days: s.dept_days,
+          confidence: s.confidence,
+          cost_per_shot: s.cost_per_shot ?? s.cost,
+          ai_total_mandays: s._ai_total_mandays ?? s.ai_total_mandays,
+        })),
+        assets: collectAssetRowsForSave(),
+        pre_qual: getPreQualData() || {},
+        currency,
+        display_currency: currency,
+        fx_rate: Number(_fxRates[currency] || 1),
+        day_rate_usd: Number(_fallbackDayRate || 700),
+        variant_label: variantLabel,
+        cover_snapshot: cover,
+        notes: opts.notes || '',
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if (!silent) toast(`Saved ${currency} variant — ${projectName}`, 'info');
+    return d.bid_id;
+  } catch (e) {
+    if (!silent) toast('Save failed: ' + e.message, 'err');
+    return null;
+  }
+}
+
+async function saveCurrencyVariant() {
+  const cur = (_displayCurrency || 'USD').toUpperCase();
+  const label = prompt(
+    `Save current bid as a revisitable ${cur} option.\nOptional label:`,
+    `${cur} client submit`
+  );
+  if (label === null) return;
+  await saveBidVariant({ currency: cur, variantLabel: label.trim() || `${cur} variant` });
+}
+
+async function saveCurrentCurrencySnapshot() {
+  const currency = (_displayCurrency || 'USD').toUpperCase();
+  const project = getBatchProjectRaw();
+  const bidId = await saveBidVariant({
+    currency,
+    projectName: project,
+    variantLabel: `${currency} snapshot · ${new Date().toLocaleString()}`,
+    silent: true,
+  });
+  if (bidId) {
+    toast(`Bid saved in ${currency}`, 'ok');
+    loadBidHistoryList();
+  } else {
+    toast(`Could not save bid in ${currency}`, 'err');
+  }
+}
+
+function scheduleAutosave() {
+  if (_autosaveTimer) clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(() => {
+    runBackgroundAutosave();
+  }, 1500);
+}
+
+async function runBackgroundAutosave() {
+  try {
+    const draft = {
+      project: getBatchProjectRaw(),
+      currency: _displayCurrency || 'USD',
+      fx_rate: Number(_fxRates[_displayCurrency] || 1),
+      company: readCompanyProfileFromForm(),
+      shots: collectBatchRowsForExport(),
+      assets: collectAssetRowsForSave(),
+      tax_credit_pct: _taxCreditPct,
+      admin_fee_pct: _adminFeePct,
+      saved_at: Date.now(),
+    };
+    if (!draft.project && !draft.shots.length && !draft.assets.length) return;
+    localStorage.setItem('vfx_bid_draft', JSON.stringify(draft));
+  } catch {
+    // ignore quota / serialization errors
+  }
+}
+
+
 // ── Bid history ────────────────────────────────────────────────────────────
 
 function formatBidDate(iso) {
@@ -6444,40 +7807,13 @@ async function autoSaveBid(project, shots) {
   const projectName = String(project || '').trim();
   const includedShots = (shots || []).filter(isIncludedShot);
   if (!projectName || !includedShots.length) return;
-  try {
-    const r = await fetch(`${API}/bid-history`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        project_name: projectName,
-        project_id: projectIdForSave(),
-        user_id: getSessionUserId() || getUserId(),
-        shots: includedShots.map(s => ({
-          item_number: s.item_number,
-          shot_code: s.shot_code,
-          description: s.description || s.script_description,
-          script_description: s.script_description,
-          methodology: s.methodology || '',
-          vfx_notes: s._notes ?? s.vfx_notes,
-          total_mandays: s.total_mandays,
-          total_days: s.total_mandays,
-          dept_days: s.dept_days,
-          confidence: s.confidence,
-          cost_per_shot: s.cost_per_shot,
-          ai_total_mandays: s._ai_total_mandays ?? s.ai_total_mandays,
-          baseline_used: s.baseline_used,
-          modifiers_applied: s.modifiers_applied,
-          baseline_days: s.baseline_days,
-          adjusted_days: s.adjusted_days,
-        })),
-        pre_qual: getPreQualData() || {},
-      }),
-    });
-    if (!r.ok) return;
-    toast(`Bid saved to history — ${projectName}`, 'info');
-  } catch {
-    // Fail silently — don't interrupt the user
-  }
+  await saveBidVariant({
+    projectName,
+    shots: includedShots,
+    currency: _displayCurrency || 'USD',
+    variantLabel: `Initial · ${(_displayCurrency || 'USD').toUpperCase()}`,
+    silent: false,
+  });
 }
 
 function promptBidNameBeforeSave(shots) {
@@ -6547,20 +7883,32 @@ async function loadBidHistoryList() {
       el.innerHTML = '<div class="history-empty">No saved bids yet. Run a batch estimate to save one.</div>';
       return;
     }
-    el.innerHTML = bids.map(b => `
+    el.innerHTML = bids.map(b => {
+      const cur = (b.display_currency || b.currency || 'USD').toUpperCase();
+      const variant = b.variant_label ? escHtml(b.variant_label) : `${cur} variant`;
+      const fxRate = Number(b.fx_rate || 1);
+      const dayRateUsd = Number(b.day_rate_usd || 700);
+      const savedTotal = (Number(b.total_mandays || 0) * dayRateUsd) * fxRate;
+      const savedMoney = `${currencySymbol(cur)}${savedTotal.toLocaleString(undefined, {
+        maximumFractionDigits: 0,
+      })} ${cur}`;
+      return `
       <div class="history-bid-card" data-bid-id="${b.id}">
-        <div class="hb-title">${escHtml(b.project_name || 'Untitled')}</div>
+        <div class="hb-title">${escHtml(b.project_name || 'Untitled')}
+          <span class="muted" style="font-size:11px;font-weight:700;margin-left:8px">${escHtml(cur)}</span>
+        </div>
         <div class="hb-meta">
-          ${b.shot_count ?? 0} shots · ${fmt(b.total_mandays ?? 0)} production days · ${formatBidDate(b.created_at)}
+          ${variant} · ${b.shot_count ?? 0} shots · ${fmt(b.total_mandays ?? 0)} production days · ${savedMoney} · ${formatBidDate(b.created_at)}
           ${b.notes ? `<br>${escHtml(b.notes)}` : ''}
         </div>
         <div class="hb-actions">
           <button type="button" class="btn-history" onclick="loadSavedBid(${b.id})">Load</button>
+          <button type="button" class="btn-history" onclick="exportSavedBidCover(${b.id})">Cover CSV</button>
           <button type="button" class="btn-history" onclick="exportSavedBidCsv(${b.id})">Export CSV</button>
           <button type="button" class="btn-history danger" onclick="deleteSavedBid(${b.id})">Delete</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   } catch {
     el.innerHTML = '<div class="history-empty">Could not load bid history.</div>';
   }
@@ -6592,9 +7940,48 @@ async function loadSavedBid(bidId) {
     setBatchExportFromResults();
     autoShowPopulatedCols(shots);
     applyColVisibility();
+    const savedCurrency = String(
+      bid.display_currency || bid.currency || 'USD'
+    ).toUpperCase();
+    if (DISPLAY_CURRENCIES.includes(savedCurrency)) {
+      if (bid.fx_rate) {
+        _fxRates[savedCurrency] = Number(bid.fx_rate) || _fxRates[savedCurrency] || 1;
+      }
+      const sel = document.getElementById('display-currency');
+      if (sel) sel.value = savedCurrency;
+      onDisplayCurrencyChange(savedCurrency);
+      if (savedCurrency !== 'USD') {
+        toast(`Currency set to ${savedCurrency} (saved with this bid)`, 'info');
+      }
+    }
+    if (bid.cover_snapshot?.company) {
+      try {
+        localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify({
+          ...defaultCompanyProfile(),
+          ...bid.cover_snapshot.company,
+        }));
+        loadCompanyProfile();
+      } catch {}
+    }
+    if (bid.cover_snapshot?.branding) {
+      try {
+        const branding = bid.cover_snapshot.branding;
+        if (branding.logo_data_url) {
+          localStorage.setItem(COVER_LOGO_KEY, branding.logo_data_url);
+        } else {
+          localStorage.removeItem(COVER_LOGO_KEY);
+        }
+        localStorage.setItem(COVER_COLORS_KEY, JSON.stringify({
+          primary: branding.primary_color || DEFAULT_COVER_COLORS.primary,
+          secondary: branding.secondary_color || DEFAULT_COVER_COLORS.secondary,
+        }));
+        restoreSavedLogo();
+        restoreCoverColors();
+      } catch {}
+    }
     closeHistoryDrawer();
     document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast(`Loaded: ${bid.project_name} (${shots.length} shots)`);
+    toast(`Loaded: ${bid.project_name} (${shots.length} shots · ${savedCurrency})`);
     return true;
   } catch (e) {
     toast('Could not load bid: ' + e.message, 'err');
@@ -6667,6 +8054,28 @@ async function exportSavedBidCsv(bidId) {
   }
 }
 
+async function exportSavedBidCover(bidId) {
+  try {
+    const r = await fetch(`${API}/bid-history/${bidId}`);
+    if (!r.ok) throw new Error('Bid not found');
+    const bid = await r.json();
+    const snap = bid.cover_snapshot && Object.keys(bid.cover_snapshot).length
+      ? bid.cover_snapshot
+      : null;
+    if (snap) {
+      const project = (bid.project_name || 'BID').replace(/[^\w\-]+/g, '_');
+      const cur = (snap.currency || bid.currency || 'USD').toUpperCase();
+      downloadCsv(`BID_${project}_${cur}_Cover_Page.csv`, coverPageRows(snap));
+      toast(`Downloaded cover page (${cur})`);
+      return;
+    }
+    await loadSavedBid(bidId);
+    exportCoverPageCsv();
+  } catch (e) {
+    toast('Cover export failed: ' + e.message, 'err');
+  }
+}
+
 async function deleteSavedBid(bidId) {
   if (!confirm('Delete this saved bid?')) return;
   try {
@@ -6693,6 +8102,9 @@ document.addEventListener('visibilitychange', () => {
   loadUserId();
   applyProjectContext();
   loadDisplayCurrency();
+  loadCompanyProfile();
+  restoreSavedLogo();
+  restoreCoverColors();
   loadTaxCreditPct();
   loadAdminFeePct();
   setupBatchDropZone();
