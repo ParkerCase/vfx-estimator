@@ -312,6 +312,47 @@
       animation:spin .7s linear infinite;display:inline-block;flex:0 0 auto;
     }
     .suggestion-loading{display:flex;align-items:center;gap:6px;padding:4px}
+    .global-activity-bar{
+      display:flex;align-items:center;gap:10px;padding:8px 18px;
+      background:rgba(79,142,247,.12);border-bottom:1px solid rgba(79,142,247,.28);
+      font-size:12px;font-weight:700;color:var(--accent);
+      transition:opacity .2s,max-height .25s,padding .25s;
+      max-height:44px;overflow:hidden;
+    }
+    .global-activity-bar.hidden{opacity:0;max-height:0;padding-top:0;padding-bottom:0;border:none;pointer-events:none}
+    .global-activity-bar[data-kind="save"]{
+      background:rgba(46,204,113,.1);border-color:rgba(46,204,113,.28);color:var(--green);
+    }
+    .global-activity-bar[data-kind="load"]{
+      background:rgba(255,255,255,.04);border-color:var(--border);color:var(--text);
+    }
+    .global-activity-bar[data-kind="export"]{
+      background:rgba(124,92,252,.1);border-color:rgba(124,92,252,.28);color:var(--accent2);
+    }
+    .loading-inline{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
+    .loading-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+      padding:28px 16px;color:var(--muted);text-align:center}
+    .loading-block .loading-title{font-size:13px;font-weight:700;color:var(--text)}
+    .loading-block .loading-sub{font-size:11px;color:var(--muted);font-weight:500;max-width:260px;line-height:1.45}
+    .spinner-md{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex:0 0 auto}
+    .spinner-lg{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:spin .7s linear infinite}
+    .table-loading-cell{padding:24px!important;text-align:center;background:var(--surface)}
+    .btn-loading{pointer-events:none;opacity:.88}
+    tr.batch-data-row.row-rerunning{position:relative}
+    tr.batch-data-row.row-rerunning::after{
+      content:'';position:absolute;inset:0;background:rgba(10,14,20,.38);pointer-events:none;z-index:1;
+    }
+    tr.batch-data-row.row-rerunning .row-loading-badge{
+      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+      display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+      background:var(--card);border:1px solid var(--accent);font-size:11px;font-weight:700;
+      color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.35);white-space:nowrap;
+    }
+    .asset-table-row-loading td{background:rgba(79,142,247,.06)}
+    .asset-table-row-loading .batch-row-days,
+    .asset-table-row-loading .batch-row-cost{color:var(--muted)!important}
 
     /* ── Cards ── */
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
@@ -609,7 +650,7 @@
     .row-mini-btn:hover{border-color:var(--accent);color:var(--accent)}
     .row-mini-btn.rerun{display:none}
     .row-mini-btn.rerun.show{display:inline-block}
-    tr.batch-data-row.row-rerunning{opacity:.6;pointer-events:none}
+    tr.batch-data-row.row-rerunning{pointer-events:none}
     tr.batch-data-row.row-rerunning .row-mini-btn.rerun{display:inline-block}
     .method-suggestions{position:absolute;left:6px;top:34px;z-index:30;width:320px;background:var(--card);
       border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(0,0,0,.45);padding:8px}
@@ -645,6 +686,9 @@
   <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l3 3v15H4V3h1Z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M2 21h20"/><path d="M8 8h2M14 8h2M8 12h2M14 12h2M10 21v-5h4v5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-grip" viewBox="0 0 24 24">
     <circle cx="9" cy="7" r="1.4" fill="currentColor" stroke="none"/>
@@ -715,6 +759,11 @@
       <div class="progress-track"><div class="progress-fill" id="page-asset-progress-fill" style="width:0%"></div></div>
     </div>
   </div>
+</div>
+<div id="global-activity-bar" class="global-activity-bar hidden" data-kind="ai"
+     aria-live="polite" role="status">
+  <span class="spinner-sm" aria-hidden="true"></span>
+  <span id="global-activity-text">Working…</span>
 </div>
 </div>
 
@@ -968,7 +1017,9 @@
       <div class="methodology-hint">
         <strong>Tip:</strong> Including a methodology column (how each shot will be executed)
         significantly improves estimate accuracy. No methodology? The AI can suggest options
-        after the batch runs — click ✨ on any row.
+        after the batch runs — click
+        <svg class="icon icon-sm" aria-label="Suggest"><use href="#i-star"></use></svg>
+        on any row.
       </div>
 
       <div class="btn-row">
@@ -1342,10 +1393,11 @@
       <button type="button" class="btn-ghost with-icon" onclick="toggleCompanyProfilePanel()">
         Company Profile
       </button>
-      <button type="button" class="btn-ghost with-icon" onclick="saveCurrentCurrencySnapshot()">
-        💾 Save in <span id="save-currency-label">USD</span>
+      <button type="button" id="save-currency-btn" class="btn-ghost with-icon" onclick="saveCurrentCurrencySnapshot(this)">
+        <svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>
+        Save in <span id="save-currency-label">USD</span>
       </button>
-      <button type="button" class="btn-green with-icon" onclick="saveAllCorrections()">
+      <button type="button" id="save-corrections-btn" class="btn-green with-icon" onclick="saveAllCorrections(this)">
         <svg class="icon"><use href="#i-check"></use></svg>
         Save All Corrections
       </button>
@@ -1353,7 +1405,7 @@
         <input type="checkbox" id="export-include-cover" checked>
         Include cover page
       </label>
-      <button type="button" class="btn-blue with-icon" onclick="exportBidExcel()">
+      <button type="button" id="export-excel-btn" class="btn-blue with-icon" onclick="exportBidExcel(this)">
         <svg class="icon"><use href="#i-download"></use></svg>
         Export Excel
       </button>
@@ -1379,7 +1431,8 @@
                   class="btn-ghost btn-sm">Remove logo</button>
         </div>
         <div id="logo-upload-hint">
-          <div style="font-size:28px;color:var(--muted)">🏢</div>
+          <svg class="icon" aria-hidden="true"
+               style="width:28px;height:28px;color:var(--muted)"><use href="#i-building"></use></svg>
           <div class="muted" style="font-size:13px;margin-top:4px">
             Click to upload your company logo
           </div>
@@ -1445,7 +1498,8 @@
 </div><!-- /wrap -->
 
 <footer class="security-footer">
-  <span>🔒 Your data is encrypted in transit (TLS 1.3) and at rest. Bids are isolated per account.</span>
+  <span><svg class="icon" aria-hidden="true"><use href="#i-lock"></use></svg>
+    Your data is encrypted in transit (TLS 1.3) and at rest. Bids are isolated per account.</span>
 </footer>
 
 <div id="col-map-modal" class="modal-overlay" onclick="closeColMapOutside(event)">
@@ -1479,7 +1533,7 @@
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-ghost" onclick="skipBidNameSave()">Skip</button>
-      <button type="button" class="btn-blue" onclick="saveNamedBidFromPrompt()">Save Bid</button>
+      <button type="button" id="bid-name-save-btn" class="btn-blue" onclick="saveNamedBidFromPrompt(this)">Save Bid</button>
     </div>
   </div>
 </div>
@@ -1491,7 +1545,7 @@
     <button type="button" class="btn-ghost" onclick="closeHistoryDrawer()">Close</button>
   </div>
   <div class="history-drawer-body" id="history-list">
-    <div class="history-empty">Loading…</div>
+    <div class="history-empty">Open to view saved bids.</div>
   </div>
 </aside>
 
@@ -1816,7 +1870,8 @@ function rateInputStep() {
 function rateDisplayValue(usdRate) {
   const v = usdToDisplay(Number(usdRate));
   if (!Number.isFinite(v)) return 0;
-  return _displayCurrency === 'USD' ? Math.round(v) : Math.round(v * 100) / 100;
+  // Snap to whole dollars to avoid FX round-trip drift (.9999 residue)
+  return Math.round(v);
 }
 
 function loadDisplayCurrency() {
@@ -1995,7 +2050,7 @@ function applyRateOverrideToAll() {
 }
 
 function onDeptRateChange(dept, raw) {
-  const displayVal = parseFloat(raw);
+  const displayVal = Math.round(parseFloat(raw) || 0);
   if (!Number.isFinite(displayVal) || displayVal < 0) return;
   const usd = displayToUsd(displayVal);
   if (!Number.isFinite(usd) || usd < 0) return;
@@ -2023,7 +2078,8 @@ function getAssetDeptRate(deptKey) {
 }
 
 function setAssetDeptRate(deptKey, valueInDisplayCurrency) {
-  const usd = displayToUsd(parseFloat(valueInDisplayCurrency));
+  const displayVal = Math.round(parseFloat(valueInDisplayCurrency) || 0);
+  const usd = displayToUsd(displayVal);
   if (!Number.isFinite(usd) || usd < 0) return;
   _assetDeptRates[deptKey] = Math.round(usd * 100) / 100;
   try {
@@ -2130,23 +2186,23 @@ function methodologyImpliesCgAsset(methodology) {
 function suggestedAssetCellHtml(asset, shotIdx) {
   if (!asset) {
     return `<button type="button" class="row-mini-btn"
-      onclick="suggestAssetForShotRow(${shotIdx}, true)">✨ Suggest</button>`;
+      onclick="suggestAssetForShotRow(${shotIdx}, true)">${iconSvg('star', 'icon icon-sm')} Suggest</button>`;
   }
   if (asset.adding) {
     return `<div class="suggestion-loading">
       <span class="spinner-sm" aria-hidden="true"></span>
-      <span style="font-size:11px;color:var(--muted)">Adding to assets...</span>
+      <span style="font-size:11px;color:var(--muted)">AI estimating build days…</span>
     </div>`;
   }
   if (asset.loading) {
     return `<div class="suggestion-loading">
       <span class="spinner-sm" aria-hidden="true"></span>
-      <span style="font-size:11px;color:var(--muted)">Finding CG asset...</span>
+      <span style="font-size:11px;color:var(--muted)">AI finding asset…</span>
     </div>`;
   }
   if (!asset.asset_name) {
     return `<button type="button" class="row-mini-btn"
-      onclick="suggestAssetForShotRow(${shotIdx}, true)">✨ Suggest</button>`;
+      onclick="suggestAssetForShotRow(${shotIdx}, true)">${iconSvg('star', 'icon icon-sm')} Suggest</button>`;
   }
   const added = !!asset.added;
   return `<div class="suggested-asset-pill" title="${escAttr(asset.reason || asset.description || '')}">
@@ -2154,7 +2210,7 @@ function suggestedAssetCellHtml(asset, shotIdx) {
     <button type="button" class="btn-accent-sm"
             ${added ? 'disabled' : ''}
             onclick="addSuggestedAssetToSection(${shotIdx})">
-      ${added ? '✓ Added' : '+ Add to Assets'}
+      ${added ? `${iconSvg('check', 'icon icon-sm')} Added` : '+ Add to Assets'}
     </button>
   </div>`;
 }
@@ -2383,8 +2439,15 @@ async function estimateSingleSuggestedAsset(asset) {
   _assetInputs[idx] = asset;
   _assetResults[idx] = null;
   let completed = false;
+  let loadingRow = null;
 
   const tier = asset.asset_type?.includes('background') ? 'background' : 'secondary';
+  setGlobalActivity(`AI estimating asset "${asset.asset_name}"…`, true, 'ai');
+  loadingRow = document.createElement('tr');
+  loadingRow.className = 'asset-table-row-loading';
+  loadingRow.dataset.assetIdx = String(idx);
+  loadingRow.innerHTML = `<td colspan="20">${loadingInlineHtml(`AI estimating ${asset.asset_name}…`, 'md')}</td>`;
+  tbody.appendChild(loadingRow);
 
   try {
     const r = await fetch(`${API}/estimate/assets/stream`, {
@@ -2419,6 +2482,8 @@ async function estimateSingleSuggestedAsset(asset) {
         try {
           const msg = JSON.parse(line.slice(6));
           if (msg.type === 'result') {
+            loadingRow?.remove();
+            loadingRow = null;
             appendAssetResultRow(idx, asset, msg.data);
             completed = true;
             updateAssetSummary();
@@ -2429,9 +2494,13 @@ async function estimateSingleSuggestedAsset(asset) {
       }
     }
   } catch (e) {
+    loadingRow?.remove();
     _assetInputs.splice(idx, 1);
     _assetResults.splice(idx, 1);
     toast('Asset estimate failed: ' + (e.message || e), 'err');
+  } finally {
+    loadingRow?.remove();
+    clearGlobalActivity();
   }
   if (!completed && _assetInputs[idx] === asset) {
     _assetInputs.splice(idx, 1);
@@ -2493,7 +2562,8 @@ function sequenceCostForRow(row) {
   const n = parseInt(row?.number_of_shots ?? 1, 10);
   const perShot = parseFloat(row?.cost_per_shot) || 0;
   if (!Number.isFinite(n) || n <= 1 || perShot <= 0) return null;
-  return Math.round(perShot * calcShotMultiplier(n) * 100) / 100;
+  // Simple: sequence cost = per-shot cost × shot count
+  return Math.round(perShot * n * 100) / 100;
 }
 
 function batchCostCellHtml(row) {
@@ -2520,6 +2590,78 @@ function escAttr(s) {
 
 function iconSvg(name, cls='icon') {
   return `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+}
+
+function spinnerHtml(size = 'sm', extraClass = '') {
+  const cls = size === 'lg' ? 'spinner-lg' : size === 'md' ? 'spinner-md' : 'spinner-sm';
+  return `<span class="${cls} ${extraClass}" aria-hidden="true"></span>`;
+}
+
+function loadingInlineHtml(label, size = 'sm') {
+  return `<span class="loading-inline">${spinnerHtml(size)}<span>${escHtml(label)}</span></span>`;
+}
+
+function loadingBlockHtml(title, subtitle = '') {
+  return `<div class="loading-block">${spinnerHtml('lg')}
+    <div class="loading-title">${escHtml(title)}</div>
+    ${subtitle ? `<div class="loading-sub">${escHtml(subtitle)}</div>` : ''}
+  </div>`;
+}
+
+function loadingTableRowHtml(colspan, title, subtitle = '') {
+  return `<tr><td colspan="${colspan}" class="table-loading-cell">${loadingBlockHtml(title, subtitle)}</td></tr>`;
+}
+
+function setGlobalActivity(message, active = true, kind = 'ai') {
+  const bar = document.getElementById('global-activity-bar');
+  const text = document.getElementById('global-activity-text');
+  if (!bar || !text) return;
+  if (!active || !message) {
+    bar.classList.add('hidden');
+    return;
+  }
+  bar.dataset.kind = kind;
+  text.textContent = message;
+  bar.classList.remove('hidden');
+}
+
+function clearGlobalActivity() {
+  setGlobalActivity('', false);
+}
+
+function setButtonLoading(btn, loading, loadingLabel = 'Working…') {
+  if (!btn) return;
+  if (loading) {
+    if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+    btn.innerHTML = `${spinnerHtml()} ${escHtml(loadingLabel)}`;
+    return;
+  }
+  btn.disabled = false;
+  btn.classList.remove('btn-loading');
+  if (btn.dataset.origHtml) {
+    btn.innerHTML = btn.dataset.origHtml;
+    delete btn.dataset.origHtml;
+  }
+}
+
+async function withGlobalActivity(message, fn, kind = 'ai') {
+  setGlobalActivity(message, true, kind);
+  try {
+    return await fn();
+  } finally {
+    clearGlobalActivity();
+  }
+}
+
+function setInlineStatus(el, message, loading = false) {
+  if (!el) return;
+  if (!message) {
+    el.textContent = '';
+    return;
+  }
+  el.innerHTML = loading ? loadingInlineHtml(message) : escHtml(message);
 }
 
 // ── Server ─────────────────────────────────────────────────────────────────
@@ -2619,7 +2761,7 @@ function handleBriefUpload(input, targetId) {
 }
 
 async function extractTextFromFile(file, targetId) {
-  toast('Extracting text...', 'info');
+  setGlobalActivity(`Extracting text from ${file.name}…`, true, 'load');
   const formData = new FormData();
   formData.append('file', file);
 
@@ -2638,6 +2780,8 @@ async function extractTextFromFile(file, targetId) {
     }
   } catch (e) {
     toast('Upload failed: ' + e.message, 'err');
+  } finally {
+    clearGlobalActivity();
   }
 }
 
@@ -2698,6 +2842,7 @@ window.addEventListener('resize', sizeTableWrappers);
 
 let _batchResult = null;
 let _batchDragRow = null;
+let _parsedShotsForMerge = [];
 let _lastDragOverRow = null;
 let _lastDragOverBefore = null;
 let _globalDeptMult = {};
@@ -2742,10 +2887,11 @@ const ASSET_PRESET_DEPT_KEYS = ASSET_PRESET_DEPTS.map(([, key]) => key);
 const ASSET_PRESET_DEPT_HEADERS = ASSET_PRESET_DEPTS.map(([header]) => header);
 
 const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
-const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', ...BID_DEPTS];
+const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', 'SCRIPT HEADING', ...BID_DEPTS];
 const COL_DEFAULTS = {
   METHODOLOGY: false,
   'SUGGESTED ASSET': true,
+  'SCRIPT HEADING': false,
   CAMERA: true,
   MATCHMOVE: false,
   LAYOUT: true,
@@ -2828,7 +2974,7 @@ function onShotPresetInputChange(input) {
     sum += parseFloat(row.querySelector(`[data-field="${key}"]`)?.value || 0) || 0;
   });
   const totalInp = row.querySelector('[data-field="total"]');
-  if (totalInp) totalInp.value = Math.round(sum * 2) / 2;
+  if (totalInp) totalInp.value = Math.round(sum * 10) / 10;
 }
 
 function presetMetadata(shotType) {
@@ -2902,7 +3048,7 @@ function renderPresets() {
     const sourceBadge = isStudio
       ? '<span class="preset-badge">custom</span>'
       : isReference
-        ? '<span class="preset-badge reference">📋 Reference</span>'
+        ? `<span class="preset-badge reference">${iconSvg('table', 'icon icon-sm')} Reference</span>`
         : '<span class="preset-badge system">Built-in</span>';
     return `<tr class="${isStudio ? 'studio' : ''}"
       data-preset="${escAttr(shotType)}"
@@ -2934,7 +3080,7 @@ function renderPresets() {
 
 async function loadPresets() {
   const body = document.getElementById('presets-body');
-  if (body) body.innerHTML = '<tr><td colspan="17" style="color:var(--muted)">Loading presets...</td></tr>';
+  if (body) body.innerHTML = loadingTableRowHtml(17, 'Loading shot presets…', 'Fetching studio reference data');
   try {
     const r = await fetch(`${API}/presets`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -2990,7 +3136,7 @@ function addCustomPreset() {
 async function loadAssetPresets() {
   const tbody = document.getElementById('asset-presets-body');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="11" style="color:var(--muted)">Loading asset presets...</td></tr>';
+  tbody.innerHTML = loadingTableRowHtml(11, 'Loading asset presets…', 'Fetching build-day baselines');
   try {
     const r = await fetch(`${API}/presets/assets`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -3196,11 +3342,11 @@ function methodologyCellHtml(idx, methodology) {
     ? `<div class="method-readonly">${escHtml(text)}</div>`
     : `<div class="method-empty">
          <button type="button" class="row-mini-btn" onclick="editMethodology(${idx})">+ Add</button>
-         <button type="button" class="row-mini-btn method-generate-hint" onclick="generateMethodology(${idx}, this)">✨ Generate</button>
+         <button type="button" class="row-mini-btn method-generate-hint" onclick="generateMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Generate</button>
        </div>`;
   return `${content}
     <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-      <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">✨ Suggest</button>
+      <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Suggest</button>
       <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}" onclick="rerunBatchRow(${idx}, this)">↻</button>
     </div>`;
 }
@@ -3209,14 +3355,15 @@ function showBatchLoading(on) {
   const btn = document.getElementById('batch-est-btn');
   const stopBtn = document.getElementById('batch-stop-btn');
   if (on) {
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spin"></span>Estimating batch…';
+    setButtonLoading(btn, true, 'Starting batch estimate…');
     if (stopBtn) stopBtn.style.display = 'inline-block';
     setPageProgress('shots', 0, 0, 'Starting shot estimate…', true);
+    setGlobalActivity('Preparing batch estimate…', true, 'ai');
   } else {
-    btn.disabled = false;
-    btn.textContent = 'Run Batch Estimate';
+    setButtonLoading(btn, false);
+    if (btn) btn.textContent = 'Run Batch Estimate';
     if (stopBtn) stopBtn.style.display = 'none';
+    clearGlobalActivity();
   }
 }
 
@@ -3261,14 +3408,16 @@ function updateProgress(current, total, label) {
   wrap.style.display = 'block';
   const pct = total > 0 ? Math.round((current / total) * 100) : 0;
   fill.style.width = pct + '%';
-  const text = label || `Processing shot ${current} of ${total}… (${pct}%)`;
+  const text = label || `AI estimating shot ${current} of ${total}… (${pct}%)`;
   lbl.textContent = text;
   setPageProgress('shots', current, total, text, true);
+  setGlobalActivity(text, true, 'ai');
 }
 
 function hideBatchProgress() {
   document.getElementById('batch-progress').style.display = 'none';
   clearPageProgress('shots');
+  clearGlobalActivity();
 }
 
 function updateAssetProgress(current, total, label) {
@@ -3276,14 +3425,17 @@ function updateAssetProgress(current, total, label) {
   const fill = document.getElementById('asset-progress-fill');
   const lbl = document.getElementById('asset-progress-label');
   if (fill) fill.style.width = pct + '%';
-  const text = label || `Estimating assets… (${current}/${total})`;
+  const text = label || `AI estimating assets… (${current}/${total})`;
   if (lbl) lbl.textContent = text;
   setPageProgress('assets', current, total, text, true);
+  setGlobalActivity(text, true, 'ai');
 }
 
 function hideAssetProgress() {
   document.getElementById('asset-progress')?.classList.add('hidden');
   clearPageProgress('assets');
+  if (!document.getElementById('page-shot-progress')?.classList.contains('idle')) return;
+  clearGlobalActivity();
 }
 
 function clearBatchResults() {
@@ -3313,13 +3465,21 @@ function appendBatchResultRow(i, row) {
   }
   const tbody = document.getElementById('batch-table-body');
   const depts = row.dept_days || {};
-  const desc = row.description || row.script_description || '';
-  const notes = row._notes ?? row.vfx_notes ?? '';
+  const displayDesc = row._raw_description
+    || row.script_description
+    || row.description
+    || '';
+  const notes = row._notes ?? row.client_notes ?? row.vfx_notes ?? '';
   row._edited = false;
   if (row._included == null) row._included = !isExcludedShot(row);
   row._notes = notes;
   if (!row._raw_description) {
-    row._raw_description = String(desc).replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '').trim() || desc;
+    // Prefer clean script text; avoid stuffing the AI combined string into the cell
+    const fallbackDesc = row.script_description || '';
+    row._raw_description = fallbackDesc
+      || String(row.description || '').replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '').trim()
+      || row.description
+      || '';
   }
   row._ai_dept_days = { ...depts };
   row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
@@ -3331,6 +3491,7 @@ function appendBatchResultRow(i, row) {
   tr.dataset.idx = String(i);
 
   const methodology = row.methodology || '';
+  const scriptHeading = row.script_heading || '';
   const readableError = humanReadableError(row.error);
   const errorIconHtml = row.error
     ? ` <span class="error-icon" title="${escAttr(readableError)}" onclick="toggleRowErrorDetail(${i})">${iconSvg('alert', 'icon icon-sm')}</span>
@@ -3349,7 +3510,11 @@ function appendBatchResultRow(i, row) {
     </span></td>
     <td>${escHtml(row.item_number || String(i + 1))}</td>
     <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${errorIconHtml}</td>
-    <td class="col-desc">${escHtml(desc)}</td>
+    <td class="col-desc">${escHtml(displayDesc)}</td>
+    <td class="col-script-heading" data-dept="SCRIPT HEADING"
+        style="font-size:11px;color:var(--muted);max-width:140px;white-space:normal">
+      ${escHtml(scriptHeading)}
+    </td>
     <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology)}</td>
     <td class="col-suggested-asset" data-dept="SUGGESTED ASSET">
       <div id="suggested-asset-${i}" class="suggested-asset-cell">
@@ -3365,7 +3530,7 @@ function appendBatchResultRow(i, row) {
     cells += isExcludedShot(row)
       ? `<td data-dept="${escAttr(dept)}" class="muted">—</td>`
       : `<td data-dept="${escAttr(dept)}"><input type="number" class="bid-dept-inp" min="0" step="0.5"
-          data-dept="${escAttr(dept)}" data-idx="${i}" value="${v}"
+          data-dept="${escAttr(dept)}" data-idx="${i}" data-base-days="${v}" value="${v}"
           oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))"></td>`;
   });
 
@@ -3775,60 +3940,61 @@ function parseCsvLine(line) {
 }
 
 function parseFullCsv(text) {
-  text = text.replace(/^\uFEFF/, '').replace(/\r(?!\n)/g, '\n');
+  // Remove BOM
+  text = text.replace(/^\uFEFF/, '');
+  // Normalize standalone \r to \n (old Mac format)
+  text = text.replace(/\r(?!\n)/g, '\n');
+  // Normalize Windows newlines so the scanner only sees \n
+  text = text.replace(/\r\n/g, '\n');
 
   const rows = [];
   let row = [];
   let cell = '';
   let inQuotes = false;
-  let i = 0;
 
-  while (i < text.length) {
+  for (let i = 0; i < text.length; i++) {
     const c = text[i];
     const next = text[i + 1];
 
     if (c === '"') {
       if (inQuotes && next === '"') {
+        // Escaped double-quote inside cell
         cell += '"';
-        i += 2;
+        i++;
         continue;
       }
       inQuotes = !inQuotes;
-      i++;
       continue;
     }
 
     if (c === ',' && !inQuotes) {
       row.push(cell.trim());
       cell = '';
-      i++;
       continue;
     }
 
-    if ((c === '\n' || (c === '\r' && next === '\n')) && !inQuotes) {
+    if (c === '\n' && !inQuotes) {
+      // Real row boundary
       row.push(cell.trim());
-      cell = '';
-      if (c === '\r') i++;
-      if (row.some(c => c.length > 0)) rows.push(row);
+      if (row.some(x => x.length > 0)) rows.push(row);
       row = [];
-      i++;
+      cell = '';
       continue;
     }
 
-    if ((c === '\n' || c === '\r') && inQuotes) {
+    if (c === '\n' && inQuotes) {
+      // Newline INSIDE a quoted cell — keep as a space
       cell += ' ';
-      if (c === '\r' && next === '\n') i++;
-      i++;
       continue;
     }
 
     cell += c;
-    i++;
   }
 
+  // Push final row
   if (cell.length || row.length) {
     row.push(cell.trim());
-    if (row.some(c => c.length > 0)) rows.push(row);
+    if (row.some(x => x.length > 0)) rows.push(row);
   }
 
   return rows;
@@ -3858,9 +4024,17 @@ const COLUMN_ALIASES = {
   sequence: [
     'sequence', 'seq', 'act',
   ],
+  // Numeric/short scene identifiers only — screenplay slug lines belong in script_heading
   scene: [
-    'scene', 'scene number', 'scene no', 'scene description',
-    'scene heading', 'script heading',
+    'scene number', 'scene no', 'scene #', 'scene num',
+    'scene', 'sc', 'sc.',
+  ],
+  script_heading: [
+    'script heading', 'script head',
+    'scene heading', 'scene head',
+    'slug line', 'slug',
+    'scene description', // some formats use this for the slug line
+    'heading',
   ],
   page: [
     'page number', 'page #', 'pg #', 'page', 'pg', 'script page',
@@ -3870,7 +4044,8 @@ const COLUMN_ALIASES = {
     'int/ext', 'ext/int', 'int ext', 'interior exterior',
   ],
   location: [
-    'location', 'loc', 'script location', 'script heading location',
+    'location', 'loc', 'script location',
+    // Removed 'script heading location' — fuzzy-matched SCRIPT HEADING incorrectly
   ],
   time_of_day: [
     'time of day', 'tod', 'time', 'day/night',
@@ -3886,9 +4061,9 @@ const COLUMN_ALIASES = {
   length: ['length', 'duration', 'frames'],
   description: [
     'shot description', 'script description', 'script descriptions',
-    'description', 'shot/scene desc', 'scene description', 'script detail',
+    'shot descriptions', 'description', 'shot/scene desc', 'script detail',
     'type of shot description', 'shot desc', 'desc',
-    'scope',
+    'action', 'scene action', 'scope',
   ],
   vfx_notes: [
     'vfx notes', 'vfx description', 'vfx work', 'vfx requirements',
@@ -3913,6 +4088,7 @@ const COLUMN_ALIASES = {
   ],
   client_notes: [
     'client notes', 'notes from client', 'notes', 'production notes',
+    'vfx notes', 'supervisor notes',
     'beauty work description', 'client feedback',
     'notes to marz', 'bid notes',
   ],
@@ -3975,7 +4151,8 @@ const COL_MAP_FIELD_LABELS = {
   methodology: 'Methodology',
   client_notes: 'Client / production notes',
   number_of_shots: 'Number of shots',
-  scene: 'Scene',
+  scene: 'Scene number',
+  script_heading: 'Script heading / slug',
   type_of_shot: 'Shot type',
 };
 
@@ -3994,7 +4171,9 @@ function headerMatchesAlias(header, alias) {
   if (h === a) return true;
   if (a === 'notes' && h !== 'notes') return false;
   if (a.length >= 5 && h.includes(a)) return true;
-  if (a.length >= 5 && a.includes(h) && h.length >= Math.min(a.length * 0.6, a.length - 2)) return true;
+  // Avoid false positives where a short header is a prefix of a longer alias
+  // e.g. "script heading" must NOT match alias "script heading location"
+  if (a.length >= 5 && a.includes(h) && h.length >= a.length - 2) return true;
   return false;
 }
 
@@ -4015,7 +4194,7 @@ function buildColumnMap(headers) {
   const map = {};
   const used = new Set();
   const fieldOrder = [
-    'item_number', 'shot_code', 'episode', 'sequence', 'scene', 'page',
+    'item_number', 'shot_code', 'episode', 'sequence', 'scene', 'script_heading', 'page',
     'int_ext', 'location', 'time_of_day', 'shot_status', 'type_of_shot', 'length',
     'description', 'methodology', 'vfx_notes', 'vfx_assumptions', 'client_notes',
     'number_of_shots',
@@ -4032,11 +4211,85 @@ function buildColumnMap(headers) {
   return map;
 }
 
+/** Disambiguate numeric SCENE vs screenplay SCRIPT HEADING when aliases collide. */
+function refineColumnMap(headers, colMap, rows, headerIdx) {
+  const map = { ...colMap };
+  let idxScene = map.scene;
+  let idxHeading = map.script_heading;
+
+  // If they point to the same column index, prefer heading
+  if (idxScene !== undefined && idxHeading !== undefined && idxScene === idxHeading) {
+    delete map.scene;
+    idxScene = undefined;
+  }
+
+  // If the 'scene' column contains values like "EXT. GLENDOWER - DUSK", re-classify as heading
+  if (idxScene !== undefined) {
+    const sampleRow = rows[(headerIdx ?? 0) + 1] || [];
+    const sampleVal = csvCell(sampleRow, idxScene) || '';
+    if (sampleVal.length > 6 && /^(INT|EXT)\./i.test(sampleVal)) {
+      if (idxHeading === undefined) {
+        map.script_heading = idxScene;
+        idxHeading = idxScene;
+      }
+      delete map.scene;
+    }
+  }
+
+  return map;
+}
+
+function parseScriptHeading(heading) {
+  if (!heading) return {};
+  const raw = String(heading).trim();
+  if (!raw) return {};
+
+  // Match: "INT." or "EXT." or "INT./EXT." / "I/E." at start
+  const intExtMatch = raw.match(/^(INT\.\/EXT\.|INT\.|EXT\.|I\/E\.)/i);
+  const intExt = intExtMatch ? intExtMatch[1].toUpperCase() : '';
+
+  const withoutPrefix = intExtMatch
+    ? raw.slice(intExtMatch[0].length).trim()
+    : raw;
+  const parts = withoutPrefix.split(/\s*-\s*/).map(p => p.trim()).filter(Boolean);
+
+  const todKeywords = [
+    'DAY', 'NIGHT', 'DUSK', 'DAWN',
+    'MORNING', 'AFTERNOON', 'EVENING',
+    'CONTINUOUS', 'LATER', 'MOMENTS LATER',
+  ];
+
+  let todIdx = -1;
+  for (let j = 0; j < parts.length; j++) {
+    const upper = parts[j].toUpperCase();
+    if (todKeywords.some(kw => upper.includes(kw))) {
+      todIdx = j;
+      break;
+    }
+  }
+
+  const locParts = todIdx >= 0 ? parts.slice(0, todIdx) : parts.slice();
+  const tod = todIdx >= 0 ? parts.slice(todIdx).join(' - ') : '';
+  const place = locParts[0] || '';
+  const location = locParts.join(' - ');
+
+  // Tokens for AI context: "EXT. GLENDOWER | BACKYARD | DUSK"
+  const contextTokens = [];
+  const head = [intExt, place].filter(Boolean).join(' ').trim();
+  if (head) contextTokens.push(head);
+  for (let j = 1; j < locParts.length; j++) {
+    if (locParts[j]) contextTokens.push(locParts[j]);
+  }
+  if (tod) contextTokens.push(tod);
+
+  return { intExt, location, tod, raw, place, contextTokens };
+}
+
 function findHeaderRowIndex(rows) {
   const scanLimit = Math.min(rows.length, 100);
   for (let i = 0; i < scanLimit; i++) {
     const headers = rows[i] || [];
-    const colMap = buildColumnMap(headers);
+    const colMap = refineColumnMap(headers, buildColumnMap(headers), rows, i);
     if (columnMapIsUsable(colMap)) return i;
   }
   for (let i = 0; i < scanLimit; i++) {
@@ -4102,16 +4355,29 @@ function isLikelyDataItem(item, hasItemCol) {
 
 async function parseFileToShots(file) {
   const rows = await readFileToRows(file);
+  console.log('[CSV debug] parseFullCsv/readFile returned', rows.length, 'rows');
   if (!rows.length) return { shots: [], skipLog: [], totalRowsScanned: 0 };
 
   let headerIdx = findHeaderRowIndex(rows);
   let colMap = headerIdx >= 0 ? buildColumnMap(rows[headerIdx]) : {};
+  if (headerIdx >= 0) {
+    colMap = refineColumnMap(rows[headerIdx], colMap, rows, headerIdx);
+  }
 
   if (headerIdx < 0 || !columnMapIsUsable(colMap)) {
     return await promptColumnMapping(rows, headerIdx >= 0 ? headerIdx : guessHeaderRow(rows));
   }
 
-  return mapRowsToShots(rows, headerIdx, colMap);
+  const parsed = mapRowsToShots(rows, headerIdx, colMap);
+  console.log(
+    '[CSV debug] mapRowsToShots produced',
+    parsed.shots.length,
+    'shots from',
+    parsed.totalRowsScanned,
+    'data rows; skipped',
+    parsed.skipLog.length
+  );
+  return parsed;
 }
 
 async function readFileToRows(file) {
@@ -4184,7 +4450,7 @@ function showColumnMappingUI(rows, headerIdx) {
 
 function populateColMapFields(rows, headerIdx) {
   const headers = rows[headerIdx] || [];
-  const colMap = buildColumnMap(headers);
+  const colMap = refineColumnMap(headers, buildColumnMap(headers), rows, headerIdx);
   const fieldsEl = document.getElementById('col-map-fields');
   fieldsEl.innerHTML = '';
 
@@ -4354,19 +4620,35 @@ function mapRowsToShots(rows, headerIdx, colMap) {
     const assump = csvCell(row, colMap.vfx_assumptions);
     const clientNotes = csvCell(row, colMap.client_notes);
     const scene = csvCell(row, colMap.scene);
-    const intExt = csvCell(row, colMap.int_ext);
-    const loc = csvCell(row, colMap.location);
-    const tod = csvCell(row, colMap.time_of_day);
+    const scriptHeading = colMap.script_heading !== undefined
+      ? csvCell(row, colMap.script_heading)
+      : '';
+    const headingData = parseScriptHeading(scriptHeading);
+
+    // Prefer dedicated INT/EXT / location / TOD columns; fall back to parsed slug
+    const intExtCol = csvCell(row, colMap.int_ext);
+    const locCol = csvCell(row, colMap.location);
+    const todCol = csvCell(row, colMap.time_of_day);
     const shotType = csvCell(row, colMap.type_of_shot);
     const miscVals = collectMiscValues(row, headers);
 
-    const context = [
-      intExt,
-      loc,
-      scene ? `Scene ${scene}` : '',
-      tod,
-      shotType,
-    ].filter(Boolean).join(' | ');
+    const effectiveIntExt = intExtCol || headingData.intExt || '';
+    const effectiveLoc = locCol || headingData.place || headingData.location || '';
+    const effectiveTod = todCol || headingData.tod || '';
+
+    const contextParts = headingData.contextTokens?.length
+      ? [...headingData.contextTokens, shotType]
+      : [
+          effectiveIntExt,
+          effectiveLoc,
+          scene ? `Scene ${scene}` : '',
+          effectiveTod,
+          shotType,
+        ];
+    if (headingData.contextTokens?.length && scene) {
+      contextParts.push(`Scene ${scene}`);
+    }
+    const context = contextParts.filter(Boolean).join(' | ');
 
     const parts = [];
     if (context) parts.push(`[${context}]`);
@@ -4407,8 +4689,11 @@ function mapRowsToShots(rows, headerIdx, colMap) {
       episode: csvCell(row, colMap.episode) || null,
       sequence: csvCell(row, colMap.sequence) || null,
       script_description: desc || shotCode,
+      script_heading: scriptHeading || '',
       methodology,
       vfx_notes: vfxWork,
+      client_notes: clientNotes || '',
+      _notes: clientNotes || vfxWork || '',
       vfx_assumptions: assump,
       number_of_shots: nShots,
       description: combined,
@@ -4439,7 +4724,7 @@ function buildBatchExportCsvBase64() {
       esc(row.shot_code || ''),
       esc(row.description || row.script_description || ''),
       esc(row.methodology || ''),
-      esc(row._notes ?? row.vfx_notes ?? ''),
+      esc(row._notes ?? row.client_notes ?? row.vfx_notes ?? ''),
       ...BID_DEPTS.map(d => depts[d] ?? 0),
       row.total_mandays ?? 0,
       row.cost_per_shot ?? 0,
@@ -5569,16 +5854,23 @@ function updateGlobalActionBar() {
   summary.textContent = parts.join('  ·  ');
 }
 
-async function saveAllCorrections() {
-  const shotSaved = await saveAllBatchCorrections({ silent: true }) || 0;
-  const assetSaved = await saveAssetCorrections({ silent: true }) || 0;
-  const saved = shotSaved + assetSaved;
-  if (saved > 0) {
-    toast(`${saved} correction${saved !== 1 ? 's' : ''} saved`);
-  } else {
-    toast('Nothing to save — adjust some values first', 'warn');
+async function saveAllCorrections(btn) {
+  setButtonLoading(btn || document.getElementById('save-corrections-btn'), true, 'Saving corrections…');
+  setGlobalActivity('Saving supervisor corrections…', true, 'save');
+  try {
+    const shotSaved = await saveAllBatchCorrections({ silent: true }) || 0;
+    const assetSaved = await saveAssetCorrections({ silent: true }) || 0;
+    const saved = shotSaved + assetSaved;
+    if (saved > 0) {
+      toast(`${saved} correction${saved !== 1 ? 's' : ''} saved`);
+    } else {
+      toast('Nothing to save — adjust some values first', 'warn');
+    }
+    return saved;
+  } finally {
+    setButtonLoading(btn || document.getElementById('save-corrections-btn'), false);
+    clearGlobalActivity();
   }
-  return saved;
 }
 
 async function runAssetEstimate() {
@@ -5612,8 +5904,9 @@ async function runAssetEstimate() {
 
   const runBtn = document.getElementById('asset-est-btn');
   const stopBtn = document.getElementById('asset-stop-btn');
-  if (runBtn) runBtn.disabled = true;
+  setButtonLoading(runBtn, true, 'Starting asset estimate…');
   if (stopBtn) stopBtn.style.display = 'inline-block';
+  setGlobalActivity('Preparing asset estimate…', true, 'ai');
   _assetAbortController = new AbortController();
 
   try {
@@ -5673,8 +5966,10 @@ async function runAssetEstimate() {
   } finally {
     _assetAbortController = null;
     hideAssetProgress();
-    if (runBtn) runBtn.disabled = false;
+    setButtonLoading(runBtn, false);
+    if (runBtn) runBtn.textContent = 'Estimate Assets';
     if (stopBtn) stopBtn.style.display = 'none';
+    clearGlobalActivity();
   }
 }
 
@@ -5748,7 +6043,7 @@ async function saveAssetCorrections(opts = {}) {
     return 0;
   }
   const status = document.getElementById('asset-save-status');
-  if (status) status.textContent = 'Saving…';
+  setInlineStatus(status, 'Saving asset corrections…', true);
   let saved = 0;
   for (const tr of rows) {
     if (!isIncludedAssetRow(tr)) continue;
@@ -5808,6 +6103,7 @@ async function runBatchStream(shots, project, preQual) {
   const totalShots = shots.length;
   updateProgress(0, totalShots, 'Starting…');
   buildBatchTableHeader();
+  _parsedShotsForMerge = shots;
   _batchResult = { count: totalShots, project, dept_rates: getDeptRates(), shots: new Array(totalShots) };
 
   const payload = { shots, dept_rates: getDeptRates(), project };
@@ -5851,19 +6147,19 @@ async function runBatchStream(shots, project, preQual) {
         updateProgress(
           msg.current,
           msg.total,
-          `Estimating ${msg.shot_code}… (${msg.percent}%)`
+          `AI estimating ${msg.shot_code}… (${msg.percent}%)`
         );
       }
 
       if (msg.type === 'result' && msg.data) {
-        const row = { ...(shots[msg.index] || {}), ...msg.data };
+        const row = mergeParsedShotIntoResult(msg.index, msg.data);
         results[msg.index] = row;
         _batchResult.shots[msg.index] = row;
         appendBatchResultRow(msg.index, row);
       }
 
       if (msg.type === 'error' && msg.data) {
-        const row = { ...(shots[msg.index] || {}), ...msg.data };
+        const row = mergeParsedShotIntoResult(msg.index, msg.data);
         results[msg.index] = row;
         _batchResult.shots[msg.index] = row;
         appendBatchResultRow(msg.index, row);
@@ -5873,11 +6169,11 @@ async function runBatchStream(shots, project, preQual) {
         _batchResult.count = msg.count ?? msg.total_shots ?? totalShots;
         _batchResult.total_mandays = msg.total_mandays ?? 0;
         if (msg.shots) {
-          _batchResult.shots = msg.shots.map((shot, idx) => ({
-            ...(shots[idx] || {}),
-            ...shot,
-            _included: _batchResult.shots[idx]?._included ?? !isExcludedShot(shot),
-          }));
+          _batchResult.shots = msg.shots.map((shot, idx) => {
+            const merged = mergeParsedShotIntoResult(idx, shot);
+            merged._included = _batchResult.shots[idx]?._included ?? !isExcludedShot(merged);
+            return merged;
+          });
         }
         if (msg.export_csv_base64) {
           _batchResult.export_csv_base64 = msg.export_csv_base64;
@@ -5913,6 +6209,22 @@ async function runBatchStream(shots, project, preQual) {
       }
     }
   }
+}
+
+function mergeParsedShotIntoResult(index, apiData) {
+  const original = _parsedShotsForMerge[index] || {};
+  const data = { ...(apiData || {}) };
+  // Preserve CSV fields the API does not round-trip
+  data.methodology = data.methodology || original.methodology || '';
+  data.client_notes = original.client_notes || data.client_notes || '';
+  data.script_heading = original.script_heading || data.script_heading || '';
+  data._raw_description = original._raw_description
+    || original.script_description
+    || data._raw_description
+    || '';
+  data._notes = original._notes || original.client_notes || data._notes || '';
+  if (!data.vfx_notes && original.vfx_notes) data.vfx_notes = original.vfx_notes;
+  return { ...original, ...data };
 }
 
 async function runBatchEstimate() {
@@ -5979,7 +6291,7 @@ async function runBatchEstimate() {
 function buildBatchTableHeader() {
   let html = `<th class="batch-include-cell"><input type="checkbox" id="batch-include-all" checked
     title="Select or deselect all rows" onchange="toggleAllBatchRowsIncluded(this.checked)">
-    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th data-dept="SUGGESTED ASSET">SUGGESTED ASSET</th><th>NOTES</th>`;
+    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="SCRIPT HEADING">SCRIPT HEADING</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th data-dept="SUGGESTED ASSET">SUGGESTED ASSET</th><th>NOTES</th>`;
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
@@ -6084,6 +6396,7 @@ function autoShowPopulatedCols(results) {
   });
   if (results.some(r => (r?.methodology || '').trim())) _visibleCols.METHODOLOGY = true;
   if (results.some(r => r?.suggestedAsset?.asset_name)) _visibleCols['SUGGESTED ASSET'] = true;
+  if (results.some(r => (r?.script_heading || '').trim())) _visibleCols['SCRIPT HEADING'] = true;
   saveVisibleCols();
   applyColVisibility();
   buildColCheckboxes();
@@ -6373,13 +6686,19 @@ function readRowMethodology(idx) {
   return String(_batchResult?.shots?.[idx]?.methodology || '').trim();
 }
 
-function showRowRerunSpinner(tr) {
+function showRowRerunSpinner(tr, label = 'AI re-estimating…') {
   if (!tr) return;
   tr.classList.add('row-rerunning');
+  tr.querySelector('.row-loading-badge')?.remove();
+  const badge = document.createElement('div');
+  badge.className = 'row-loading-badge';
+  badge.innerHTML = `${spinnerHtml()} ${escHtml(label)}`;
+  tr.appendChild(badge);
 }
 
 function hideRowRerunSpinner(tr) {
   tr?.classList.remove('row-rerunning');
+  tr?.querySelector('.row-loading-badge')?.remove();
 }
 
 function estimateDeptDaysToBidDepts(estDeptDays) {
@@ -6484,9 +6803,9 @@ async function suggestMethodology(idx, btn) {
   const row = _batchResult?.shots?.[idx];
   if (!row) return;
   closeMethodologySuggestions();
-  btn.disabled = true;
-  btn.textContent = '...';
+  setButtonLoading(btn, true, 'Suggesting…');
   setMethodologyLoading(idx, true);
+  setGlobalActivity(`AI suggesting methodology for ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
   try {
     const suggestions = await fetchMethodologySuggestions(row);
     const wrap = document.createElement('div');
@@ -6508,8 +6827,8 @@ async function suggestMethodology(idx, btn) {
     toast(`Methodology suggestion failed: ${e.message}`, 'err');
   } finally {
     setMethodologyLoading(idx, false);
-    btn.disabled = false;
-    btn.textContent = '✨ Suggest';
+    setButtonLoading(btn, false);
+    clearGlobalActivity();
   }
 }
 
@@ -6520,7 +6839,7 @@ function setMethodologyLoading(idx, on) {
     if (on) {
       const dial = document.createElement('div');
       dial.className = 'method-loading-dial';
-      dial.innerHTML = '<span class="dial" aria-hidden="true"></span><span>Generating…</span>';
+      dial.innerHTML = `${spinnerHtml()}<span>AI thinking…</span>`;
       cell.appendChild(dial);
     }
   });
@@ -6529,11 +6848,11 @@ function setMethodologyLoading(idx, on) {
 async function generateMethodology(idx, btn, silent=false) {
   const row = _batchResult?.shots?.[idx];
   if (!row || (row.methodology || '').trim()) return false;
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '...';
-  }
+  if (btn) setButtonLoading(btn, true, 'Generating…');
   setMethodologyLoading(idx, true);
+  if (!silent) {
+    setGlobalActivity(`AI generating methodology for ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
+  }
   try {
     const suggestions = await fetchMethodologySuggestions(row);
     const first = suggestions.find(s => (s.methodology || '').trim());
@@ -6547,10 +6866,11 @@ async function generateMethodology(idx, btn, silent=false) {
     return false;
   } finally {
     setMethodologyLoading(idx, false);
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '✨ Generate';
+    setButtonLoading(btn, false);
+    if (btn && !btn.dataset.origHtml) {
+      btn.innerHTML = `${iconSvg('star', 'icon icon-sm')} Generate`;
     }
+    if (!silent) clearGlobalActivity();
   }
 }
 
@@ -6563,7 +6883,7 @@ function showMethodologyAutoStatus(text) {
     return;
   }
   el.classList.remove('hidden');
-  el.innerHTML = `<span class="spin"></span>${escHtml(text)}`;
+  el.innerHTML = `${spinnerHtml()} ${escHtml(text)}`;
 }
 
 async function autoGenerateMissingMethodologies() {
@@ -6576,16 +6896,22 @@ async function autoGenerateMissingMethodologies() {
 
   let done = 0;
   showMethodologyAutoStatus(`Generating methodology for ${targets.length} shots...`);
-  for (let i = 0; i < targets.length; i += 5) {
-    const chunk = targets.slice(i, i + 5);
-    await Promise.all(chunk.map(async ({ idx }) => {
-      const ok = await generateMethodology(idx, null, true);
-      if (ok) done++;
-    }));
-    showMethodologyAutoStatus(`Generating methodology for ${targets.length} shots... ${done}/${targets.length}`);
+  setGlobalActivity(`AI generating methodology for ${targets.length} shots…`, true, 'ai');
+  try {
+    for (let i = 0; i < targets.length; i += 5) {
+      const chunk = targets.slice(i, i + 5);
+      await Promise.all(chunk.map(async ({ idx }) => {
+        const ok = await generateMethodology(idx, null, true);
+        if (ok) done++;
+      }));
+      showMethodologyAutoStatus(`Generating methodology for ${targets.length} shots... ${done}/${targets.length}`);
+      setGlobalActivity(`AI generating methodology… ${done}/${targets.length} done`, true, 'ai');
+    }
+    if (done) toast(`Generated methodology for ${done} shot${done > 1 ? 's' : ''}.`, 'info');
+  } finally {
+    showMethodologyAutoStatus('');
+    clearGlobalActivity();
   }
-  showMethodologyAutoStatus('');
-  if (done) toast(`Generated methodology for ${done} shot${done > 1 ? 's' : ''}.`, 'info');
 }
 
 async function rerunBatchRow(idx, btn) {
@@ -6598,12 +6924,10 @@ async function rerunBatchRow(idx, btn) {
     row._has_methodology = true;
   }
 
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '...';
-  }
+  if (btn) setButtonLoading(btn, true, 'Re-estimating…');
   showRowRerunSpinner(tr);
   showRowRerun(idx);
+  setGlobalActivity(`AI re-estimating ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
 
   try {
     const r = await fetch(`${API}/estimate`, {
@@ -6641,10 +6965,9 @@ async function rerunBatchRow(idx, btn) {
     toast(`Re-estimate failed: ${e.message}`, 'err');
   } finally {
     hideRowRerunSpinner(tr);
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '↻';
-    }
+    setButtonLoading(btn, false);
+    if (btn && !btn.dataset.origHtml) btn.textContent = '↻';
+    clearGlobalActivity();
   }
 }
 
@@ -6652,6 +6975,7 @@ function updateBatchRowNotes(input) {
   const idx = batchRowIndex(input.closest('tr.batch-data-row'));
   if (!Number.isFinite(idx) || !_batchResult?.shots[idx]) return;
   _batchResult.shots[idx]._notes = input.value;
+  _batchResult.shots[idx].client_notes = input.value;
   _batchResult.shots[idx].vfx_notes = input.value;
   markBatchRowEdited(idx);
   _batchResult.export_csv_base64 = null;
@@ -6663,11 +6987,23 @@ function updateShotMultiplierCells(input) {
   const shots = Math.min(100, Math.max(1, parseInt(input.value, 10) || 1));
   const baseDays = parseFloat(input.dataset.baseDays) || 0;
   const factor = calcShotMultiplier(shots);
+  const n = shots;
   const totalDays = calcTotalShotDays(baseDays, shots);
   const factorCell = tr.querySelector('.shot-factor-cell');
   const totalCell = tr.querySelector('.shot-total-days-cell');
   if (factorCell) factorCell.textContent = factor.toFixed(2) + '×';
   if (totalCell) totalCell.textContent = fmt(totalDays);
+
+  tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
+    const base = parseFloat(inp.dataset.baseDays ?? inp.value) || 0;
+    if (inp.dataset.baseDays == null || inp.dataset.baseDays === '') {
+      inp.dataset.baseDays = String(base);
+    }
+    if (base === 0) return;
+    inp.value = n === 1
+      ? inp.dataset.baseDays
+      : String(Math.round(base * factor * 2) / 2);
+  });
 
   const idx = batchRowIndex(tr);
   if (Number.isFinite(idx) && _batchResult?.shots?.[idx]) {
@@ -6694,6 +7030,15 @@ function updateBatchRowTotals(tr, skipRefresh) {
   days = Math.round(days * 2) / 2;
   const cost = computeClientShotCost(depts, getDeptRates(), { mandaysFallback: days });
   tr.querySelector('.batch-row-days').textContent = fmt(days);
+  const shotInput = tr.querySelector('.shot-count-inp');
+  const nShots = Math.max(1, parseInt(shotInput?.value, 10) || 1);
+  // When shot count is 1, treat current dept values as the new per-shot base
+  if (nShots === 1) {
+    tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
+      inp.dataset.baseDays = String(parseFloat(inp.value) || 0);
+    });
+    if (shotInput) shotInput.dataset.baseDays = String(days);
+  }
   refreshShotMultiplier(tr);
   const costEl = tr.querySelector('.batch-row-cost');
   if (_batchResult?.shots[idx]) {
@@ -6753,6 +7098,7 @@ function collectBatchRowsForExport() {
     });
     const notes = tr.querySelector('.batch-notes-inp')?.value
       ?? shot?._notes
+      ?? shot?.client_notes
       ?? shot?.vfx_notes
       ?? '';
     rows.push({
@@ -6786,7 +7132,7 @@ function applySheetColWidths(sheet, widths) {
   sheet['!cols'] = widths.map(wch => ({ wch }));
 }
 
-async function exportBidExcel() {
+async function exportBidExcel(btn) {
   if (typeof XLSX === 'undefined') {
     toast('Excel library not loaded — try Export CSV instead.', 'err');
     return;
@@ -6799,6 +7145,9 @@ async function exportBidExcel() {
     return;
   }
 
+  setButtonLoading(btn || document.getElementById('export-excel-btn'), true, 'Building Excel…');
+  setGlobalActivity('Building Excel workbook…', true, 'export');
+  try {
   const wb = XLSX.utils.book_new();
   const visibleAssetDepts = getVisibleAssetDepts();
   const exportCurrency = (_displayCurrency || 'USD').toUpperCase();
@@ -7009,6 +7358,10 @@ async function exportBidExcel() {
   const filename = `${project}_${exportCurrency}_AI_ESTIMATE.xlsx`;
   await writeWorkbookWithCoverBranding(wb, filename, coverSnap);
   toast(`Downloaded ${filename} (${exportCurrency})`);
+  } finally {
+    setButtonLoading(btn || document.getElementById('export-excel-btn'), false);
+    clearGlobalActivity();
+  }
 }
 
 async function saveAllBatchCorrections(opts = {}) {
@@ -7018,7 +7371,7 @@ async function saveAllBatchCorrections(opts = {}) {
     return 0;
   }
   const status = document.getElementById('batch-save-status');
-  if (status) status.textContent = 'Saving…';
+  setInlineStatus(status, 'Saving shot corrections…', true);
   const dataRows = document.querySelectorAll('#batch-table-body tr.batch-data-row');
   const corrections = [];
 
@@ -7087,6 +7440,7 @@ const DEFAULT_COVER_TERMS = `1. This quote is based on the information provided.
 let _autosaveTimer = null;
 let _autosaveBusy = false;
 let _logoDataUrl = null;
+let _logoNaturalSize = null;
 
 function setLogoPreview(dataUrl) {
   const preview = document.getElementById('logo-preview');
@@ -7139,6 +7493,7 @@ function handleLogoUpload(input) {
       _logoDataUrl = ['image/svg+xml', 'image/webp'].includes(file.type)
         ? await convertLogoToPng(source)
         : source;
+      _logoNaturalSize = await measureImageSize(_logoDataUrl);
       setLogoPreview(_logoDataUrl);
       try { localStorage.setItem(COVER_LOGO_KEY, _logoDataUrl); } catch {}
       scheduleAutosave();
@@ -7153,6 +7508,7 @@ function handleLogoUpload(input) {
 function clearLogo(event) {
   event?.stopPropagation();
   _logoDataUrl = null;
+  _logoNaturalSize = null;
   setLogoPreview(null);
   try { localStorage.removeItem(COVER_LOGO_KEY); } catch {}
   scheduleAutosave();
@@ -7164,7 +7520,9 @@ function restoreSavedLogo() {
   } catch {
     _logoDataUrl = null;
   }
+  _logoNaturalSize = null;
   setLogoPreview(_logoDataUrl);
+  measureImageSize(_logoDataUrl).then(size => { _logoNaturalSize = size; });
 }
 
 function readCoverColors() {
@@ -7329,6 +7687,7 @@ function buildCoverPageSnapshot(currency) {
     company,
     branding: {
       logo_data_url: _logoDataUrl || null,
+      logo_size: _logoDataUrl ? fitCoverLogo(_logoNaturalSize) : null,
       primary_color: colors.primary,
       secondary_color: colors.secondary,
     },
@@ -7350,6 +7709,60 @@ function buildCoverPageSnapshot(currency) {
     admin_fee_usd: net.adminAmt,
     net_usd: net.net,
   };
+}
+
+const COVER_LOGO_BOX = { width: 200, height: 84 };
+
+function coverHex(value, fallback) {
+  const normalized = String(value || '').replace(/^#/, '').toUpperCase();
+  return /^[0-9A-F]{6}$/.test(normalized) ? normalized : fallback;
+}
+
+function coverTint(hex, ratio) {
+  const n = parseInt(hex, 16);
+  const channels = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  return channels
+    .map(v => Math.round(v + (255 - v) * ratio).toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+}
+
+function coverTextOn(hex) {
+  const n = parseInt(hex, 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62 ? '111827' : 'FFFFFF';
+}
+
+function measureImageSize(dataUrl) {
+  return new Promise(resolve => {
+    if (!dataUrl) {
+      resolve(null);
+      return;
+    }
+    const image = new Image();
+    image.onload = () => resolve({
+      width: image.naturalWidth || 0,
+      height: image.naturalHeight || 0,
+    });
+    image.onerror = () => resolve(null);
+    image.src = dataUrl;
+  });
+}
+
+function fitCoverLogo(size) {
+  const width = Number(size?.width) > 0 ? Number(size.width) : COVER_LOGO_BOX.width;
+  const height = Number(size?.height) > 0 ? Number(size.height) : COVER_LOGO_BOX.height;
+  const scale = Math.min(COVER_LOGO_BOX.width / width, COVER_LOGO_BOX.height / height);
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
+
+function coverHeaderRowHeightPt(logoSize) {
+  if (!logoSize) return 54;
+  return Math.max(54, Math.round((Number(logoSize.height) || COVER_LOGO_BOX.height) * 0.75) + 14);
 }
 
 function coverStyle(opts) {
@@ -7390,14 +7803,11 @@ function buildStyledCoverSheet(snapshot) {
   const company = s.company || {};
   const branding = s.branding || {};
   const money = (usd) => moneyExact(usd, cur);
-  const excelHex = (value, fallback) => {
-    const normalized = String(value || '').replace(/^#/, '').toUpperCase();
-    return /^[0-9A-F]{6}$/.test(normalized) ? normalized : fallback;
-  };
-  const primary = excelHex(branding.primary_color, '4F8EF7');
-  const ink = excelHex(branding.secondary_color, '1A2030');
-  const band = 'E2E8F0';      // cool gray row
-  const white = 'FFFFFF';
+  const primary = coverHex(branding.primary_color, '4F8EF7');
+  const ink = coverHex(branding.secondary_color, '1A2030');
+  const band = coverTint(primary, 0.88);   // light wash of the brand primary
+  const onPrimary = coverTextOn(primary);
+  const onInk = coverTextOn(ink);
   const mute = '334155';
 
   const sheet = {};
@@ -7406,26 +7816,27 @@ function buildStyledCoverSheet(snapshot) {
 
   const pushMerge = (r1, c1, r2, c2) => merges.push({ s: { r: r1, c: c1 }, e: { r: r2, c: c2 } });
 
-  // Header: company name + contact block
-  coverSet(sheet, r, 0, branding.logo_data_url ? '' : (company.company_name || 'VFX Bid'), coverStyle({
-    bold: true, sz: 22, color: branding.logo_data_url ? white : primary,
-    fill: branding.logo_data_url ? primary : undefined, align: 'left',
+  // Header: logo or company name on the primary band + contact block on the secondary band
+  const logoSize = branding.logo_data_url
+    ? fitCoverLogo(branding.logo_size)
+    : null;
+  coverSet(sheet, r, 0, logoSize ? '' : (company.company_name || 'VFX Bid'), coverStyle({
+    bold: true, sz: 22, color: onPrimary, fill: primary, align: 'left',
   }));
   pushMerge(r, 0, r, 2);
-  if (branding.logo_data_url) {
-    for (let c = 1; c <= 2; c++) coverSet(sheet, r, c, '', coverStyle({ fill: primary }));
-  }
+  for (let c = 1; c <= 2; c++) coverSet(sheet, r, c, '', coverStyle({ fill: primary }));
   const contactLines = [
     company.address || '',
     company.website || '',
     [company.email, company.phone].filter(Boolean).join('  |  '),
   ].filter(Boolean).join('\n');
   coverSet(sheet, r, 3, contactLines, coverStyle({
-    fill: ink, color: white, sz: 10, wrap: true, align: 'left',
+    fill: ink, color: onInk, sz: 10, wrap: true, align: 'left',
   }));
   pushMerge(r, 3, r, 5);
+  for (let c = 4; c <= 5; c++) coverSet(sheet, r, c, '', coverStyle({ fill: ink }));
   sheet['!rows'] = sheet['!rows'] || [];
-  sheet['!rows'][r] = { hpt: branding.logo_data_url ? 64 : 54 };
+  sheet['!rows'][r] = { hpt: coverHeaderRowHeightPt(logoSize) };
   r += 1;
 
   // spacer
@@ -7441,23 +7852,23 @@ function buildStyledCoverSheet(snapshot) {
     ['Currency', cur],
   ];
   meta.forEach(([label, value]) => {
-    coverSet(sheet, r, 0, label, coverStyle({ bold: true, fill: band, color: mute, border: primary }));
-    coverSet(sheet, r, 1, value, coverStyle({ fill: band, border: primary }));
+    coverSet(sheet, r, 0, label, coverStyle({ bold: true, fill: band, color: mute, border: ink }));
+    coverSet(sheet, r, 1, value, coverStyle({ fill: band, border: ink }));
     pushMerge(r, 1, r, 5);
-    for (let c = 2; c <= 5; c++) coverSet(sheet, r, c, '', coverStyle({ fill: band, border: primary }));
+    for (let c = 2; c <= 5; c++) coverSet(sheet, r, c, '', coverStyle({ fill: band, border: ink }));
     r += 1;
   });
 
   r += 1;
 
   const sectionBar = (title, amount) => {
-    coverSet(sheet, r, 0, title, coverStyle({ bold: true, fill: primary, color: white, sz: 12 }));
+    coverSet(sheet, r, 0, title, coverStyle({ bold: true, fill: primary, color: onPrimary, sz: 12 }));
     pushMerge(r, 0, r, amount != null ? 4 : 5);
     for (let c = 1; c <= (amount != null ? 4 : 5); c++) {
-      coverSet(sheet, r, c, '', coverStyle({ fill: primary, color: white }));
+      coverSet(sheet, r, c, '', coverStyle({ fill: primary, color: onPrimary }));
     }
     if (amount != null) {
-      coverSet(sheet, r, 5, amount, coverStyle({ bold: true, fill: primary, color: white, align: 'right', sz: 12 }));
+      coverSet(sheet, r, 5, amount, coverStyle({ bold: true, fill: primary, color: onPrimary, align: 'right', sz: 12 }));
     }
     r += 1;
   };
@@ -7532,13 +7943,11 @@ async function writeWorkbookWithCoverBranding(workbook, filename, snapshot) {
     return;
   }
   try {
-    const extension = logo.startsWith('data:image/jpeg') ? 'jpeg'
-      : logo.startsWith('data:image/png') ? 'png'
-      : null;
-    if (!extension) {
-      XLSX.writeFile(workbook, filename);
-      return;
-    }
+    const embeddable = /^data:image\/(png|jpeg);/.test(logo)
+      ? logo
+      : await convertLogoToPng(logo);
+    const extension = embeddable.startsWith('data:image/jpeg') ? 'jpeg' : 'png';
+    const logoSize = fitCoverLogo(await measureImageSize(embeddable) || snapshot?.branding?.logo_size);
     const source = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const brandedWorkbook = new ExcelJS.Workbook();
     await brandedWorkbook.xlsx.load(source);
@@ -7547,10 +7956,11 @@ async function writeWorkbookWithCoverBranding(workbook, filename, snapshot) {
       XLSX.writeFile(workbook, filename);
       return;
     }
-    const imageId = brandedWorkbook.addImage({ base64: logo, extension });
+    const imageId = brandedWorkbook.addImage({ base64: embeddable, extension });
+    coverSheet.getRow(1).height = coverHeaderRowHeightPt(logoSize);
     coverSheet.addImage(imageId, {
-      tl: { col: 0.15, row: 0.10 },
-      ext: { width: 190, height: 72 },
+      tl: { col: 0.12, row: 0.12 },
+      ext: { width: logoSize.width, height: logoSize.height },
       editAs: 'oneCell',
     });
     const output = await brandedWorkbook.xlsx.writeBuffer();
@@ -7610,7 +8020,7 @@ function coverPageRows(snapshot) {
 }
 
 
-async function exportCoverPageOnly() {
+async function exportCoverPageOnly(btn) {
   if (typeof XLSX === 'undefined') {
     toast('Excel library not loaded.', 'err');
     return;
@@ -7620,12 +8030,19 @@ async function exportCoverPageOnly() {
     toast('Run a shot or asset estimate first.', 'warn');
     return;
   }
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, buildStyledCoverSheet(snapshot), 'Cover Page');
-  const project = (snapshot.project_name || 'BID').replace(/[^\\w\\-]+/g, '_');
-  const filename = `BID_${project}_${snapshot.currency}_Cover_Page.xlsx`;
-  await writeWorkbookWithCoverBranding(wb, filename, snapshot);
-  toast(`Downloaded ${filename}`);
+  setButtonLoading(btn, true, 'Building cover page…');
+  setGlobalActivity('Building cover page Excel…', true, 'export');
+  try {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildStyledCoverSheet(snapshot), 'Cover Page');
+    const project = (snapshot.project_name || 'BID').replace(/[^\\w\\-]+/g, '_');
+    const filename = `BID_${project}_${snapshot.currency}_Cover_Page.xlsx`;
+    await writeWorkbookWithCoverBranding(wb, filename, snapshot);
+    toast(`Downloaded ${filename}`);
+  } finally {
+    setButtonLoading(btn, false);
+    clearGlobalActivity();
+  }
 }
 
 function exportCoverPageCsv() {
@@ -7726,20 +8143,27 @@ async function saveCurrencyVariant() {
   await saveBidVariant({ currency: cur, variantLabel: label.trim() || `${cur} variant` });
 }
 
-async function saveCurrentCurrencySnapshot() {
+async function saveCurrentCurrencySnapshot(btn) {
   const currency = (_displayCurrency || 'USD').toUpperCase();
   const project = getBatchProjectRaw();
-  const bidId = await saveBidVariant({
-    currency,
-    projectName: project,
-    variantLabel: `${currency} snapshot · ${new Date().toLocaleString()}`,
-    silent: true,
-  });
-  if (bidId) {
-    toast(`Bid saved in ${currency}`, 'ok');
-    loadBidHistoryList();
-  } else {
-    toast(`Could not save bid in ${currency}`, 'err');
+  setButtonLoading(btn || document.getElementById('save-currency-btn'), true, `Saving in ${currency}…`);
+  setGlobalActivity(`Saving ${currency} bid snapshot…`, true, 'save');
+  try {
+    const bidId = await saveBidVariant({
+      currency,
+      projectName: project,
+      variantLabel: `${currency} snapshot · ${new Date().toLocaleString()}`,
+      silent: true,
+    });
+    if (bidId) {
+      toast(`Bid saved in ${currency}`, 'ok');
+      loadBidHistoryList();
+    } else {
+      toast(`Could not save bid in ${currency}`, 'err');
+    }
+  } finally {
+    setButtonLoading(btn || document.getElementById('save-currency-btn'), false);
+    clearGlobalActivity();
   }
 }
 
@@ -7792,14 +8216,17 @@ function normalizeSavedShot(shot, i) {
     shot_code: shot.shot_code || null,
     description: shot.description || shot.script_description || '',
     script_description: shot.script_description || shot.description || '',
+    script_heading: shot.script_heading || '',
     methodology: shot.methodology || '',
     vfx_notes: shot.vfx_notes || shot._notes || '',
+    client_notes: shot.client_notes || '',
     total_mandays: total,
     dept_days: depts,
     confidence: shot.confidence ?? 0,
     cost_per_shot: shot.cost_per_shot ?? computeClientShotCost(depts, getDeptRates(), { mandaysFallback: total }),
     _ai_total_mandays: shot._ai_total_mandays ?? shot.ai_total_mandays ?? total,
-    _notes: shot._notes ?? shot.vfx_notes ?? '',
+    _raw_description: shot._raw_description || shot.script_description || '',
+    _notes: shot._notes ?? shot.client_notes ?? shot.vfx_notes ?? '',
   };
 }
 
@@ -7807,13 +8234,18 @@ async function autoSaveBid(project, shots) {
   const projectName = String(project || '').trim();
   const includedShots = (shots || []).filter(isIncludedShot);
   if (!projectName || !includedShots.length) return;
-  await saveBidVariant({
-    projectName,
-    shots: includedShots,
-    currency: _displayCurrency || 'USD',
-    variantLabel: `Initial · ${(_displayCurrency || 'USD').toUpperCase()}`,
-    silent: false,
-  });
+  setGlobalActivity('Saving bid to history…', true, 'save');
+  try {
+    await saveBidVariant({
+      projectName,
+      shots: includedShots,
+      currency: _displayCurrency || 'USD',
+      variantLabel: `Initial · ${(_displayCurrency || 'USD').toUpperCase()}`,
+      silent: false,
+    });
+  } finally {
+    clearGlobalActivity();
+  }
 }
 
 function promptBidNameBeforeSave(shots) {
@@ -7838,7 +8270,7 @@ function skipBidNameSave() {
   toast('Bid history save skipped.', 'info');
 }
 
-function saveNamedBidFromPrompt() {
+async function saveNamedBidFromPrompt(btn) {
   const input = document.getElementById('bid-name-input');
   const name = (input?.value || '').trim();
   if (!name) {
@@ -7852,7 +8284,12 @@ function saveNamedBidFromPrompt() {
   const shots = _pendingHistorySaveShots || [];
   _pendingHistorySaveShots = null;
   closeBidNameModal();
-  autoSaveBid(name, shots);
+  setButtonLoading(btn || document.getElementById('bid-name-save-btn'), true, 'Saving bid…');
+  try {
+    await autoSaveBid(name, shots);
+  } finally {
+    setButtonLoading(btn || document.getElementById('bid-name-save-btn'), false);
+  }
 }
 
 function openHistoryDrawer() {
@@ -7869,7 +8306,8 @@ function closeHistoryDrawer() {
 async function loadBidHistoryList() {
   const el = document.getElementById('history-list');
   if (!el) return;
-  el.innerHTML = '<div class="history-empty">Loading…</div>';
+  el.innerHTML = loadingBlockHtml('Loading bid history…', 'Fetching saved estimates');
+  setGlobalActivity('Loading bid history…', true, 'load');
   try {
     const params = new URLSearchParams({ limit: '30' });
     const uid = getSessionUserId() || getUserId();
@@ -7903,18 +8341,21 @@ async function loadBidHistoryList() {
         </div>
         <div class="hb-actions">
           <button type="button" class="btn-history" onclick="loadSavedBid(${b.id})">Load</button>
-          <button type="button" class="btn-history" onclick="exportSavedBidCover(${b.id})">Cover CSV</button>
-          <button type="button" class="btn-history" onclick="exportSavedBidCsv(${b.id})">Export CSV</button>
-          <button type="button" class="btn-history danger" onclick="deleteSavedBid(${b.id})">Delete</button>
+          <button type="button" class="btn-history" onclick="exportSavedBidCover(${b.id}, this)">Cover CSV</button>
+          <button type="button" class="btn-history" onclick="exportSavedBidCsv(${b.id}, this)">Export CSV</button>
+          <button type="button" class="btn-history danger" onclick="deleteSavedBid(${b.id}, this)">Delete</button>
         </div>
       </div>`;
     }).join('');
   } catch {
     el.innerHTML = '<div class="history-empty">Could not load bid history.</div>';
+  } finally {
+    clearGlobalActivity();
   }
 }
 
 async function loadSavedBid(bidId) {
+  setGlobalActivity('Restoring saved bid…', true, 'load');
   try {
     const r = await fetch(`${API}/bid-history/${bidId}`);
     if (!r.ok) throw new Error('Bid not found');
@@ -7986,6 +8427,8 @@ async function loadSavedBid(bidId) {
   } catch (e) {
     toast('Could not load bid: ' + e.message, 'err');
     return false;
+  } finally {
+    clearGlobalActivity();
   }
 }
 
@@ -8000,6 +8443,7 @@ async function loadProjectBidFromContext() {
   const projectName = (PROJECT_NAME || '').trim().toLowerCase();
   if (!projectId && !projectName) return;
 
+  setGlobalActivity('Loading project bid…', true, 'load');
   try {
     // Prefer bids linked to this project_id
     if (projectId) {
@@ -8030,10 +8474,14 @@ async function loadProjectBidFromContext() {
     }
   } catch {
     // leave blank estimator if history unavailable
+  } finally {
+    clearGlobalActivity();
   }
 }
 
-async function exportSavedBidCsv(bidId) {
+async function exportSavedBidCsv(bidId, btn) {
+  setButtonLoading(btn, true, 'Exporting…');
+  setGlobalActivity('Exporting saved bid CSV…', true, 'export');
   try {
     const r = await fetch(`${API}/bid-history/${bidId}`);
     if (!r.ok) throw new Error('Bid not found');
@@ -8049,12 +8497,18 @@ async function exportSavedBidCsv(bidId) {
     setBatchExportFromResults();
     exportBatchCsv();
     _batchResult = prev;
+    toast('CSV exported');
   } catch (e) {
     toast('Export failed: ' + e.message, 'err');
+  } finally {
+    setButtonLoading(btn, false);
+    clearGlobalActivity();
   }
 }
 
-async function exportSavedBidCover(bidId) {
+async function exportSavedBidCover(bidId, btn) {
+  setButtonLoading(btn, true, 'Exporting…');
+  setGlobalActivity('Exporting cover page…', true, 'export');
   try {
     const r = await fetch(`${API}/bid-history/${bidId}`);
     if (!r.ok) throw new Error('Bid not found');
@@ -8073,18 +8527,26 @@ async function exportSavedBidCover(bidId) {
     exportCoverPageCsv();
   } catch (e) {
     toast('Cover export failed: ' + e.message, 'err');
+  } finally {
+    setButtonLoading(btn, false);
+    clearGlobalActivity();
   }
 }
 
-async function deleteSavedBid(bidId) {
+async function deleteSavedBid(bidId, btn) {
   if (!confirm('Delete this saved bid?')) return;
+  setButtonLoading(btn, true, 'Deleting…');
+  setGlobalActivity('Deleting saved bid…', true, 'save');
   try {
     const r = await fetch(`${API}/bid-history/${bidId}`, { method: 'DELETE' });
     if (!r.ok) throw new Error('Delete failed');
     toast('Bid deleted');
-    loadBidHistoryList();
+    await loadBidHistoryList();
   } catch (e) {
     toast('Delete failed: ' + e.message, 'err');
+  } finally {
+    setButtonLoading(btn, false);
+    clearGlobalActivity();
   }
 }
 
@@ -8101,6 +8563,8 @@ document.addEventListener('visibilitychange', () => {
   setTableWrapperFallbacks();
   loadUserId();
   applyProjectContext();
+  setInlineStatus(document.getElementById('rates-summary'), 'Loading rates…', true);
+  setInlineStatus(document.getElementById('asset-rates-summary'), 'Loading rates…', true);
   loadDisplayCurrency();
   loadCompanyProfile();
   restoreSavedLogo();

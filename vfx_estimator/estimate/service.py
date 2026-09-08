@@ -25,6 +25,13 @@ from vfx_estimator.screenplay.scene_match import fdx_xml_to_plaintext, screenpla
 from vfx_estimator.types import BidPreQual, ShotEstimate, UserCorrection
 
 
+# Global estimation scale factor.
+# AI tends to overbid — apply a 1/3 reduction to all
+# dept day estimates before returning results.
+# Frontend sliders still apply on top of this.
+ESTIMATION_SCALE_FACTOR: float = 2 / 3  # ≈ 0.6667
+
+
 def _round_half(x: float) -> float:
     return round(float(x) * 2) / 2
 
@@ -292,6 +299,19 @@ class EstimatorService:
             final = _round_half(dept_sum)
         elif cg_rules_active(cg_ratio) and dept_sum > 0:
             final = _round_half(dept_sum)
+
+        # Apply global scale factor (reduce by ~33%) — once, after
+        # enforce_department_minimums and before total_mandays is finalized.
+        # Frontend mixing-board sliders still apply on top of this baseline.
+        if dept:
+            dept = {
+                k: _round_half(float(v) * ESTIMATION_SCALE_FACTOR)
+                for k, v in dept.items()
+                if float(v or 0) > 0
+            }
+            final = max(0.25, _round_half(sum(float(v) for v in dept.values())))
+        else:
+            final = max(0.25, _round_half(final * ESTIMATION_SCALE_FACTOR))
 
         allot = max(1, int((pre_qual.allotment_n if pre_qual else 1) or 1))
         dr = self.settings.day_rate

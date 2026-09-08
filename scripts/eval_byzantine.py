@@ -61,7 +61,7 @@ def main() -> None:
         hit50 = m["within_20pct"] >= 50.0
         print(
             f"{mode:18s} ±20%={m['within_20pct']:5.1f}%  MAE={m['mae']:.3f}  "
-            f"±10%={m['within_10pct']:5.1f}%  {'✓ >=50%' if hit50 else '  <50%'}"
+            f"±10%={m['within_10pct']:5.1f}%  {'PASS >=50%' if hit50 else 'FAIL <50%'}"
         )
 
     out_path = settings.data_dir / "reports" / f"byzantine_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"

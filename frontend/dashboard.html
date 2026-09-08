@@ -68,9 +68,20 @@
     .stage-estimating{color:var(--accent);border-color:rgba(69,106,237,.45)}.stage-submitted,.stage-negotiating{color:var(--mint);border-color:rgba(111,217,168,.4)}.stage-awarded{color:var(--green);border-color:rgba(111,217,168,.45)}
     .dash-two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}.task-list{list-style:none;padding:0;margin:12px 0}.task-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;cursor:pointer}
     .task-item:hover{background:var(--card2)}.task-title.done{text-decoration:line-through;color:var(--muted)}.task-project{margin-left:auto;color:var(--muted);font-size:11px}
+    .loading-inline{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
+    .loading-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 16px;color:var(--muted);text-align:center}
+    .loading-block .loading-title{font-size:13px;font-weight:700;color:var(--text)}
+    .spinner-sm{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:dashSpin .7s linear infinite;display:inline-block;flex:0 0 auto}
+    .spinner-md{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:dashSpin .7s linear infinite;display:inline-block;flex:0 0 auto}
+    @keyframes dashSpin{to{transform:rotate(360deg)}}
     .task-add{display:flex;gap:8px}.task-add input,.modal-card input,.modal-card select,.dash-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px}
     .dash-search:focus,.task-add input:focus,.modal-card input:focus,.modal-card select:focus{outline:none;border-color:rgba(69,106,237,.55)}
     .recs-list{display:grid;gap:10px;margin-top:12px}.rec-item{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:11px}.rec-text{font-size:13px;line-height:1.45}
+    .ui-icon{width:16px;height:16px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .rec-icon .ui-icon{width:18px;height:18px;color:var(--accent)}
+    .task-check .ui-icon{color:var(--muted)}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
     .modal-card{width:min(440px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px}
     .modal-title{font-size:18px;font-weight:700;margin-bottom:14px;font-family:var(--font-display);letter-spacing:-.02em}.modal-card input,.modal-card select{margin-bottom:10px}
@@ -124,7 +135,7 @@
         </div>
         <table class="dash-table">
           <thead><tr><th>Project</th><th>Client</th><th>Stage</th><th>Bids</th><th>Due</th><th></th></tr></thead>
-          <tbody id="projects-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Loading...</td></tr></tbody>
+          <tbody id="projects-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px"><span class="loading-inline"><span class="spinner-md" aria-hidden="true"></span><span>Loading projects…</span></span></td></tr></tbody>
         </table>
       </div>
 
@@ -167,7 +178,7 @@
         </select>
         <input id="new-project-due" type="date">
         <div style="display:flex;gap:8px;margin-top:10px">
-          <button onclick="createProject()" class="btn-accent">Create &amp; Open</button>
+          <button onclick="createProject(this)" class="btn-accent">Create &amp; Open</button>
           <button onclick="document.getElementById('new-project-modal').classList.add('hidden')" class="btn-ghost">Cancel</button>
         </div>
       </div>
@@ -184,6 +195,22 @@ let _projects = [];
 
 function esc(s){return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function escJs(s){return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function spinnerHtml(size='sm'){const cls=size==='md'?'spinner-md':'spinner-sm';return `<span class="${cls}" aria-hidden="true"></span>`}
+function loadingInline(label,size='sm'){return `<span class="loading-inline">${spinnerHtml(size)}<span>${esc(label)}</span></span>`}
+function loadingBlock(title){return `<div class="loading-block">${spinnerHtml('md')}<div class="loading-title">${esc(title)}</div></div>`}
+function setProjectsLoading(message='Loading projects…'){const tbody=document.getElementById('projects-tbody');if(tbody)tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:32px">${loadingInline(message,'md')}</td></tr>`}
+const UI_ICON_PATHS={
+  circle:'<circle cx="12" cy="12" r="7"/>',
+  square:'<rect x="4" y="4" width="16" height="16" rx="3"/>',
+  bulb:'<path d="M9 18h6M10 22h4M8.5 14.5a6 6 0 1 1 7 0c-.9.7-1.5 1.5-1.5 2.5h-4c0-1-.6-1.8-1.5-2.5Z"/>',
+  tag:'<path d="M20 13 13 20l-9-9V4h7l9 9Z"/><circle cx="8.5" cy="8.5" r="1"/>',
+  clipboard:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 9h6M9 13h6M9 17h4"/>'
+};
+function uiIcon(name,style=''){return `<svg class="ui-icon" style="${style}" viewBox="0 0 24 24" aria-hidden="true">${UI_ICON_PATHS[name]||''}</svg>`}
+function projectStatusIcon(status){
+  const colors={active:'var(--orange)',awarded:'var(--green)',lost:'var(--red)',archived:'var(--muted)',submitted:'var(--accent)'};
+  return uiIcon('circle',`color:${colors[status]||'var(--muted)'};fill:currentColor`);
+}
 function loadSession(){try{_token=localStorage.getItem('vfx_auth_token');const saved=localStorage.getItem('vfx_user');_user=saved?JSON.parse(saved):null}catch{}}
 function clearSession(){_user=null;_token=null;localStorage.removeItem('vfx_auth_token');localStorage.removeItem('vfx_user');try{google.accounts.id.disableAutoSelect()}catch{}}
 function authHeaders(){return {Authorization:`Bearer ${_token}`}}
@@ -212,22 +239,25 @@ async function loadStats(){
   }catch{}
 }
 async function loadProjects(status='active'){
+  setProjectsLoading(status==='archived'?'Loading archived projects…':'Loading projects…');
   try{
     const r=await fetch(`${API}/projects?status=${encodeURIComponent(status)}`,{headers:authHeaders()});if(r.status===401) return signOut();
     const data=await r.json();_projects=data.projects||[];renderProjectsTable(_projects);
-  }catch{}
+  }catch{
+    const tbody=document.getElementById('projects-tbody');
+    if(tbody) tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Could not load projects.</td></tr>';
+  }
 }
 function filterProjects(q){q=String(q||'').toLowerCase();renderProjectsTable(_projects.filter(p=>`${p.name} ${p.client}`.toLowerCase().includes(q)))}
 function renderProjectsTable(projects){
   const tbody=document.getElementById('projects-tbody');
   if(!projects.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No projects yet - create one to get started.</td></tr>';return}
-  const dots={active:'🟡',awarded:'🟢',lost:'🔴',archived:'⚫',submitted:'🔵'};
   const labels={lead:'Lead',estimating:'Estimating',submitted:'Submitted',negotiating:'Negotiating',awarded:'Awarded'};
   tbody.innerHTML=projects.map(p=>{const due=p.due_date?new Date(p.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'-';const bidId=p.latest_bid_id!=null?Number(p.latest_bid_id):'null';return `
     <tr onclick="openProject(${p.id},'${escJs(p.name)}',${bidId})" class="project-row" style="cursor:pointer">
       <td style="font-weight:800">${esc(p.name)}</td><td>${esc(p.client||'-')}</td>
       <td><span class="stage-badge stage-${esc(p.stage)}">${esc(labels[p.stage]||p.stage)}</span></td>
-      <td class="muted">${p.bid_count} bid${p.bid_count!==1?'s':''}</td><td class="muted">${due}</td><td>${dots[p.status]||'⚪'}</td>
+      <td class="muted">${p.bid_count} bid${p.bid_count!==1?'s':''}</td><td class="muted">${due}</td><td>${projectStatusIcon(p.status)}</td>
     </tr>`}).join('');
 }
 function openProject(projectId, projectName, latestBidId){
@@ -236,34 +266,52 @@ function openProject(projectId, projectName, latestBidId){
   window.location.href=`/estimate?${params.toString()}`;
 }
 function showNewProjectModal(){document.getElementById('new-project-modal').classList.remove('hidden');document.getElementById('new-project-name').focus()}
-async function createProject(){
+async function createProject(btn){
   const name=document.getElementById('new-project-name').value.trim();
   const client=document.getElementById('new-project-client').value.trim();
   const stage=document.getElementById('new-project-stage').value;
   const due=document.getElementById('new-project-due').value;
   if(!name) return;
-  const r=await fetch(`${API}/projects`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({name,client,stage,due_date:due||null})});
-  const proj=await r.json();
-  document.getElementById('new-project-modal').classList.add('hidden');
-  openProject(proj.id,proj.name,null);
+  if(btn) btn.disabled=true;
+  try{
+    const r=await fetch(`${API}/projects`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({name,client,stage,due_date:due||null})});
+    const proj=await r.json();
+    document.getElementById('new-project-modal').classList.add('hidden');
+    openProject(proj.id,proj.name,null);
+  }catch{
+    alert('Could not create project. Please try again.');
+  }finally{
+    if(btn) btn.disabled=false;
+  }
 }
-async function loadTasks(){try{const r=await fetch(`${API}/tasks`,{headers:authHeaders()});const data=await r.json();renderTasks(data.tasks||[])}catch{}}
+async function loadTasks(){
+  const list=document.getElementById('task-list');
+  if(list) list.innerHTML=`<li class="muted" style="padding:8px">${loadingInline('Loading tasks…')}</li>`;
+  try{
+    const r=await fetch(`${API}/tasks`,{headers:authHeaders()});
+    const data=await r.json();
+    renderTasks(data.tasks||[]);
+  }catch{
+    if(list) list.innerHTML='<li class="muted" style="padding:8px">Could not load tasks</li>';
+  }
+}
 function renderTasks(tasks){
   const list=document.getElementById('task-list');const open=tasks.filter(t=>!t.done).slice(0,5);
-  list.innerHTML=open.map(t=>`<li class="task-item" onclick="toggleTask(${t.id},this)"><span class="task-check">☐</span><span class="task-title">${esc(t.title)}</span>${t.project_name?`<span class="task-project">${esc(t.project_name)}</span>`:''}</li>`).join('') || '<li class="muted" style="padding:8px">No open tasks</li>';
+  list.innerHTML=open.map(t=>`<li class="task-item" onclick="toggleTask(${t.id},this)"><span class="task-check">${uiIcon('square')}</span><span class="task-title">${esc(t.title)}</span>${t.project_name?`<span class="task-project">${esc(t.project_name)}</span>`:''}</li>`).join('') || '<li class="muted" style="padding:8px">No open tasks</li>';
 }
 async function toggleTask(id,el){await fetch(`${API}/tasks/${id}`,{method:'PUT',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({done:true})});el.classList.add('task-done-anim');setTimeout(()=>loadTasks(),400)}
 async function addTask(){const input=document.getElementById('new-task-input');const title=input.value.trim();if(!title)return;await fetch(`${API}/tasks`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({title})});input.value='';loadTasks()}
 async function loadAiRecommendations(){
   const container=document.getElementById('ai-recs');const recs=[];
+  if(container)container.innerHTML=loadingInline('Loading recommendations…','md');
   try{
     const q=_user?.id?`?user_id=${encodeURIComponent(_user.id)}&limit=10`:'?limit=10';
     const r=await fetch(`${API}/bid-history${q}`,{headers:authHeaders()});const data=await r.json();const bids=data.bids||[];
-    if(bids[0]) recs.push({icon:'💡',text:`Your last bid (${bids[0].project_name}) had ${bids[0].shot_count} shots and ${Math.round(Number(bids[0].total_mandays||0)*10)/10} production days.`});
-    recs.push({icon:'🏷️',text:'Tip: Add a methodology column to your CSV for more accurate department estimates.'});
-    recs.push({icon:'📋',text:'Corrections improve accuracy - reviewed bids make the AI smarter for your workflow.'});
+    if(bids[0]) recs.push({icon:'bulb',text:`Your last bid (${bids[0].project_name}) had ${bids[0].shot_count} shots and ${Math.round(Number(bids[0].total_mandays||0)*10)/10} production days.`});
+    recs.push({icon:'tag',text:'Tip: Add a methodology column to your CSV for more accurate department estimates.'});
+    recs.push({icon:'clipboard',text:'Corrections improve accuracy - reviewed bids make the AI smarter for your workflow.'});
   }catch{}
-  container.innerHTML=recs.slice(0,4).map(r=>`<div class="rec-item"><span class="rec-icon">${r.icon}</span><span class="rec-text">${esc(r.text)}</span></div>`).join('') || '<div class="muted" style="padding:8px">Run some bids to see recommendations</div>';
+  container.innerHTML=recs.slice(0,4).map(r=>`<div class="rec-item"><span class="rec-icon">${uiIcon(r.icon)}</span><span class="rec-text">${esc(r.text)}</span></div>`).join('') || '<div class="muted" style="padding:8px">Run some bids to see recommendations</div>';
 }
 (async()=>{
   loadSession();

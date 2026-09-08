@@ -353,7 +353,7 @@ class GeminiMandaysEstimator:
             return "SIMILAR SHOTS: none found.\n"
         lines = ["SIMILAR SHOTS (use as pricing anchors):"]
         for i, h in enumerate(hits, 1):
-            tag = "★ CORRECTION" if h.source == "correction" else h.source.upper()
+            tag = "CORRECTION" if h.source == "correction" else h.source.upper()
             dept_text = ", ".join(
                 f"{key}={float(days):g}d"
                 for key, days in h.dept_days.items()

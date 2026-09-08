@@ -160,6 +160,11 @@
       justify-content: center;
     }
     #google-btn.busy { opacity: 0.45; pointer-events: none; }
+    .signin-loading{display:none;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:13px;color:var(--mute);font-weight:600}
+    .signin-loading.show{display:flex}
+    .signin-spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:signinSpin .7s linear infinite}
+    @keyframes signinSpin{to{transform:rotate(360deg)}}
     .signin-status {
       margin-top: 14px;
       color: var(--mint);
@@ -168,7 +173,7 @@
       display: none;
       text-align: center;
     }
-    .signin-status.show { display: block; }
+    .signin-status.show { display: flex; align-items: center; justify-content: center; gap: 8px; }
     .signin-error {
       margin-top: 14px;
       color: var(--danger);
@@ -259,7 +264,10 @@
         security standards used for protected enterprise data.
         No bid data is shared across accounts.
       </p>
-      <div id="signin-status" class="signin-status" aria-live="polite">Signing you in…</div>
+      <div id="signin-status" class="signin-status" aria-live="polite">
+        <span class="signin-spinner" aria-hidden="true"></span>
+        <span>Signing you in…</span>
+      </div>
       <div id="signin-error" class="signin-error" role="alert"></div>
       <div class="hint">New here? <a href="/">See how FrameBid works</a></div>
     </div>
@@ -405,6 +413,10 @@ async function initGoogleSignIn() {
 }
 
 (async () => {
+  const btnWrap = document.getElementById('google-btn');
+  if (btnWrap) {
+    btnWrap.innerHTML = '<div class="signin-loading show"><span class="signin-spinner" aria-hidden="true"></span><span>Loading sign-in…</span></div>';
+  }
   if (loadSession()) {
     window.location.replace('/dashboard');
     return;
