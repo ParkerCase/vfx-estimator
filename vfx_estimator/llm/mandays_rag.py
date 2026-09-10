@@ -24,7 +24,18 @@ CG_DESCRIPTION_RE = re.compile(
 MIN_CG_LIGHTING_DAYS = 3.0
 
 SHOT_BASELINES: Dict[str, Dict[str, float | str]] = {
-    "monitor_insert": {"description": "Screen/monitor replacement, UI insert", "matchmove": 0.5, "compositing": 0.75, "total": 1.9},
+    "monitor_insert": {
+        "description": "Screen/monitor/TV insert — pure 2D comp, NO 3D",
+        "comp_roto": 0.5,
+        "compositing": 1.0,
+        "total": 1.5,
+    },
+    "phone_insert": {
+        "description": "Phone/tablet/device screen insert — pure 2D comp",
+        "comp_roto": 0.5,
+        "compositing": 1.0,
+        "total": 1.5,
+    },
     "muzzle_flash": {"description": "Gunfire muzzle flash effect", "matchmove": 0.25, "fx": 0.4, "compositing": 0.75, "total": 1.7},
     "bullet_hits": {"description": "Bullet impact on surface or body", "matchmove": 0.25, "fx": 0.6, "compositing": 0.8, "total": 2.0},
     "wire_removal": {"description": "Safety wire or rig removal from stunt", "comp_paint": 0.8, "comp_roto": 0.4, "compositing": 0.6, "total": 1.9},
@@ -76,34 +87,66 @@ COMPLEXITY_MODIFIERS: Dict[str, Dict[str, float]] = {
 VFX_RULES = """
 ABSOLUTE RULES — override similar shots if they conflict:
 
+SCREEN / DEVICE INSERTS — HIGHEST PRIORITY RULE:
+If the description mentions ANY of these keywords:
+  "phone insert", "monitor insert", "screen insert",
+  "tv insert", "tablet insert", "computer screen insert",
+  "screen replacement", "ui insert", "display insert",
+  "phone screen", "device insert", "screen comp",
+  or any combination of [phone/monitor/TV/tablet/screen/display]
+  + [insert/replacement/comp]
+THEN this is a PURE 2D composite operation. Apply these rules:
+  - Total days: 1.5 to 2.0 days MAXIMUM — never exceed 2.5d
+  - compositing: 1.0 to 1.5 days
+  - comp_roto: 0.0 to 0.5 days (only if screen shape needs isolation)
+  - ALL OTHER DEPARTMENTS MUST BE ZERO:
+      camera_track=0, matchmove=0, layout=0, animation=0,
+      cfx=0, fx=0, lighting=0, dmp=0, comp_paint=0, ai=0
+  - These are locked-off insert shots of practical screens.
+    There is NO 3D work. NO CG. NO environment build.
+    Just replacing what's ON the screen in 2D comp.
+  - Even if the surrounding scene has 3D elements,
+    the INSERT SHOT ITSELF is only 2D comp work.
+
+SIMILAR 2D-ONLY SHOT TYPES (same treatment):
+  wire removal, rig removal, logo removal, paint-out,
+  period cleanup, beauty cleanup → max 2.5d,
+  comp_roto + comp_paint + compositing ONLY.
+
 COMPOSITING IS MANDATORY ON EVERY SINGLE SHOT — NO EXCEPTIONS:
 - Compositing is the final step that integrates ALL elements
 - If you return comp = 0, your entire answer is wrong
 - Use department key "compositing" for COMP days (not a separate "comp" key)
 - Minimum comp days by total shot size:
-    1-5 day shot:   comp = 2 days minimum
+    1-2 day shot (insert/cleanup): comp = 0.75-1.5 days
+    2-5 day shot:   comp = 1.5 days minimum
     5-10 day shot:  comp = 3 days minimum
     10-20 day shot: comp = 4-5 days minimum
     20+ day shot:   comp = 5-8 days minimum
+  Exception: phone inserts, monitor inserts, screen inserts
+    follow the INSERT rule above — comp = 1.0-1.5d max.
 - For shots with 3D elements (lighting, animation, FX, layout):
     comp must be at least 25% of total days
 - The only exception is if the shot is pure 2D cleanup
-  (wire removal, paint-out only) — even then comp = 2 days minimum
+  (wire removal, paint-out only) — even then keep 2D-only depts
 REMINDER: comp = 0 on any shot is always incorrect.
 
 CG LIGHTING IS MANDATORY — NO EXCEPTIONS:
 - Any CG element requires lighting. CG without lighting is physically impossible.
 - If layout, animation, CFX, FX, CGI, 3D, digital creature, or digital double applies,
   department "lighting" must be included with at least 3 days.
+- Does NOT apply to phone/monitor/screen inserts or pure 2D cleanup shots.
 
 COMP ROTO (comp_roto) guidelines:
 - Always include for any shot with a live-action plate AND CG elements that need isolation or extraction
 - Minimum 1.0d for any CG integration shot
 - 2.0d+ for complex hair, fine detail, or handheld camera
+- Inserts: 0.0–0.5d only if the screen shape needs isolation
 
 COMP PAINT (comp_paint) guidelines:
 - Include for any cleanup, beauty work, or element extension needed in comp stage
 - Minimum 0.5d for any shot where background reconstruction is needed around CG elements.
+- Inserts: usually 0 — do not add paint unless notes explicitly require it.
 
 2. ANIMATION = 0 for any static object (buildings, castles, palaces, environments,
    vehicles parked, static props).
@@ -278,9 +321,51 @@ def _enforce_vfx_rules(
     total = max(float(data.get("total_days") or 0), sum(dept.values()))
     cg = 100 if cg_ratio is None else max(0, min(100, int(cg_ratio)))
 
+    insert_keywords = (
+        "phone insert", "monitor insert", "screen insert",
+        "tv insert", "tablet insert", "display insert",
+        "screen replacement", "ui insert", "device insert",
+        "phone screen", "screen comp", "computer screen insert",
+    )
+    is_insert = any(kw in desc for kw in insert_keywords) or bool(
+        re.search(
+            r"\b(phone|monitor|tv|tablet|screen|display|device)\b.{0,24}\b(insert|replacement|comp)\b",
+            desc,
+        )
+        or re.search(
+            r"\b(insert|replacement)\b.{0,24}\b(phone|monitor|tv|tablet|screen|display|device)\b",
+            desc,
+        )
+    )
+    if is_insert:
+        depts = data.get("departments")
+        if isinstance(depts, dict):
+            for key in (
+                "camera_track", "matchmove", "layout", "animation",
+                "cfx", "fx", "lighting", "dmp", "comp_paint", "ai",
+            ):
+                depts.pop(key, None)
+        comp = min(max(dept.get("compositing", 0), 1.0), 1.5)
+        _set_dept(data, "compositing", comp)
+        roto = min(dept.get("comp_roto", 0), 0.5)
+        if roto > 0:
+            _set_dept(data, "comp_roto", roto)
+        elif isinstance(data.get("departments"), dict):
+            data["departments"].pop("comp_roto", None)
+        dept = _dept_days(data)
+        total_2d = sum(dept.values())
+        if total_2d > 2.0 and total_2d > 0:
+            scale = 2.0 / total_2d
+            for key, days in list(dept.items()):
+                _set_dept(data, key, _round_half(days * scale))
+        data["total_days"] = max(0.25, sum(_dept_days(data).values()))
+        return
+
     if dept.get("compositing", 0) <= 0:
-        if total <= 5:
-            comp = 2.0
+        if total <= 2:
+            comp = 1.0
+        elif total <= 5:
+            comp = 1.5
         elif total <= 10:
             comp = 3.0
         elif total <= 20:
@@ -292,9 +377,9 @@ def _enforce_vfx_rules(
     if re.search(r"\b(wire removal|wire remove|wires?)\b", desc):
         depts = data.get("departments")
         if isinstance(depts, dict):
-            for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx"):
+            for key in ("layout", "animation", "lighting", "fx", "dmp", "cfx", "camera_track", "matchmove"):
                 depts.pop(key, None)
-        _set_dept(data, "compositing", 2.0)
+        _set_dept(data, "compositing", max(dept.get("compositing", 0), 1.0))
 
     dept = _dept_days(data)
     if (
@@ -314,12 +399,12 @@ def _enforce_vfx_rules(
         _set_dept(data, "dmp", dmp_days)
 
     dept = _dept_days(data)
-    if cg > 0 and _has_cg_element(description, dept) and dept.get("lighting", 0) <= 0:
+    is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc))
+    if cg > 0 and _has_cg_element(description, dept) and dept.get("lighting", 0) <= 0 and not is_wire_cleanup:
         lit = MIN_CG_LIGHTING_DAYS if cg >= 100 else max(1.0, _round_half(MIN_CG_LIGHTING_DAYS * cg / 100.0))
         _set_dept(data, "lighting", lit)
 
     dept = _dept_days(data)
-    is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc))
     if cg > 0 and _has_cg_element(description, dept) and not is_wire_cleanup:
         if dept.get("comp_roto", 0) <= 0:
             roto_floor = 2.0 if re.search(r"\b(hair|fur|feather|fine detail|handheld|face)\b", desc) else 1.0

@@ -2568,7 +2568,28 @@ function sequenceCostForRow(row) {
 
 function batchCostCellHtml(row) {
   const perShot = parseFloat(row?.cost_per_shot) || 0;
-  return money(perShot);
+  const n = Math.max(1, parseInt(row?.number_of_shots ?? 1, 10));
+
+  if (n <= 1 || !perShot) {
+    // Single shot: just show the cost
+    return `<span style="font-weight:700">${money(perShot)}</span>`;
+  }
+
+  // Multiple shots: show per-shot AND sequence cost
+  const seqCost = sequenceCostForRow(row) ?? (perShot * n);
+  return `
+    <div style="line-height:1.4">
+      <span style="font-weight:700">${money(perShot)}</span>
+      <span class="muted" style="font-size:10px;display:block">
+        per shot
+      </span>
+      <span style="font-weight:700;color:var(--accent)">
+        ${money(seqCost)}
+      </span>
+      <span class="muted" style="font-size:10px;display:block">
+        ×${n} shots total
+      </span>
+    </div>`;
 }
 
 function calcShotMultiplier(n) {
@@ -6989,11 +7010,18 @@ function updateShotMultiplierCells(input) {
   const factor = calcShotMultiplier(shots);
   const n = shots;
   const totalDays = calcTotalShotDays(baseDays, shots);
+
+  // Update factor and total days display columns
   const factorCell = tr.querySelector('.shot-factor-cell');
   const totalCell = tr.querySelector('.shot-total-days-cell');
   if (factorCell) factorCell.textContent = factor.toFixed(2) + '×';
   if (totalCell) totalCell.textContent = fmt(totalDays);
 
+  // Update the main DAYS cell to show base (n=1) or scaled total (n>1)
+  const daysCell = tr.querySelector('.batch-row-days');
+  if (daysCell) daysCell.textContent = n === 1 ? fmt(baseDays) : fmt(totalDays);
+
+  // Update all dept input cells proportionally from preserved 1-shot bases
   tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
     const base = parseFloat(inp.dataset.baseDays ?? inp.value) || 0;
     if (inp.dataset.baseDays == null || inp.dataset.baseDays === '') {
@@ -7005,11 +7033,16 @@ function updateShotMultiplierCells(input) {
       : String(Math.round(base * factor * 2) / 2);
   });
 
+  // Refresh cost cell — keep cost_per_shot as original 1-shot cost
   const idx = batchRowIndex(tr);
   if (Number.isFinite(idx) && _batchResult?.shots?.[idx]) {
-    _batchResult.shots[idx].number_of_shots = shots;
+    const shot = _batchResult.shots[idx];
+    shot.number_of_shots = shots;
+    const costEl = tr.querySelector('.batch-row-cost');
+    if (costEl) costEl.innerHTML = batchCostCellHtml(shot);
     _batchResult.export_csv_base64 = null;
   }
+
   scheduleAutosave();
 }
 
@@ -7017,8 +7050,12 @@ function refreshShotMultiplier(tr) {
   const daysCell = tr?.querySelector('.batch-row-days');
   const shotInput = tr?.querySelector('.shot-count-inp');
   if (!daysCell || !shotInput) return;
-  const newBase = parseFloat(daysCell.textContent.replace(/,/g, '')) || 0;
-  shotInput.dataset.baseDays = String(newBase);
+  const n = Math.max(1, parseInt(shotInput.value, 10) || 1);
+  // Only re-seed baseDays from the DAYS cell when showing the 1-shot value
+  if (n === 1) {
+    const newBase = parseFloat(String(daysCell.textContent || '').replace(/,/g, '')) || 0;
+    shotInput.dataset.baseDays = String(newBase);
+  }
   updateShotMultiplierCells(shotInput);
 }
 
@@ -7042,9 +7079,13 @@ function updateBatchRowTotals(tr, skipRefresh) {
   refreshShotMultiplier(tr);
   const costEl = tr.querySelector('.batch-row-cost');
   if (_batchResult?.shots[idx]) {
-    _batchResult.shots[idx].dept_days = depts;
-    _batchResult.shots[idx].total_mandays = days;
-    _batchResult.shots[idx].cost_per_shot = cost;
+    if (nShots === 1) {
+      // Only rewrite the 1-shot baseline when shot count is 1
+      _batchResult.shots[idx].dept_days = depts;
+      _batchResult.shots[idx].total_mandays = days;
+      _batchResult.shots[idx].cost_per_shot = cost;
+    }
+    _batchResult.shots[idx].number_of_shots = nShots;
     if (costEl) costEl.innerHTML = batchCostCellHtml(_batchResult.shots[idx]);
     markBatchRowEdited(idx);
     showRowRerun(idx);

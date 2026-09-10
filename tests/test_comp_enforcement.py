@@ -6,14 +6,18 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from vfx_estimator.estimate.service import EstimatorService, enforce_department_minimums
+from vfx_estimator.estimate.service import (
+    ESTIMATION_SCALE_FACTOR,
+    EstimatorService,
+    enforce_department_minimums,
+)
 
 
 class TestEnforceDepartmentMinimums:
     @pytest.mark.parametrize(
         "description,dept_in,total,min_comp",
         [
-            ("Wire removal from stunt", {"comp_roto": 1.0, "comp_paint": 1.0}, 4.0, 2.0),
+            ("Wire removal from stunt", {"comp_roto": 1.0, "comp_paint": 1.0}, 4.0, 1.0),
             ("CG castle establishing shot", {"layout": 3.0, "lighting": 6.0, "dmp": 2.0}, 18.0, 5.0),
             ("CG creature hero shot with fire", {"animation": 6.0, "fx": 5.0, "lighting": 4.0}, 20.0, 6.0),
         ],
@@ -33,6 +37,35 @@ class TestEnforceDepartmentMinimums:
     def test_cg_elements_always_get_lighting(self, description, dept_in, total):
         dept = enforce_department_minimums(dept_in, total, description=description)
         assert dept.get("lighting", 0) >= 3.0
+
+    @pytest.mark.parametrize(
+        "description",
+        [
+            "Suzy picks up phone | NOTES: phone insert",
+            "Suzy and John are watching TV | NOTES: Monitor insert",
+            "Close on tablet UI | screen insert",
+        ],
+    )
+    def test_insert_shots_are_2d_only_and_capped(self, description):
+        dept = enforce_department_minimums(
+            {
+                "matchmove": 2.0,
+                "layout": 1.0,
+                "lighting": 3.0,
+                "compositing": 4.0,
+                "comp_roto": 2.0,
+            },
+            12.0,
+            description=description,
+        )
+        assert sum(dept.values()) <= 2.0 + 1e-6
+        assert dept.get("compositing", 0) <= 1.5
+        assert dept.get("comp_roto", 0) <= 0.5
+        for banned in (
+            "camera_track", "matchmove", "layout", "animation",
+            "cfx", "fx", "lighting", "dmp", "comp_paint",
+        ):
+            assert dept.get(banned, 0) == 0
 
     def test_ai_days_when_explicitly_mentioned(self):
         dept = enforce_department_minimums(
@@ -68,7 +101,7 @@ class TestEstimateCompMinimums:
     @pytest.mark.parametrize(
         "description,min_comp",
         [
-            ("Wire removal from stunt", 2.0),
+            ("Wire removal from stunt", 1.0),
             ("CG castle establishing shot", 5.0),
             ("CG creature hero shot with fire", 6.0),
         ],
@@ -94,4 +127,27 @@ class TestEstimateCompMinimums:
                 "screenplay_scene_matches": [],
             }
         est = svc.estimate(description, mode="numeric_only")
-        assert est.dept_days.get("compositing", 0) >= min_comp
+        # Complex shots (>3d) are scaled by ESTIMATION_SCALE_FACTOR after floors
+        expected = min_comp if est.per_shot_mandays <= 3.0 else min_comp * ESTIMATION_SCALE_FACTOR
+        assert est.dept_days.get("compositing", 0) >= expected - 0.01
+
+    def test_phone_insert_estimate_stays_near_two_days(self):
+        svc = self._make_service()
+        svc.legacy.predict.return_value = {
+            "per_shot_mandays": 10.0,
+            "dept_days": {
+                "matchmove": 2.0,
+                "layout": 1.0,
+                "lighting": 3.0,
+                "compositing": 4.0,
+            },
+            "screenplay_scene_matches": [],
+        }
+        est = svc.estimate(
+            "Suzy picks up phone | NOTES: phone insert",
+            mode="numeric_only",
+        )
+        assert est.per_shot_mandays <= 2.0 + 1e-6
+        assert est.dept_days.get("lighting", 0) == 0
+        assert est.dept_days.get("matchmove", 0) == 0
+        assert 1.0 <= est.dept_days.get("compositing", 0) <= 1.5

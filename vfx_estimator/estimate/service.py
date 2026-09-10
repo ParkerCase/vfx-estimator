@@ -81,6 +81,73 @@ def enforce_department_minimums(
     is_wire_cleanup = bool(re.search(r"\b(wire removal|wire remove|wires?)\b", desc_lower))
     cg = 100 if cg_ratio is None else max(0, min(100, int(cg_ratio)))
 
+    INSERT_KEYWORDS = [
+        "phone insert", "monitor insert", "screen insert",
+        "tv insert", "tablet insert", "display insert",
+        "screen replacement", "ui insert", "device insert",
+        "phone screen", "screen comp", "computer screen insert",
+    ]
+    CLEANUP_KEYWORDS = [
+        "wire removal", "wire remove", "rig removal",
+        "logo removal", "paint out", "paintout",
+        "period cleanup", "beauty cleanup",
+    ]
+    is_insert_shot = any(kw in desc_lower for kw in INSERT_KEYWORDS) or bool(
+        re.search(
+            r"\b(phone|monitor|tv|tablet|screen|display|device)\b.{0,24}\b(insert|replacement|comp)\b",
+            desc_lower,
+        )
+        or re.search(
+            r"\b(insert|replacement)\b.{0,24}\b(phone|monitor|tv|tablet|screen|display|device)\b",
+            desc_lower,
+        )
+    )
+    is_cleanup_shot = is_wire_cleanup or any(kw in desc_lower for kw in CLEANUP_KEYWORDS)
+    is_2d_only = is_insert_shot or is_cleanup_shot
+
+    # ── INSERT / CLEANUP: strip all 3D departments and cap total ──
+    if is_2d_only:
+        # These shots have zero 3D work. Remove any 3D dept
+        # that Gemini may have hallucinated.
+        _3d_depts = {
+            "camera_track", "matchmove", "layout", "animation",
+            "cfx", "fx", "lighting", "dmp",
+        }
+        for d in _3d_depts:
+            dept.pop(d, None)
+
+        # For inserts: cap compositing at 1.5d, comp_roto at 0.5d
+        if is_insert_shot:
+            if dept.get("compositing", 0) <= 0:
+                dept["compositing"] = 1.0
+            dept["compositing"] = min(dept.get("compositing", 1.0), 1.5)
+            if dept.get("comp_roto", 0) > 0.5:
+                dept["comp_roto"] = 0.5
+            dept.pop("comp_paint", None)
+            dept.pop("ai", None)
+            # Enforce the 2d total cap
+            total_2d = sum(dept.values())
+            if total_2d > 2.0:
+                scale = 2.0 / total_2d
+                dept = {k: _round_half(v * scale) for k, v in dept.items() if v > 0}
+            # Drop zeros created by rounding
+            dept = {k: v for k, v in dept.items() if float(v or 0) > 0}
+            if "compositing" not in dept:
+                dept["compositing"] = 1.0
+
+        # For cleanup: standard wire-removal pattern
+        if is_cleanup_shot and not is_insert_shot:
+            if dept.get("compositing", 0) < 0.5:
+                dept["compositing"] = 1.0
+            # Keep comp_roto, comp_paint, compositing only
+            dept = {
+                k: v for k, v in dept.items()
+                if k in {"comp_roto", "comp_paint", "compositing"}
+            }
+
+        # Return immediately — skip all the 3D minimum checks below
+        return dept
+
     if cg == 0:
         for key in CG_PIPELINE_DEPTS:
             dept.pop(key, None)
@@ -97,9 +164,11 @@ def enforce_department_minimums(
 
     if dept.get("compositing", 0) == 0:
         if is_wire_cleanup:
-            dept["compositing"] = 2.0
+            dept["compositing"] = 1.0
+        elif total <= 2:
+            dept["compositing"] = 1.0
         elif total <= 5:
-            dept["compositing"] = 2.0
+            dept["compositing"] = 1.5
         elif total <= 10:
             dept["compositing"] = 3.0
         elif total <= 20:
@@ -302,16 +371,24 @@ class EstimatorService:
 
         # Apply global scale factor (reduce by ~33%) — once, after
         # enforce_department_minimums and before total_mandays is finalized.
-        # Frontend mixing-board sliders still apply on top of this baseline.
+        # Skip scaling for simple shots (≤3d): inserts/cleanup are already
+        # at their correct floor; scaling them down under-bids.
+        _SCALE_THRESHOLD = 3.0  # days — below this, don't scale
+
         if dept:
-            dept = {
-                k: _round_half(float(v) * ESTIMATION_SCALE_FACTOR)
-                for k, v in dept.items()
-                if float(v or 0) > 0
-            }
+            current_total = sum(float(v) for v in dept.values())
+            if current_total > _SCALE_THRESHOLD:
+                dept = {
+                    k: _round_half(float(v) * ESTIMATION_SCALE_FACTOR)
+                    for k, v in dept.items()
+                    if float(v or 0) > 0
+                }
             final = max(0.25, _round_half(sum(float(v) for v in dept.values())))
         else:
-            final = max(0.25, _round_half(final * ESTIMATION_SCALE_FACTOR))
+            if final > _SCALE_THRESHOLD:
+                final = max(0.25, _round_half(final * ESTIMATION_SCALE_FACTOR))
+            else:
+                final = max(0.25, _round_half(final))
 
         allot = max(1, int((pre_qual.allotment_n if pre_qual else 1) or 1))
         dr = self.settings.day_rate
