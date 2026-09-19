@@ -1773,9 +1773,9 @@
   </section>
   <section id="sec-cover" class="bid-section">
     <h2 class="bid-h1"><span class="n">09</span> Cover Page</h2>
-    <p class="bid-lead">Company letterhead, brand colors, and on-set line items for Excel cover exports.</p>
-<div id="company-profile-panel" class="card hidden" style="margin-top:16px">
-    <div class="sec-label" style="margin-bottom:10px">Company Profile (Cover Page)</div>
+    <p class="bid-lead">Company letterhead and brand colors for Excel cover exports. Always editable — no estimate required.</p>
+<div id="company-profile-panel" class="card" style="margin-top:4px">
+    <div class="sec-label" style="margin-bottom:10px">Company Profile</div>
     <p class="muted" style="font-size:12px;margin-bottom:12px;max-width:42rem;line-height:1.5">
       Letterhead used on Cover Page exports. Saved in this browser and snapshotted into each
       currency variant so historical bids keep the letterhead used at save time.
@@ -8396,10 +8396,13 @@ function persistCompanyProfile() {
 
 function toggleCompanyProfilePanel() {
   const panel = document.getElementById('company-profile-panel');
-  if (!panel) return;
-  const opening = panel.classList.contains('hidden');
-  panel.classList.toggle('hidden', !opening);
-  if (opening) loadCompanyProfile();
+  if (panel) panel.classList.remove('hidden');
+  loadCompanyProfile();
+  if (typeof scrollToBidSection === 'function') {
+    scrollToBidSection('sec-cover');
+  } else {
+    document.getElementById('sec-cover')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function moneyExact(usdAmount, currency) {
