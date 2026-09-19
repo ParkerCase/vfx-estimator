@@ -44,7 +44,13 @@
     nextTarget: nextTarget,
   };
 
-  if (unlocked() || isAccessPage()) return;
+  function isLocalHost() {
+    var h = location.hostname || "";
+    return h === "localhost" || h === "127.0.0.1" || h === "[::1]";
+  }
+
+  // Local preview: skip password gate (production still requires unlock)
+  if (unlocked() || isAccessPage() || isLocalHost()) return;
 
   var next = location.pathname + location.search + location.hash;
   if (!next || next === "/access") next = "/signin";

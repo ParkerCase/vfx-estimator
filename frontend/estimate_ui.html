@@ -35,12 +35,14 @@
       --scroll-thumb-hover: rgba(69,106,237,.55);
     }
     *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;margin:0}
     body{
       background:
         radial-gradient(1000px 560px at 88% -12%, rgba(69,106,237,.14), transparent 55%),
         radial-gradient(780px 420px at 6% 12%, rgba(111,217,168,.05), transparent 50%),
         linear-gradient(180deg,#0a0a0c 0%, var(--bg) 45%, #050506 100%);
-      color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh
+      color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;
+      display:flex;flex-direction:column;height:100vh;overflow:hidden
     }
 
     /* ── Modern scrollbars ── */
@@ -81,7 +83,7 @@
     }
 
     /* ── Header ── */
-    .top-chrome{position:sticky;top:0;z-index:20;background:var(--surface)}
+    .top-chrome{position:relative;z-index:20;background:var(--surface);flex:0 0 auto}
     .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;
          display:flex;align-items:center;justify-content:space-between;min-height:68px;box-sizing:border-box}
     .hdr-left{display:flex;align-items:center;gap:16px}
@@ -89,7 +91,13 @@
     .hdr-user{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
     .hdr-user input{width:88px;padding:5px 8px;font-size:12px;border-radius:8px}
     .hdr-currency{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-weight:700}
-    .hdr-currency select{padding:5px 8px;font-size:12px;border-radius:8px;min-width:72px}
+    .hdr-currency select{
+      padding:5px 24px 5px 8px;font-size:12px;border-radius:8px;min-width:72px;
+      color:var(--text);background-color:var(--card2);color-scheme:dark;
+      appearance:none;-webkit-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f7f7f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 8px center
+    }
     .hdr-brand{
       display:inline-flex;align-items:center;gap:0;margin:0;padding:0;
       font-family:var(--font-display);color:#7a91a3;text-decoration:none;line-height:1
@@ -138,8 +146,12 @@
       .page-progress{padding:10px 14px 12px}
     }
     .back-to-dash{font-size:12px;color:var(--accent);font-weight:800;text-decoration:none;border:1px solid var(--border);
-      border-radius:8px;padding:5px 9px;background:var(--card)}
+      border-radius:8px;padding:5px 9px;background:var(--card);display:inline-flex;align-items:center;gap:8px}
     .back-to-dash:hover{border-color:var(--accent)}
+    .back-to-dash .back-arrow{
+      width:0;height:0;border-style:solid;border-width:5px 7px 5px 0;
+      border-color:transparent var(--accent) transparent transparent
+    }
     .project-context{display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px}
     .project-context strong{font-size:13px;color:var(--text-strong)}
     .pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card2);
@@ -148,13 +160,162 @@
     .pill.ok{border-color:var(--green);color:var(--green)}
     .pill.err{border-color:var(--red);color:var(--red)}
     .icon{width:14px;height:14px;display:inline-block;vertical-align:-2px;fill:none;
-          stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+          stroke:currentColor;color:var(--text);stroke-width:2;stroke-linecap:round;
+          stroke-linejoin:round;flex:0 0 auto}
     .icon-sm{width:12px;height:12px}
     .icon-lg{width:16px;height:16px}
     .with-icon{display:inline-flex;align-items:center;gap:7px}
+    /* Force visible strokes when <use> fails to inherit currentColor */
+    .icon use{stroke:var(--text);fill:none}
 
     /* ── Layout ── */
-    .wrap{max-width:1600px;margin:0 auto;padding:24px 18px 80px}
+    .wrap{max-width:1600px;margin:0 auto;padding:0 0 48px}
+
+    /* ── BidReel-inspired shell (Bid IQ colors) ── */
+    .bid-shell{display:flex;flex:1;min-height:0;width:100%}
+    .bid-rail{
+      width:190px;flex:0 0 auto;background:var(--surface);
+      border-right:1px solid var(--border);padding:14px 10px;
+      display:flex;flex-direction:column;gap:3px;overflow:hidden;
+      transition:width .2s ease,padding .2s ease
+    }
+    .bid-rail .bid-eyebrow{
+      color:var(--muted-soft);font-size:10px;letter-spacing:.2em;
+      text-transform:uppercase;padding:6px 10px 10px;font-weight:700
+    }
+    .bid-navitem{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;
+      border-radius:7px;color:var(--muted);font-weight:600;font-size:13px;
+      border:1px solid transparent;background:transparent;cursor:pointer;
+      transition:.14s;width:100%;text-align:left;font-family:inherit
+    }
+    .bid-navitem .n{
+      font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+      font-size:11px;color:var(--muted-soft);flex:0 0 auto;min-width:1.6em
+    }
+    .bid-navitem .bid-nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bid-navitem:hover{background:var(--card2);color:var(--text)}
+    .bid-navitem.on{background:var(--card2);color:var(--text);border-color:var(--border)}
+    .bid-navitem.on .n{color:var(--accent)}
+    .bid-rail-toggle{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      margin:4px 6px 10px;padding:7px 10px;border-radius:7px;
+      border:1px solid var(--border);background:var(--card);color:var(--text);
+      font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+      transition:.14s;width:calc(100% - 12px)
+    }
+    .bid-rail-toggle:hover{color:var(--text-strong);border-color:var(--accent)}
+    .bid-rail-toggle span{color:inherit}
+    .bid-rail-burger{
+      width:14px;height:10px;display:inline-block;position:relative;flex:0 0 auto
+    }
+    .bid-rail-burger::before,.bid-rail-burger::after,
+    .bid-rail-burger{box-shadow:inset 0 0 0 1px transparent}
+    .bid-rail-burger::before,.bid-rail-burger::after{
+      content:"";position:absolute;left:0;right:0;height:2px;border-radius:1px;
+      background:var(--text)
+    }
+    .bid-rail-burger::before{top:0;box-shadow:0 4px 0 var(--text)}
+    .bid-rail-burger::after{bottom:0}
+    .bid-rail .bid-rail-foot{
+      margin-top:auto;color:var(--muted-soft);font-size:10.5px;
+      line-height:1.5;padding:10px
+    }
+    .bid-shell.rail-collapsed .bid-rail{width:56px;padding:14px 6px}
+    .bid-shell.rail-collapsed .bid-eyebrow,
+    .bid-shell.rail-collapsed .bid-nav-label,
+    .bid-shell.rail-collapsed .bid-rail-foot,
+    .bid-shell.rail-collapsed .bid-rail-toggle-text{display:none}
+    .bid-shell.rail-collapsed .bid-navitem{justify-content:center;padding:10px 6px;gap:0}
+    .bid-shell.rail-collapsed .bid-rail-toggle{width:calc(100% - 4px);margin:4px 2px 10px;padding:7px 4px}
+    .bid-main{flex:1;min-width:0;overflow:auto;padding:22px 26px 30px}
+    .bid-section{scroll-margin-top:18px;margin-bottom:28px}
+    .bid-section:last-child{margin-bottom:12px}
+    .bid-h1{
+      font-size:19px;font-weight:700;margin:0 0 4px;color:var(--text);
+      font-family:var(--font-display);letter-spacing:.01em;
+      display:flex;align-items:baseline;gap:10px
+    }
+    .bid-h1 .n{color:var(--accent);font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+               font-size:14px;font-weight:700;letter-spacing:.04em}
+    .bid-lead{color:var(--muted);font-size:12.5px;margin:0 0 14px;max-width:78ch;line-height:1.5}
+    .bid-chart{display:flex;flex-direction:column;gap:8px}
+    .bid-chart-row{display:grid;grid-template-columns:110px 1fr 72px;gap:10px;align-items:center;font-size:12px}
+    .bid-chart-label{color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bid-chart-track{height:10px;background:var(--card2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .bid-chart-bar{height:100%;border-radius:999px;background:var(--accent);min-width:0}
+    .bid-chart-bar.asset{background:var(--green)}
+    .bid-chart-bar.hi{background:var(--orange)}
+    .bid-chart-val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
+    .summary-line{display:flex}
+    .btn-xs{padding:2px 8px;font-size:11px;line-height:1.2}
+
+    /* ── Onset supervision table ── */
+    #onset-section.onset-card{
+      margin-top:20px;padding:18px 18px 14px;background:var(--card);
+      border:1px solid var(--border);border-radius:var(--r)
+    }
+    #onset-section .onset-head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px
+    }
+    #onset-section .onset-head .sec-label{margin:0}
+    #onset-section .onset-lead{
+      color:var(--muted);font-size:12px;margin:0 0 14px;max-width:42rem;line-height:1.5
+    }
+    .onset-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+    table.onset-table{
+      width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px
+    }
+    .onset-table th,.onset-table td{
+      padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle
+    }
+    .onset-table th{
+      font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+      font-weight:800;background:var(--surface);text-align:left
+    }
+    .onset-table th.num,.onset-table td.num{text-align:right}
+    .onset-table th.act,.onset-table td.act{width:44px;padding-left:4px;padding-right:8px;text-align:center}
+    .onset-table th.days,.onset-table td.days{width:88px}
+    .onset-table th.rate,.onset-table td.rate{width:112px}
+    .onset-table th.tot,.onset-table td.tot{width:104px}
+    .onset-table tbody tr:last-child td{border-bottom:none}
+    .onset-table tbody tr:hover{background:rgba(247,247,247,.02)}
+    .onset-table input[type=text],
+    .onset-table input[type=number]{
+      width:100%;box-sizing:border-box;padding:8px 10px;font-size:13px;font-weight:600;
+      background:var(--bg);border:1px solid rgba(247,247,247,.18);border-radius:7px;color:var(--text)
+    }
+    .onset-table input[type=text]:focus,
+    .onset-table input[type=number]:focus{
+      border-color:var(--accent);box-shadow:0 0 0 1px rgba(69,106,237,.25)
+    }
+    .onset-table input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+    .onset-table th.days,.onset-table td.days{width:80px}
+    .onset-table th.rate,.onset-table td.rate{width:100px}
+    .onset-table th.tot,.onset-table td.tot{width:96px}
+    .onset-table{min-width:0}
+    .onset-table .onset-row-total{
+      font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap
+    }
+    .onset-table .onset-row-total.has-val{color:var(--green)}
+    .onset-table .onset-remove{
+      border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;
+      width:28px;height:28px;border-radius:6px;line-height:1
+    }
+    .onset-table .onset-remove:hover{color:var(--red);background:rgba(255,122,110,.12)}
+    .onset-table tfoot td{
+      border-bottom:none;border-top:1px solid var(--border);background:var(--card2);
+      font-weight:800;padding:12px;color:var(--text)
+    }
+    .onset-table tfoot .onset-foot-total{color:var(--green);font-size:14px}
+    .security-footer{flex:0 0 auto}
+    @media (max-width:900px){
+      .bid-rail{width:56px;padding:14px 6px}
+      .bid-eyebrow,.bid-nav-label,.bid-rail-foot,.bid-rail-toggle-text{display:none}
+      .bid-navitem{justify-content:center;padding:10px 6px;gap:0}
+      .bid-rail-toggle{width:calc(100% - 4px);margin:4px 2px 10px;padding:7px 4px}
+      .bid-main{padding:16px 14px 28px}
+    }
 
     /* ── Section labels ── */
     .sec-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;
@@ -162,13 +323,40 @@
 
     /* ── Inputs ── */
     textarea,input,select{
-      background:var(--card2);border:1px solid var(--border);border-radius:var(--r);
+      background-color:var(--card2);border:1px solid var(--border);border-radius:var(--r);
       color:var(--text);font-family:var(--font);font-size:13px;outline:none;
-      transition:border-color .2s
+      transition:border-color .2s;color-scheme:dark
     }
     textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(69,106,237,.22)}
     textarea::placeholder,input::placeholder{color:var(--muted-soft)}
     select option{background:var(--card)}
+    select{
+      appearance:none;-webkit-appearance:none;
+      padding-right:28px;
+      background-color:var(--card2);
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f7f7f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 8px center
+    }
+    /* Hide native number steppers — they fight the dark theme */
+    input[type=number],
+    .onset-table input[type=number],
+    .rate-field input[type=number],
+    .rate-input{
+      -moz-appearance:textfield !important;
+      appearance:textfield !important
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button,
+    .onset-table input[type=number]::-webkit-inner-spin-button,
+    .onset-table input[type=number]::-webkit-outer-spin-button,
+    .rate-input::-webkit-inner-spin-button,
+    .rate-input::-webkit-outer-spin-button{
+      -webkit-appearance:none !important;
+      appearance:none !important;
+      margin:0 !important;
+      display:none !important;
+      width:0 !important;height:0 !important;opacity:0 !important
+    }
 
     /* ── Pre-qual panel ── */
     .prequal-toggle{
@@ -180,7 +368,13 @@
       margin-bottom:12px
     }
     .prequal-toggle:hover{color:var(--text);border-color:var(--accent)}
-    .prequal-toggle .arrow{transition:transform .2s;font-size:10px}
+    .prequal-toggle .arrow{
+      transition:transform .2s;flex:0 0 auto;opacity:1;
+      width:0;height:0;display:inline-block;
+      border-style:solid;border-width:5px 0 5px 7px;
+      border-color:transparent transparent transparent #f7f7f7;
+      transform-origin:40% 50%
+    }
     .prequal-toggle.open .arrow{transform:rotate(90deg)}
     #batch-prequal-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
                    background:var(--card2);padding:18px;margin-bottom:14px}
@@ -193,11 +387,11 @@
     .pq-field select,.pq-field input[type=number]{padding:8px 10px;width:100%}
     .pq-field textarea{padding:8px 10px;min-height:64px;width:100%;resize:vertical}
     .pq-full{grid-column:1/-1}
-    .rates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-    .rate-field{display:flex;flex-direction:column;gap:4px}
+    .rates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 16px}
+    .rate-field{display:flex;flex-direction:column;gap:8px}
     .rate-field label{font-size:10px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.45px}
-    .rate-field input{padding:7px 8px;font-size:12px;font-weight:700}
-    .rate-override-row{margin-bottom:4px}
+    .rate-field input{padding:9px 10px;font-size:12px;font-weight:700}
+    .rate-override-row{margin-bottom:8px}
     .rate-override-label{display:block;font-size:11px;font-weight:800;color:var(--text);
       text-transform:uppercase;letter-spacing:.45px;margin-bottom:6px}
     .rate-override-input-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
@@ -262,12 +456,64 @@
 
     .security-footer {
       text-align: center;
-      padding: 16px;
-      font-size: 11px;
+      padding: 8px 16px;
+      font-size: 10px;
       color: var(--muted);
       border-top: 1px solid var(--border);
-      margin-top: 32px;
+      margin-top: 0;
+      flex: 0 0 auto;
+      background: var(--surface);
     }
+
+    /* ── BidReel-style sticky totals bar ── */
+    .bid-readout{
+      flex:0 0 auto;display:flex;align-items:stretch;
+      background:linear-gradient(180deg,var(--surface),var(--bg));
+      border-top:1px solid var(--border);padding:0;min-height:62px;z-index:30
+    }
+    .bid-ro{
+      display:flex;flex-direction:column;justify-content:center;
+      padding:8px 18px;flex:1;min-width:0
+    }
+    .bid-ro + .bid-ro{border-left:1px solid var(--border)}
+    .bid-ro .k{
+      color:var(--muted-soft);font-size:10px;letter-spacing:.14em;
+      text-transform:uppercase;font-weight:700
+    }
+    .bid-ro .v{
+      font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+      font-size:18px;font-weight:700;margin-top:3px;color:var(--text);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .bid-ro .cur{color:var(--muted-soft);font-size:11px;font-weight:500;margin-left:5px}
+    .bid-ro.rebate .v{color:var(--orange)}
+    .bid-ro.final{background:rgba(69,106,237,.10);flex:1.25}
+    .bid-ro.final .k{color:var(--accent2)}
+    .bid-ro.final .v{color:var(--accent2);font-size:20px}
+    @media (max-width:720px){
+      .bid-readout{flex-wrap:wrap;min-height:0}
+      .bid-ro{flex:1 1 33%;padding:8px 12px}
+      .bid-ro .v{font-size:15px}
+      .bid-ro.final .v{font-size:16px}
+    }
+
+    /* ── Compare section ── */
+    .compare-card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+      padding:18px;margin-bottom:14px
+    }
+    .compare-toolbar{
+      display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px
+    }
+    .compare-field{display:flex;flex-direction:column;gap:6px;min-width:240px;flex:1}
+    .compare-field label{
+      font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;color:var(--text)
+    }
+    .compare-field select{
+      width:100%;min-width:0;padding:10px 32px 10px 12px;font-size:13px;font-weight:600
+    }
+    .compare-body{font-size:13px;color:var(--muted);min-height:48px}
+    .compare-body .batch-dept-summary-wrap{margin-top:4px}
 
     /* ── Buttons ── */
     button{border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);
@@ -676,20 +922,25 @@
 </head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
-  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
-  <symbol id="i-plus-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
-  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
-  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
-  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9 9 15M9 9l6 6"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
-  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
-  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l3 3v15H4V3h1Z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
-  <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M2 21h20"/><path d="M8 8h2M14 8h2M8 12h2M14 12h2M10 21v-5h4v5"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
-  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <defs>
+    <style>
+      .ico{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect class="ico" x="3" y="4" width="18" height="16" rx="2"/><path class="ico" d="M3 10h18M9 4v16M15 4v16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path class="ico" d="m20 6-11 11-5-5"/></symbol>
+  <symbol id="i-plus-circle" viewBox="0 0 24 24"><circle class="ico" cx="12" cy="12" r="9"/><path class="ico" d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path class="ico" d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path class="ico" d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle class="ico" cx="12" cy="12" r="9"/><path class="ico" d="M15 9 9 15M9 9l6 6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path class="ico" d="M12 3 2 20h20L12 3Z"/><path class="ico" d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path class="ico" d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path class="ico" d="M12 3v12"/><path class="ico" d="m7 10 5 5 5-5"/><path class="ico" d="M5 21h14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect class="ico" x="3" y="5" width="18" height="16" rx="2"/><path class="ico" d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path class="ico" d="M5 3h12l3 3v15H4V3h1Z"/><path class="ico" d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path class="ico" d="M4 21V5l8-3 8 3v16M2 21h20"/><path class="ico" d="M8 8h2M14 8h2M8 12h2M14 12h2M10 21v-5h4v5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect class="ico" x="4" y="10" width="16" height="11" rx="2"/><path class="ico" d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path class="ico" d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-grip" viewBox="0 0 24 24">
     <circle cx="9" cy="7" r="1.4" fill="currentColor" stroke="none"/>
     <circle cx="15" cy="7" r="1.4" fill="currentColor" stroke="none"/>
@@ -704,7 +955,7 @@
 <div class="top-chrome">
 <div class="hdr">
   <div class="hdr-left">
-    <a href="/dashboard" class="back-to-dash">← Dashboard</a>
+    <a href="/dashboard" class="back-to-dash"><span class="back-arrow" aria-hidden="true"></span> Dashboard</a>
     <a class="hdr-brand brand-animate" href="/dashboard" aria-label="FrameBid">
       <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
       <span class="brand-word-clip" aria-hidden="true"><span class="brand-word">FRAMEBID</span></span>
@@ -767,10 +1018,133 @@
 </div>
 </div>
 
-<div class="wrap">
+<div class="bid-shell" id="bid-shell">
+<aside class="bid-rail" id="bid-rail" aria-label="Bid sections">
+  <button type="button" class="bid-rail-toggle" id="bid-rail-toggle" onclick="toggleBidSidebar()" title="Toggle sidebar" aria-expanded="true">
+    <span class="bid-rail-burger" aria-hidden="true"></span>
+    <span class="bid-rail-toggle-text">Menu</span>
+  </button>
+  <div class="bid-eyebrow">Bid</div>
+  <button type="button" class="bid-navitem on" data-target="sec-project"><span class="n">01</span><span class="bid-nav-label">Project</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-rates"><span class="n">02</span><span class="bid-nav-label">Rates</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-shots"><span class="n">03</span><span class="bid-nav-label">Shots</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-assets"><span class="n">04</span><span class="bid-nav-label">Assets</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-summary"><span class="n">05</span><span class="bid-nav-label">Summary</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-charts"><span class="n">06</span><span class="bid-nav-label">Charts</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-compare"><span class="n">07</span><span class="bid-nav-label">Compare</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-resources"><span class="n">08</span><span class="bid-nav-label">Resources</span></button>
+  <button type="button" class="bid-navitem" data-target="sec-cover"><span class="n">09</span><span class="bid-nav-label">Cover Page</span></button>
+  <div class="bid-rail-foot">Scroll the bid sections.<br>Sidebar state is saved in this browser.</div>
+</aside>
 
-  <div class="prequal-toggle" id="rates-toggle" onclick="toggleRatesPanel()">
-    <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
+<main class="bid-main" id="bid-main">
+<div class="wrap">
+    <section id="sec-project" class="bid-section">
+    <h2 class="bid-h1"><span class="n">01</span> Project</h2>
+    <p class="bid-lead">Set the project name and optional context that improves estimate accuracy.</p>
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-label">Project Details</div>
+      <div class="batch-settings">
+        <label>Project
+          <input type="text" id="batch-project" value="" placeholder="e.g. IRON VEIL">
+        </label>
+      </div>
+
+      <div class="prequal-toggle" id="batch-pq-toggle" onclick="toggleBatchPrequal()">
+        <span class="arrow" aria-hidden="true"></span>
+        <span>Project Context (optional — improves accuracy)</span>
+      </div>
+
+      <div id="batch-prequal-panel">
+        <div class="pq-grid">
+          <div class="pq-field">
+            <label>Shot Type Override</label>
+            <select id="batch-pq-shot-type">
+              <option value="">Auto-detect</option>
+              <option value="establishing">Establishing</option>
+              <option value="hero">Hero</option>
+              <option value="background">Background</option>
+              <option value="standard">Standard</option>
+              <option value="cleanup">Cleanup</option>
+            </select>
+          </div>
+
+          <div class="pq-field">
+            <label>Complexity Band</label>
+            <select id="batch-pq-complexity">
+              <option value="">Not specified</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="very_high">Very High</option>
+            </select>
+          </div>
+
+          <div class="pq-field">
+            <label>Bid Scale Tier</label>
+            <select id="batch-pq-scale">
+              <option value="">Not specified</option>
+              <option value="indie_low">Indie/Low Budget</option>
+              <option value="mid_tier_tv">Mid-tier TV</option>
+              <option value="premium_tv">Premium TV/Streaming</option>
+              <option value="feature_film">Feature Film</option>
+            </select>
+          </div>
+
+          <div class="pq-field pq-full">
+            <label>Practical vs CG Ratio</label>
+            <div class="pq-ratio-row">
+              <span style="font-size:11px;color:var(--orange);min-width:68px">Practical</span>
+              <input type="range" id="batch-pq-cg-ratio" min="0" max="100" value="100" step="5"
+                     oninput="updateBatchCGRatio()">
+              <span style="font-size:11px;color:var(--accent);min-width:36px">CG</span>
+              <span class="pq-ratio-label" id="batch-pq-ratio-label">100% CG</span>
+            </div>
+          </div>
+
+          <div class="pq-field pq-full">
+            <label class="check-label">
+              <input type="checkbox" id="auto-fill-methodology" checked>
+              Auto-generate methodology for shots without VFX notes
+            </label>
+            <div id="methodology-auto-status" class="method-auto-status hidden"></div>
+          </div>
+
+          <div class="pq-field pq-full">
+            <div class="field-label-row">
+              <label>Director Brief / Production Intent</label>
+              <label class="file-upload-label" title="Upload PDF, Word doc, or text file">
+                Upload
+                <input type="file" class="brief-file-input" accept=".pdf,.doc,.docx,.txt"
+                       onchange="handleBriefUpload(this, 'batch-pq-director-brief')">
+              </label>
+            </div>
+            <textarea id="batch-pq-director-brief"
+              placeholder="e.g. Photoreal result indistinguishable from plate. Inspired by Blade Runner 2049…"></textarea>
+          </div>
+
+          <div class="pq-field pq-full">
+            <div class="field-label-row">
+              <label>Key VFX Assumptions</label>
+              <label class="file-upload-label" title="Upload PDF, Word doc, or text file">
+                Upload
+                <input type="file" class="brief-file-input" accept=".pdf,.doc,.docx,.txt"
+                       onchange="handleBriefUpload(this, 'batch-pq-assumptions')">
+              </label>
+            </div>
+            <textarea id="batch-pq-assumptions"
+              placeholder="e.g. Background is full CG. Hero actor is practical on greenscreen…"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+  <section id="sec-rates" class="bid-section">
+    <h2 class="bid-h1"><span class="n">02</span> Rates</h2>
+    <p class="bid-lead">Shot rates, asset rates, and onset supervision — all billing rates in one place.</p>
+<div class="prequal-toggle" id="rates-toggle" onclick="toggleRatesPanel()">
+    <span class="arrow" aria-hidden="true"></span>
     <span>Department Day Rates (<span id="rates-currency-label">USD</span>/day)</span>
     <span style="margin-left:auto;font-size:11px;font-weight:400" id="rates-summary">loading…</span>
   </div>
@@ -894,7 +1268,78 @@
     </p>
   </div>
 
-  <div class="card" style="margin-bottom:14px">
+    <div style="margin-top:20px"></div>
+<div class="prequal-toggle" id="asset-rates-toggle" onclick="toggleAssetRatesPanel()">
+      <span class="arrow" id="asset-rates-arrow-icon" aria-hidden="true"></span>
+      <span>Asset Dept Rates (<span id="asset-rates-currency-label">USD</span>/day)</span>
+      <span id="asset-rates-summary" style="margin-left:auto;font-size:11px;font-weight:400">loading…</span>
+    </div>
+    <div id="asset-rates-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
+        <div class="sec-label" style="margin-bottom:10px">Asset build rates by department</div>
+        <div class="rate-override-row">
+          <label class="rate-override-label" for="asset-rates-override-input">
+            Apply one rate to all asset departments
+          </label>
+          <div class="rate-override-input-row">
+            <span class="rate-sym" id="asset-rates-override-sym">$</span>
+            <input type="number"
+                   id="asset-rates-override-input"
+                   class="rate-input"
+                   placeholder="e.g. 750"
+                   min="0" step="50"
+                   style="width:90px">
+            <button type="button" class="btn-blue btn-sm"
+                    onclick="applyAssetRateOverrideToAll()">
+              Apply to All
+            </button>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <div class="rates-grid" id="asset-rates-grid"></div>
+        <div class="rates-hint muted" style="font-size:11px;margin-top:6px">
+          Rates shown in <span id="asset-rates-currency">USD</span>/day.
+          Changes apply to all future asset cost calculations.
+        </div>
+    </div>
+
+    
+    <div id="onset-section" class="onset-card">
+      <div class="onset-head">
+        <div class="sec-label">Onset Supervision</div>
+        <button type="button" class="btn-ghost btn-sm" onclick="addOnsetRow()">+ Add Role</button>
+      </div>
+      <p class="onset-lead">
+        On-set crew billed by time. Total is added to the bid gross and flows to the cover page and Excel export.
+      </p>
+      <div class="onset-table-wrap">
+        <table class="onset-table" id="onset-table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th class="num days">Days</th>
+              <th class="num rate">Rate / Day</th>
+              <th class="num tot">Total</th>
+              <th class="act"></th>
+            </tr>
+          </thead>
+          <tbody id="onset-tbody"></tbody>
+          <tfoot>
+            <tr>
+              <td>Onset Total</td>
+              <td class="num days" id="onset-total-days">—</td>
+              <td class="num rate">—</td>
+              <td class="num tot onset-foot-total" id="onset-total-cost">—</td>
+              <td class="act"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </section>
+  <section id="sec-shots" class="bid-section">
+    <h2 class="bid-h1"><span class="n">03</span> Shots</h2>
+    <p class="bid-lead">Upload or paste shots, run the batch estimate, then review methodology and department mix.</p>
+    <div class="card" style="margin-bottom:14px">
       <div class="sec-label">Bid File Upload</div>
       <div class="batch-drop-zone" id="batch-drop-zone"
            onclick="document.getElementById('batch-csv-file').click()">
@@ -920,100 +1365,6 @@
         Format: <code>SHOT_CODE | DESCRIPTION</code> or description only.
       </p>
 
-      <div class="batch-settings">
-        <label>Project
-          <input type="text" id="batch-project" value="" placeholder="e.g. IRON VEIL">
-        </label>
-      </div>
-
-      <div class="prequal-toggle" id="batch-pq-toggle" onclick="toggleBatchPrequal()">
-        <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
-        <span>Project Context (optional — improves accuracy)</span>
-      </div>
-
-      <div id="batch-prequal-panel">
-        <div class="pq-grid">
-          <div class="pq-field">
-            <label>Shot Type Override</label>
-            <select id="batch-pq-shot-type">
-              <option value="">Auto-detect</option>
-              <option value="establishing">Establishing</option>
-              <option value="hero">Hero</option>
-              <option value="background">Background</option>
-              <option value="standard">Standard</option>
-              <option value="cleanup">Cleanup</option>
-            </select>
-          </div>
-
-          <div class="pq-field">
-            <label>Complexity Band</label>
-            <select id="batch-pq-complexity">
-              <option value="">Not specified</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="very_high">Very High</option>
-            </select>
-          </div>
-
-          <div class="pq-field">
-            <label>Bid Scale Tier</label>
-            <select id="batch-pq-scale">
-              <option value="">Not specified</option>
-              <option value="indie_low">Indie/Low Budget</option>
-              <option value="mid_tier_tv">Mid-tier TV</option>
-              <option value="premium_tv">Premium TV/Streaming</option>
-              <option value="feature_film">Feature Film</option>
-            </select>
-          </div>
-
-          <div class="pq-field pq-full">
-            <label>Practical vs CG Ratio</label>
-            <div class="pq-ratio-row">
-              <span style="font-size:11px;color:var(--orange);min-width:68px">Practical</span>
-              <input type="range" id="batch-pq-cg-ratio" min="0" max="100" value="100" step="5"
-                     oninput="updateBatchCGRatio()">
-              <span style="font-size:11px;color:var(--accent);min-width:36px">CG</span>
-              <span class="pq-ratio-label" id="batch-pq-ratio-label">100% CG</span>
-            </div>
-          </div>
-
-          <div class="pq-field pq-full">
-            <label class="check-label">
-              <input type="checkbox" id="auto-fill-methodology" checked>
-              Auto-generate methodology for shots without VFX notes
-            </label>
-            <div id="methodology-auto-status" class="method-auto-status hidden"></div>
-          </div>
-
-          <div class="pq-field pq-full">
-            <div class="field-label-row">
-              <label>Director Brief / Production Intent</label>
-              <label class="file-upload-label" title="Upload PDF, Word doc, or text file">
-                Upload
-                <input type="file" class="brief-file-input" accept=".pdf,.doc,.docx,.txt"
-                       onchange="handleBriefUpload(this, 'batch-pq-director-brief')">
-              </label>
-            </div>
-            <textarea id="batch-pq-director-brief"
-              placeholder="e.g. Photoreal result indistinguishable from plate. Inspired by Blade Runner 2049…"></textarea>
-          </div>
-
-          <div class="pq-field pq-full">
-            <div class="field-label-row">
-              <label>Key VFX Assumptions</label>
-              <label class="file-upload-label" title="Upload PDF, Word doc, or text file">
-                Upload
-                <input type="file" class="brief-file-input" accept=".pdf,.doc,.docx,.txt"
-                       onchange="handleBriefUpload(this, 'batch-pq-assumptions')">
-              </label>
-            </div>
-            <textarea id="batch-pq-assumptions"
-              placeholder="e.g. Background is full CG. Hero actor is practical on greenscreen…"></textarea>
-          </div>
-        </div>
-      </div>
-
       <div class="methodology-hint">
         <strong>Tip:</strong> Including a methodology column (how each shot will be executed)
         significantly improves estimate accuracy. No methodology? The AI can suggest options
@@ -1027,8 +1378,7 @@
         <button id="batch-stop-btn" style="display:none" class="btn-red" onclick="stopBatch()">⏹ Stop</button>
       </div>
     </div>
-
-    <div id="batch-results" class="hidden">
+<div id="batch-results" class="hidden">
       <div id="batch-progress" style="display:none">
         <div class="progress-track progress-bar-track">
           <div class="progress-fill progress-bar-fill" id="progress-fill"></div>
@@ -1100,43 +1450,11 @@
 
       </div>
     </div>
-
-    <div class="section-divider"><div></div>VFX ASSET BREAKDOWN<div></div></div>
-
-    <div class="prequal-toggle" id="asset-rates-toggle" onclick="toggleAssetRatesPanel()">
-      <svg class="icon icon-sm arrow" id="asset-rates-arrow-icon"><use href="#i-chevron"></use></svg>
-      <span>Asset Dept Rates (<span id="asset-rates-currency-label">USD</span>/day)</span>
-      <span id="asset-rates-summary" style="margin-left:auto;font-size:11px;font-weight:400">loading…</span>
-    </div>
-    <div id="asset-rates-panel" class="card hidden" style="margin-top:-6px;padding-top:14px">
-        <div class="sec-label" style="margin-bottom:10px">Asset build rates by department</div>
-        <div class="rate-override-row">
-          <label class="rate-override-label" for="asset-rates-override-input">
-            Apply one rate to all asset departments
-          </label>
-          <div class="rate-override-input-row">
-            <span class="rate-sym" id="asset-rates-override-sym">$</span>
-            <input type="number"
-                   id="asset-rates-override-input"
-                   class="rate-input"
-                   placeholder="e.g. 750"
-                   min="0" step="50"
-                   style="width:90px">
-            <button type="button" class="btn-blue btn-sm"
-                    onclick="applyAssetRateOverrideToAll()">
-              Apply to All
-            </button>
-          </div>
-        </div>
-        <div style="height:1px;background:var(--border);margin:10px 0"></div>
-        <div class="rates-grid" id="asset-rates-grid"></div>
-        <div class="rates-hint muted" style="font-size:11px;margin-top:6px">
-          Rates shown in <span id="asset-rates-currency">USD</span>/day.
-          Changes apply to all future asset cost calculations.
-        </div>
-    </div>
-
-    <div class="card" id="asset-card">
+  </section>
+    <section id="sec-assets" class="bid-section">
+    <h2 class="bid-h1"><span class="n">04</span> Assets</h2>
+    <p class="bid-lead">Upload assets and estimate build days. Asset department rates live under Rates.</p>
+<div class="card" id="asset-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="sec-label">Asset Breakdown</div>
         <span class="muted" style="font-size:12px">Build days for CG assets — modelling, rigging, etc.</span>
@@ -1161,7 +1479,7 @@
         placeholder="Paste asset names (one per line):&#10;CG Dragon — Hero Creature&#10;CG Castle Environment&#10;CG Warship — Background"
         style="width:100%;min-height:88px;padding:12px 14px;resize:vertical"></textarea>
       <div class="prequal-toggle" id="asset-pq-toggle" onclick="toggleAssetContext()" style="margin-top:12px">
-        <svg class="icon icon-sm arrow"><use href="#i-chevron"></use></svg>
+        <span class="arrow" aria-hidden="true"></span>
         <span>Asset Context <span class="muted">(optional)</span></span>
       </div>
       <div id="asset-context-panel" class="hidden" style="margin-top:8px;padding:14px;background:var(--card2);border-radius:var(--r);display:grid;grid-template-columns:1fr;gap:10px">
@@ -1221,8 +1539,11 @@
         <span id="asset-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
       </div>
     </div>
-
-    <div id="combined-summary" class="card hidden" style="margin-top:16px">
+  </section>
+  <section id="sec-summary" class="bid-section">
+    <h2 class="bid-h1"><span class="n">05</span> Summary</h2>
+    <p class="bid-lead">Combined bid summary, tax credit, and currency equivalents.</p>
+<div id="combined-summary" class="card hidden" style="margin-top:16px">
       <div class="sec-label">Bid Summary</div>
       <div id="cs-reference" class="muted" style="font-size:12px;margin-top:4px">—</div>
       <div class="batch-bid-summary-stats" style="margin-top:12px">
@@ -1232,6 +1553,10 @@
         <div class="stat-block"><div class="n" id="cs-asset-cost">—</div><div class="l">Asset Cost</div></div>
       </div>
       <hr>
+      <div id="onset-summary-line" class="summary-line" style="display:none;padding:10px 4px;font-size:13px;font-weight:700;justify-content:space-between;gap:12px;align-items:center">
+        <span>Onset Supervision</span>
+        <span id="cs-onset-total" style="color:var(--text)">—</span>
+      </div>
       <div class="batch-bid-summary-stats" style="margin-bottom:0">
         <div class="stat-block"><div class="n" id="cs-total-days">—</div><div class="l">Total Production Days</div></div>
         <div class="stat-block"><div class="n" id="cs-gross-total" style="color:var(--green)">—</div><div class="l">Gross Total</div></div>
@@ -1284,8 +1609,70 @@
       <div class="fx-multi-summary" id="fx-multi-summary"></div>
       <div class="fx-status-note" id="fx-status-note"></div>
     </div>
-
-    <div id="resource-planning-card" class="card hidden" style="margin-top:16px">
+<div id="global-action-bar" class="hidden"
+         style="margin-top:32px;padding:20px;background:var(--card);border:1px solid var(--border);
+                border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;
+                flex-wrap:wrap;gap:12px">
+      <div id="global-action-summary" style="font-size:13px;color:var(--muted)"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="btn-ghost with-icon" onclick="toggleCompanyProfilePanel()">
+        Company Profile
+      </button>
+      <button type="button" id="save-currency-btn" class="btn-ghost with-icon" onclick="saveCurrentCurrencySnapshot(this)">
+        <svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>
+        Save in <span id="save-currency-label">USD</span>
+      </button>
+      <button type="button" id="save-corrections-btn" class="btn-green with-icon" onclick="saveAllCorrections(this)">
+        <svg class="icon"><use href="#i-check"></use></svg>
+        Save All Corrections
+      </button>
+      <label class="check-label" style="margin:0;padding:0 4px;white-space:nowrap" title="Include styled cover page as the first Excel sheet">
+        <input type="checkbox" id="export-include-cover" checked>
+        Include cover page
+      </label>
+      <button type="button" id="export-excel-btn" class="btn-blue with-icon" onclick="exportBidExcel(this)">
+        <svg class="icon"><use href="#i-download"></use></svg>
+        Export Excel
+      </button>
+    </div>
+  </div>
+  </section>
+  <section id="sec-charts" class="bid-section">
+    <h2 class="bid-h1"><span class="n">06</span> Charts</h2>
+    <p class="bid-lead">Visual breakdown of the current bid. Refreshes when you open this section or after estimates update.</p>
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-label" style="margin-bottom:8px">Bid days by department</div>
+      <p class="muted" style="font-size:12px;margin-bottom:12px">Shot vs asset production days per department.</p>
+      <div id="chart-days" class="bid-chart"></div>
+      <div id="chart-days-cap" class="muted" style="font-size:11px;margin-top:8px"></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-label" style="margin-bottom:8px">Cost by department</div>
+      <p class="muted" style="font-size:12px;margin-bottom:12px">Labor cost from current rates. Highest bar is highlighted.</p>
+      <div id="chart-cost" class="bid-chart"></div>
+      <div id="chart-cost-cap" class="muted" style="font-size:11px;margin-top:8px"></div>
+    </div>
+  </section>
+  <section id="sec-compare" class="bid-section">
+    <h2 class="bid-h1"><span class="n">07</span> Compare</h2>
+    <p class="bid-lead">Compare the current bid against a saved bid from History.</p>
+    <div class="compare-card">
+      <div class="compare-toolbar">
+        <div class="compare-field">
+          <label for="compare-bid-select">Compare against</label>
+          <select id="compare-bid-select" onchange="renderCompare()">
+            <option value="">— Select a saved bid —</option>
+          </select>
+        </div>
+        <button type="button" class="btn-ghost btn-sm" onclick="refreshCompareBidList()">Refresh list</button>
+      </div>
+      <div id="compare-body" class="compare-body">Select a saved bid from History to compare side by side.</div>
+    </div>
+  </section>
+  <section id="sec-resources" class="bid-section">
+    <h2 class="bid-h1"><span class="n">08</span> Resources</h2>
+    <p class="bid-lead">Staff the pipeline from weeks, artist counts, or start/end dates.</p>
+<div id="resource-planning-card" class="card hidden" style="margin-top:16px">
       <div class="sec-label" style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
         <svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"></use></svg>
         Resource Planning
@@ -1383,36 +1770,11 @@
         </p>
       </div>
     </div>
-
-    <div id="global-action-bar" class="hidden"
-         style="margin-top:32px;padding:20px;background:var(--card);border:1px solid var(--border);
-                border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;
-                flex-wrap:wrap;gap:12px">
-      <div id="global-action-summary" style="font-size:13px;color:var(--muted)"></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <button type="button" class="btn-ghost with-icon" onclick="toggleCompanyProfilePanel()">
-        Company Profile
-      </button>
-      <button type="button" id="save-currency-btn" class="btn-ghost with-icon" onclick="saveCurrentCurrencySnapshot(this)">
-        <svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>
-        Save in <span id="save-currency-label">USD</span>
-      </button>
-      <button type="button" id="save-corrections-btn" class="btn-green with-icon" onclick="saveAllCorrections(this)">
-        <svg class="icon"><use href="#i-check"></use></svg>
-        Save All Corrections
-      </button>
-      <label class="check-label" style="margin:0;padding:0 4px;white-space:nowrap" title="Include styled cover page as the first Excel sheet">
-        <input type="checkbox" id="export-include-cover" checked>
-        Include cover page
-      </label>
-      <button type="button" id="export-excel-btn" class="btn-blue with-icon" onclick="exportBidExcel(this)">
-        <svg class="icon"><use href="#i-download"></use></svg>
-        Export Excel
-      </button>
-    </div>
-  </div>
-
-  <div id="company-profile-panel" class="card hidden" style="margin-top:16px">
+  </section>
+  <section id="sec-cover" class="bid-section">
+    <h2 class="bid-h1"><span class="n">09</span> Cover Page</h2>
+    <p class="bid-lead">Company letterhead, brand colors, and on-set line items for Excel cover exports.</p>
+<div id="company-profile-panel" class="card hidden" style="margin-top:16px">
     <div class="sec-label" style="margin-bottom:10px">Company Profile (Cover Page)</div>
     <p class="muted" style="font-size:12px;margin-bottom:12px;max-width:42rem;line-height:1.5">
       Letterhead used on Cover Page exports. Saved in this browser and snapshotted into each
@@ -1486,21 +1848,50 @@
       <label class="span-2">Locations line<input type="text" id="co-locations" placeholder="Your Studio" oninput="persistCompanyProfile()"></label>
       <label>Prepared by<input type="text" id="co-prepared-by" placeholder="Supervisor Name" oninput="persistCompanyProfile()"></label>
       <label>Client (cover)<input type="text" id="co-client" placeholder="Client name" oninput="persistCompanyProfile()"></label>
-      <label>On-set supervision $/day<input type="number" id="co-onset-rate" value="0" min="0" step="50" oninput="persistCompanyProfile()"></label>
-      <label>On-set days<input type="number" id="co-onset-days" value="0" min="0" step="1" oninput="persistCompanyProfile()"></label>
+      <!-- Legacy onset fields — synced from Rates → Onset table for Excel/cover export -->
+      <input type="hidden" id="co-onset-rate" value="0">
+      <input type="hidden" id="co-onset-days" value="0">
       <label>Lidar / data processing<input type="number" id="co-lidar" value="0" min="0" step="100" oninput="persistCompanyProfile()"></label>
       <label>Quote valid (days)<input type="number" id="co-valid-days" value="60" min="1" step="1" oninput="persistCompanyProfile()"></label>
     </div>
     <label class="lbl" style="margin-top:12px">Terms &amp; Conditions</label>
     <textarea id="co-terms" rows="6" style="width:100%;resize:vertical" oninput="persistCompanyProfile()"></textarea>
   </div>
-
+  </section>
 </div><!-- /wrap -->
-
-<footer class="security-footer">
+<footer class="security-footer" style="margin:24px 0 0;border:0;padding:12px 0;background:transparent">
   <span><svg class="icon" aria-hidden="true"><use href="#i-lock"></use></svg>
     Your data is encrypted in transit (TLS 1.3) and at rest. Bids are isolated per account.</span>
 </footer>
+</main>
+</div><!-- /bid-shell -->
+
+<div class="bid-readout" id="bid-readout" aria-live="polite">
+  <div class="bid-ro">
+    <div class="k">Assets</div>
+    <div class="v" id="ro-assets">—</div>
+  </div>
+  <div class="bid-ro">
+    <div class="k">Shots</div>
+    <div class="v" id="ro-shots">—</div>
+  </div>
+  <div class="bid-ro">
+    <div class="k">Onset</div>
+    <div class="v" id="ro-onset">—</div>
+  </div>
+  <div class="bid-ro">
+    <div class="k">Grand Total</div>
+    <div class="v" id="ro-gross">—</div>
+  </div>
+  <div class="bid-ro rebate">
+    <div class="k">Tax Credit</div>
+    <div class="v" id="ro-credit">—</div>
+  </div>
+  <div class="bid-ro final">
+    <div class="k">Net / To Client</div>
+    <div class="v" id="ro-net">—</div>
+  </div>
+</div>
 
 <div id="col-map-modal" class="modal-overlay" onclick="closeColMapOutside(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
@@ -2405,7 +2796,7 @@ async function addSuggestedAssetToSection(shotIdx) {
   shot.suggestedAsset = asset;
   renderSuggestedAssetCell(shotIdx, asset);
   toast('Adding asset to breakdown below — estimating build days...', 'info');
-  document.getElementById('asset-card')?.scrollIntoView({ behavior: 'smooth' });
+  scrollBidMainToEl(document.getElementById('asset-card'), 'smooth');
   document.getElementById('asset-results')?.classList.remove('hidden');
 
   const added = await estimateSingleSuggestedAsset({
@@ -2568,28 +2959,15 @@ function sequenceCostForRow(row) {
 
 function batchCostCellHtml(row) {
   const perShot = parseFloat(row?.cost_per_shot) || 0;
+  return `<span style="font-weight:700">${money(perShot)}</span>`;
+}
+
+function seqCostCellHtml(row) {
   const n = Math.max(1, parseInt(row?.number_of_shots ?? 1, 10));
-
-  if (n <= 1 || !perShot) {
-    // Single shot: just show the cost
-    return `<span style="font-weight:700">${money(perShot)}</span>`;
-  }
-
-  // Multiple shots: show per-shot AND sequence cost
-  const seqCost = sequenceCostForRow(row) ?? (perShot * n);
-  return `
-    <div style="line-height:1.4">
-      <span style="font-weight:700">${money(perShot)}</span>
-      <span class="muted" style="font-size:10px;display:block">
-        per shot
-      </span>
-      <span style="font-weight:700;color:var(--accent)">
-        ${money(seqCost)}
-      </span>
-      <span class="muted" style="font-size:10px;display:block">
-        ×${n} shots total
-      </span>
-    </div>`;
+  if (n <= 1) return '<span class="muted">—</span>';
+  const seq = sequenceCostForRow(row);
+  if (seq == null) return '<span class="muted">—</span>';
+  return `<span style="font-weight:700;color:var(--accent)">${money(seq)}</span>`;
 }
 
 function calcShotMultiplier(n) {
@@ -2607,6 +2985,10 @@ function escHtml(s) {
 
 function escAttr(s) {
   return String(s || '').replace(/"/g, '&quot;');
+}
+
+function escJs(s) {
+  return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function iconSvg(name, cls='icon') {
@@ -2822,7 +3204,8 @@ function preventScrollTrap(e) {
 
   if (escapingUp || escapingDown) {
     e.preventDefault();
-    window.scrollBy({ top: e.deltaY, left: 0, behavior: 'auto' });
+    const main = document.getElementById('bid-main') || window;
+    main.scrollBy({ top: e.deltaY, left: 0, behavior: 'auto' });
     return;
   }
 
@@ -2908,11 +3291,12 @@ const ASSET_PRESET_DEPT_KEYS = ASSET_PRESET_DEPTS.map(([, key]) => key);
 const ASSET_PRESET_DEPT_HEADERS = ASSET_PRESET_DEPTS.map(([header]) => header);
 
 const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
-const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', 'SCRIPT HEADING', ...BID_DEPTS];
+const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', 'SCRIPT HEADING', 'SEQ COST', ...BID_DEPTS];
 const COL_DEFAULTS = {
   METHODOLOGY: false,
   'SUGGESTED ASSET': true,
   'SCRIPT HEADING': false,
+  'SEQ COST': false,
   CAMERA: true,
   MATCHMOVE: false,
   LAYOUT: true,
@@ -3504,6 +3888,7 @@ function appendBatchResultRow(i, row) {
   }
   row._ai_dept_days = { ...depts };
   row._ai_total_mandays = row.ai_total_mandays ?? row.total_mandays;
+  if (!row._dept_factors) row._dept_factors = {};
 
   const tr = document.createElement('tr');
   tr.className = 'batch-data-row';
@@ -3550,27 +3935,45 @@ function appendBatchResultRow(i, row) {
     const v = depts[dept] ?? 0;
     cells += isExcludedShot(row)
       ? `<td data-dept="${escAttr(dept)}" class="muted">—</td>`
-      : `<td data-dept="${escAttr(dept)}"><input type="number" class="bid-dept-inp" min="0" step="0.5"
-          data-dept="${escAttr(dept)}" data-idx="${i}" data-base-days="${v}" value="${v}"
-          oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))"></td>`;
+      : `<td data-dept="${escAttr(dept)}">
+          <div class="dept-cell-wrap" style="position:relative">
+            <input type="number" class="bid-dept-inp" min="0" step="0.5"
+              data-dept="${escAttr(dept)}" data-idx="${i}" data-base-days="${v}" value="${v}"
+              oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))">
+            <div class="dept-factor-indicator hidden"
+                 data-dept="${escAttr(dept)}"
+                 style="font-size:10px;color:var(--muted);margin-top:2px;cursor:pointer;user-select:none"
+                 onclick="openDeptFactorEdit(this, ${i}, '${escJs(dept)}')">
+              <span class="dept-factor-val">×1.00</span>
+              <span style="color:var(--accent);margin-left:3px" aria-hidden="true">edit</span>
+            </div>
+          </div>
+        </td>`;
   });
 
   const shotCost = row.cost_per_shot ?? computeClientShotCost(depts, getDeptRates(), { mandaysFallback: row.total_mandays });
   row.cost_per_shot = shotCost;
   const baseDays = parseFloat(row.total_mandays) || 0;
   const shotCount = Math.max(1, parseInt(row.number_of_shots, 10) || 1);
-  const shotFactor = calcShotMultiplier(shotCount);
+  const shotFactor = row._global_factor ?? calcShotMultiplier(shotCount);
   const allShotDays = calcTotalShotDays(baseDays, shotCount);
 
   cells += `
     <td class="batch-row-days" style="font-weight:700">${fmt(baseDays)}</td>
     <td class="batch-row-cost" style="font-weight:700;color:var(--green)">${batchCostCellHtml(row)}</td>
+    <td class="batch-row-seq-cost" data-dept="SEQ COST"
+        style="font-weight:700;color:var(--accent)">
+      ${seqCostCellHtml({ ...row, cost_per_shot: shotCost, number_of_shots: shotCount })}
+    </td>
     <td><input type="number" class="shot-count-inp" value="${shotCount}"
       min="1" max="100" step="1" style="width:52px;text-align:center"
       data-row-idx="${i}" data-base-days="${baseDays}"
       ${isExcludedShot(row) ? 'disabled' : ''}
       oninput="updateShotMultiplierCells(this)"></td>
-    <td class="shot-factor-cell" style="color:var(--muted);font-size:12px;text-align:right">
+    <td class="shot-factor-cell"
+        style="color:var(--muted);font-size:12px;text-align:right;cursor:pointer"
+        title="Click to edit global factor for this shot"
+        onclick="openGlobalFactorEdit(this, ${i})">
       ${shotFactor.toFixed(2)}×
     </td>
     <td class="shot-total-days-cell" style="font-weight:700;text-align:right">
@@ -3581,6 +3984,10 @@ function appendBatchResultRow(i, row) {
   tr.innerHTML = cells;
   tbody.appendChild(tr);
   applyDeptMixToRow(row, tr, { skipRefresh: true });
+  if (shotCount > 1) {
+    const shotInp = tr.querySelector('.shot-count-inp');
+    if (shotInp) updateShotMultiplierCells(shotInp);
+  }
   if (row.error) showRowRerun(i);
   applyColVisibility();
   updateIncludeMasterCheckbox();
@@ -5406,15 +5813,49 @@ function currentShotStats() {
   return computeBatchBidStats(rows.length ? rows : (_batchResult?.shots || []).filter(Boolean));
 }
 
+function updateBidReadout(summary) {
+  const s = summary || {};
+  const shotCost = Number(s.shotCost) || 0;
+  const assetCost = Number(s.assetCost) || 0;
+  const onsetCost = Number(s.onsetCost) || 0;
+  const grossCost = Number(s.grossCost) || 0;
+  const net = Number(s.net) || 0;
+  const netSummary = grossCost > 0 ? computeBidNetSummary(grossCost) : { creditAmt: 0, net: 0 };
+  const credit = Number(s.creditAmt ?? netSummary.creditAmt) || 0;
+  const cur = (_displayCurrency || 'USD').toUpperCase();
+  const set = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+  set('ro-assets', assetCost > 0 ? money(assetCost) : '—');
+  set('ro-shots', shotCost > 0 ? money(shotCost) : '—');
+  set('ro-onset', onsetCost > 0 ? money(onsetCost) : '—');
+  const grossEl = document.getElementById('ro-gross');
+  if (grossEl) {
+    grossEl.innerHTML = grossCost > 0
+      ? `${escHtml(money(grossCost))}<span class="cur">${escHtml(cur)}</span>`
+      : '—';
+  }
+  set('ro-credit', credit > 0 ? '−' + money(credit) : '—');
+  const netEl = document.getElementById('ro-net');
+  if (netEl) {
+    const netVal = grossCost > 0 ? (Number.isFinite(net) ? net : netSummary.net) : 0;
+    netEl.innerHTML = grossCost > 0
+      ? `${escHtml(money(netVal))}<span class="cur">${escHtml(cur)}</span>`
+      : '—';
+  }
+}
+
 function updateCombinedSummary(shotStats) {
   const assetStats = updateAssetSummary();
   const stats = shotStats || currentShotStats();
   const shotCount = stats?.shotCount || 0;
   const shotDays = stats?.totalDays || 0;
   const shotCost = stats?.totalCost || 0;
+  const onsetCost = typeof _onsetTotal === 'number' ? _onsetTotal : 0;
   const totalDays = Math.round((shotDays + assetStats.totalDays) * 2) / 2;
-  const grossCost = Math.round((shotCost + assetStats.totalCost) * 100) / 100;
-  const hasAnyCost = shotCount > 0 || assetStats.count > 0;
+  const grossCost = Math.round((shotCost + assetStats.totalCost + onsetCost) * 100) / 100;
+  const hasAnyCost = shotCount > 0 || assetStats.count > 0 || onsetCost > 0;
   document.getElementById('combined-summary')?.classList.toggle('hidden', !hasAnyCost);
   document.getElementById('tax-credit-card')?.classList.toggle('hidden', !hasAnyCost);
   if (!hasAnyCost) {
@@ -5423,7 +5864,9 @@ function updateCombinedSummary(shotStats) {
     updateTaxCreditDisplay(0);
     renderFxMultiSummary(0, 0);
     updateFxStatusNote();
-    return { shotCost: 0, assetCost: 0, grossCost: 0, net: 0 };
+    renderBidCharts();
+    updateBidReadout({ shotCost: 0, assetCost: 0, onsetCost: 0, grossCost: 0, net: 0, creditAmt: 0 });
+    return { shotCost: 0, assetCost: 0, onsetCost: 0, grossCost: 0, net: 0 };
   }
   document.getElementById('cs-shot-days').textContent = fmt(shotDays) + 'd';
   document.getElementById('cs-asset-days').textContent = fmt(assetStats.totalDays) + 'd';
@@ -5432,6 +5875,12 @@ function updateCombinedSummary(shotStats) {
   document.getElementById('cs-asset-cost').textContent = money(assetStats.totalCost);
   document.getElementById('cs-total-days').textContent = fmt(totalDays) + 'd';
   document.getElementById('cs-gross-total').textContent = money(grossCost);
+  const onsetLine = document.getElementById('onset-summary-line');
+  const onsetDisplay = document.getElementById('cs-onset-total');
+  if (onsetLine && onsetDisplay) {
+    onsetLine.style.display = onsetCost > 0 ? 'flex' : 'none';
+    onsetDisplay.textContent = money(onsetCost);
+  }
   fitStatNumbers(document.getElementById('combined-summary') || document);
   const netSummary = computeBidNetSummary(grossCost);
   updateTaxCreditDisplay(grossCost);
@@ -5439,8 +5888,17 @@ function updateCombinedSummary(shotStats) {
   updateFxStatusNote();
   maybeShowResourcePlanning();
   updateGlobalActionBar();
+  renderBidCharts();
+  updateBidReadout({
+    shotCost,
+    assetCost: assetStats.totalCost,
+    onsetCost,
+    grossCost,
+    net: netSummary.net,
+    creditAmt: netSummary.creditAmt,
+  });
   scheduleAutosave();
-  return { shotCost, assetCost: assetStats.totalCost, grossCost, net: netSummary.net };
+  return { shotCost, assetCost: assetStats.totalCost, onsetCost, grossCost, net: netSummary.net };
 }
 
 // Pipeline order — each array is a parallel stage.
@@ -6294,7 +6752,7 @@ async function runBatchEstimate() {
     }
 
     await runBatchStream(shots, project, preQual);
-    document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollBidMainToEl(document.getElementById('batch-results'), 'smooth');
   } catch (e) {
     if (e.name === 'AbortError') {
       toast('Estimation stopped.', 'warn');
@@ -6316,7 +6774,7 @@ function buildBatchTableHeader() {
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
-  html += '<th>DAYS</th><th>COST</th><th>SHOTS</th><th>× FACTOR</th><th>TOTAL DAYS</th><th>CONF</th>';
+  html += '<th>DAYS</th><th>COST</th><th data-dept="SEQ COST">SEQ COST</th><th>SHOTS</th><th>× FACTOR</th><th>TOTAL DAYS</th><th>CONF</th>';
   document.getElementById('batch-thead-row').innerHTML = html;
   setupBatchTableDragDrop();
   applyColVisibility();
@@ -6418,6 +6876,9 @@ function autoShowPopulatedCols(results) {
   if (results.some(r => (r?.methodology || '').trim())) _visibleCols.METHODOLOGY = true;
   if (results.some(r => r?.suggestedAsset?.asset_name)) _visibleCols['SUGGESTED ASSET'] = true;
   if (results.some(r => (r?.script_heading || '').trim())) _visibleCols['SCRIPT HEADING'] = true;
+  if (results.some(r => Math.max(1, parseInt(r?.number_of_shots, 10) || 1) > 1)) {
+    _visibleCols['SEQ COST'] = true;
+  }
   saveVisibleCols();
   applyColVisibility();
   buildColCheckboxes();
@@ -7007,42 +7468,266 @@ function updateShotMultiplierCells(input) {
   if (!tr) return;
   const shots = Math.min(100, Math.max(1, parseInt(input.value, 10) || 1));
   const baseDays = parseFloat(input.dataset.baseDays) || 0;
-  const factor = calcShotMultiplier(shots);
+  const idx = batchRowIndex(tr);
+  const shot = Number.isFinite(idx) ? _batchResult?.shots?.[idx] : null;
+
+  if (shot) {
+    // Only clear custom global factor when the user is editing SHOTS directly
+    if (input?.classList?.contains('shot-count-inp') && document.activeElement === input) {
+      delete shot._global_factor;
+    }
+    if (shots === 1) shot._dept_factors = {};
+    shot.number_of_shots = shots;
+  }
+
+  const factor = (shot && shot._global_factor != null)
+    ? Number(shot._global_factor)
+    : calcShotMultiplier(shots);
   const n = shots;
-  const totalDays = calcTotalShotDays(baseDays, shots);
+  const totalDays = (parseFloat(baseDays) || 0) * factor;
 
   // Update factor and total days display columns
   const factorCell = tr.querySelector('.shot-factor-cell');
   const totalCell = tr.querySelector('.shot-total-days-cell');
-  if (factorCell) factorCell.textContent = factor.toFixed(2) + '×';
+  if (factorCell && !factorCell.querySelector('input')) {
+    factorCell.textContent = factor.toFixed(2) + '×';
+  }
   if (totalCell) totalCell.textContent = fmt(totalDays);
 
   // Update the main DAYS cell to show base (n=1) or scaled total (n>1)
   const daysCell = tr.querySelector('.batch-row-days');
   if (daysCell) daysCell.textContent = n === 1 ? fmt(baseDays) : fmt(totalDays);
 
-  // Update all dept input cells proportionally from preserved 1-shot bases
+  // Update all dept input cells from preserved 1-shot bases × (override or global)
   tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
     const base = parseFloat(inp.dataset.baseDays ?? inp.value) || 0;
     if (inp.dataset.baseDays == null || inp.dataset.baseDays === '') {
       inp.dataset.baseDays = String(base);
     }
     if (base === 0) return;
+    const dept = inp.dataset.dept;
+    const deptFactor = (n === 1)
+      ? 1
+      : (shot?._dept_factors?.[dept] ?? factor);
     inp.value = n === 1
       ? inp.dataset.baseDays
-      : String(Math.round(base * factor * 2) / 2);
+      : String(Math.round(base * deptFactor * 2) / 2);
   });
 
-  // Refresh cost cell — keep cost_per_shot as original 1-shot cost
-  const idx = batchRowIndex(tr);
-  if (Number.isFinite(idx) && _batchResult?.shots?.[idx]) {
-    const shot = _batchResult.shots[idx];
-    shot.number_of_shots = shots;
+  // Show/hide per-dept factor indicators
+  tr.querySelectorAll('.dept-factor-indicator').forEach(ind => {
+    if (shots > 1) {
+      const dept = ind.dataset.dept;
+      const f = shot?._dept_factors?.[dept] ?? factor;
+      ind.classList.remove('hidden');
+      const valEl = ind.querySelector('.dept-factor-val');
+      if (valEl) valEl.textContent = '×' + Number(f).toFixed(2);
+    } else {
+      ind.classList.add('hidden');
+    }
+  });
+
+  // Refresh cost + sequence cost — keep cost_per_shot as original 1-shot cost
+  if (shot) {
     const costEl = tr.querySelector('.batch-row-cost');
     if (costEl) costEl.innerHTML = batchCostCellHtml(shot);
+
+    const seqCostEl = tr.querySelector('.batch-row-seq-cost');
+    if (seqCostEl) {
+      seqCostEl.innerHTML = seqCostCellHtml(shot);
+      if (shots > 1 && !_visibleCols['SEQ COST']) {
+        _visibleCols['SEQ COST'] = true;
+        saveVisibleCols();
+        applyColVisibility();
+        buildColCheckboxes();
+      }
+    }
     _batchResult.export_csv_base64 = null;
   }
 
+  scheduleAutosave();
+}
+
+function openDeptFactorEdit(indicator, rowIdx, dept) {
+  document.querySelectorAll('.dept-factor-popover').forEach(p => p.remove());
+
+  const shot = _batchResult?.shots?.[rowIdx];
+  const globalFactor = shot?._global_factor
+    ?? calcShotMultiplier(shot?.number_of_shots ?? 1);
+  const currentFactor = shot?._dept_factors?.[dept] ?? globalFactor;
+
+  const popover = document.createElement('div');
+  popover.className = 'dept-factor-popover';
+  popover.style.cssText = `
+    position:absolute;bottom:calc(100% + 4px);left:0;
+    background:var(--card2);border:1px solid var(--border);
+    border-radius:6px;padding:8px 10px;z-index:50;
+    white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.3)`;
+
+  popover.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">
+      ${escHtml(dept)} multiplier
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:12px;color:var(--muted)">×</span>
+      <input type="number" class="dept-factor-input"
+             value="${Number(currentFactor).toFixed(2)}"
+             min="0" step="0.05" style="width:64px;font-size:13px">
+      <button type="button" class="btn-blue" style="padding:4px 10px;font-size:12px"
+              onclick="applyDeptFactor(${rowIdx},'${escJs(dept)}',this.closest('.dept-factor-popover').querySelector('.dept-factor-input').value)">
+        Apply
+      </button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:4px">
+      Global: ×${Number(globalFactor).toFixed(2)}
+    </div>`;
+
+  indicator.style.position = 'relative';
+  indicator.appendChild(popover);
+
+  const input = popover.querySelector('.dept-factor-input');
+  input.focus();
+  input.select();
+
+  setTimeout(() => {
+    const close = (e) => {
+      if (!popover.contains(e.target) && e.target !== indicator && !indicator.contains(e.target)) {
+        popover.remove();
+        document.removeEventListener('click', close);
+      }
+    };
+    document.addEventListener('click', close);
+  }, 10);
+}
+
+function applyDeptFactor(rowIdx, dept, factorVal) {
+  const factor = Math.max(0, parseFloat(factorVal) || 1);
+  const shot = _batchResult?.shots?.[rowIdx];
+  if (!shot) return;
+
+  shot._dept_factors = shot._dept_factors || {};
+  shot._dept_factors[dept] = factor;
+
+  const tr = document.querySelector(
+    `#batch-table-body tr.batch-data-row[data-idx="${rowIdx}"]`
+  );
+  if (!tr) return;
+
+  const deptInp = tr.querySelector(
+    `input.bid-dept-inp[data-dept="${CSS.escape(dept)}"]`
+  );
+  if (deptInp) {
+    const base = parseFloat(deptInp.dataset.baseDays) || 0;
+    deptInp.value = base > 0
+      ? String(Math.round(base * factor * 2) / 2)
+      : '0';
+  }
+
+  const ind = tr.querySelector(
+    `.dept-factor-indicator[data-dept="${CSS.escape(dept)}"]`
+  );
+  if (ind) {
+    const valEl = ind.querySelector('.dept-factor-val');
+    if (valEl) valEl.textContent = '×' + factor.toFixed(2);
+  }
+
+  tr.querySelectorAll('.dept-factor-popover').forEach(p => p.remove());
+
+  // Recalc DAYS from current inputs without wiping per-dept overrides
+  const depts = readRowDepts(tr);
+  let days = Object.values(depts).reduce((a, b) => a + b, 0);
+  days = Math.round(days * 2) / 2;
+  const daysCell = tr.querySelector('.batch-row-days');
+  if (daysCell) daysCell.textContent = fmt(days);
+  const totalCell = tr.querySelector('.shot-total-days-cell');
+  if (totalCell) totalCell.textContent = fmt(days);
+
+  const costEl = tr.querySelector('.batch-row-cost');
+  if (costEl) costEl.innerHTML = batchCostCellHtml(shot);
+  const seqCostEl = tr.querySelector('.batch-row-seq-cost');
+  if (seqCostEl) seqCostEl.innerHTML = seqCostCellHtml(shot);
+
+  markBatchRowEdited(rowIdx);
+  _batchResult.export_csv_base64 = null;
+  refreshBatchBidSummary();
+  scheduleAutosave();
+}
+
+function openGlobalFactorEdit(cell, rowIdx) {
+  if (cell.querySelector('input')) return;
+  const current = parseFloat(String(cell.textContent || '').replace(/×/g, '')) || 1;
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.value = current.toFixed(2);
+  input.min = '0';
+  input.step = '0.05';
+  input.style.cssText = 'width:56px;font-size:12px;text-align:center';
+
+  cell.textContent = '';
+  cell.appendChild(input);
+  input.focus();
+  input.select();
+
+  let committed = false;
+  function commit() {
+    if (committed) return;
+    committed = true;
+    const val = Math.max(0, parseFloat(input.value) || 1);
+    cell.textContent = val.toFixed(2) + '×';
+    applyGlobalFactorOverride(rowIdx, val);
+  }
+
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { commit(); e.preventDefault(); }
+    if (e.key === 'Escape') {
+      committed = true;
+      cell.textContent = current.toFixed(2) + '×';
+    }
+  });
+}
+
+function applyGlobalFactorOverride(rowIdx, factor) {
+  const tr = document.querySelector(
+    `#batch-table-body tr.batch-data-row[data-idx="${rowIdx}"]`
+  );
+  const shot = _batchResult?.shots?.[rowIdx];
+  if (!tr || !shot) return;
+
+  shot._global_factor = factor;
+
+  tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
+    const dept = inp.dataset.dept;
+    // Skip if this dept has its own override
+    if (shot._dept_factors?.[dept] != null) return;
+    const base = parseFloat(inp.dataset.baseDays) || 0;
+    if (base === 0) return;
+    inp.value = String(Math.round(base * factor * 2) / 2);
+    const ind = tr.querySelector(
+      `.dept-factor-indicator[data-dept="${CSS.escape(dept)}"]`
+    );
+    if (ind) {
+      const valEl = ind.querySelector('.dept-factor-val');
+      if (valEl) valEl.textContent = '×' + factor.toFixed(2);
+    }
+  });
+
+  const depts = readRowDepts(tr);
+  let days = Object.values(depts).reduce((a, b) => a + b, 0);
+  days = Math.round(days * 2) / 2;
+  const daysCell = tr.querySelector('.batch-row-days');
+  if (daysCell) daysCell.textContent = fmt(days);
+  const totalCell = tr.querySelector('.shot-total-days-cell');
+  if (totalCell) totalCell.textContent = fmt(days);
+
+  const costEl = tr.querySelector('.batch-row-cost');
+  if (costEl) costEl.innerHTML = batchCostCellHtml(shot);
+  const seqCostEl = tr.querySelector('.batch-row-seq-cost');
+  if (seqCostEl) seqCostEl.innerHTML = seqCostCellHtml(shot);
+
+  markBatchRowEdited(rowIdx);
+  _batchResult.export_csv_base64 = null;
+  refreshBatchBidSummary();
   scheduleAutosave();
 }
 
@@ -7087,6 +7772,8 @@ function updateBatchRowTotals(tr, skipRefresh) {
     }
     _batchResult.shots[idx].number_of_shots = nShots;
     if (costEl) costEl.innerHTML = batchCostCellHtml(_batchResult.shots[idx]);
+    const seqCostEl = tr.querySelector('.batch-row-seq-cost');
+    if (seqCostEl) seqCostEl.innerHTML = seqCostCellHtml(_batchResult.shots[idx]);
     markBatchRowEdited(idx);
     showRowRerun(idx);
     _batchResult.export_csv_base64 = null;
@@ -7129,12 +7816,19 @@ function collectBatchRowsForExport() {
     const factorCell = tr.querySelector('.shot-factor-cell');
     const totalCell = tr.querySelector('.shot-total-days-cell');
     const nShots = Math.max(1, parseInt(shotInput?.value, 10) || 1);
-    const shotFactor = parseFloat(factorCell?.textContent) || calcShotMultiplier(nShots);
+    const shotFactor = parseFloat(String(factorCell?.textContent || '').replace(/×/g, ''))
+      || shot?._global_factor
+      || calcShotMultiplier(nShots);
     const allShotDays = parseFloat(
       String(totalCell?.textContent || '').replace(/,/g, '')
-    ) || calcTotalShotDays(days, nShots);
+    ) || calcTotalShotDays(
+      parseFloat(shotInput?.dataset.baseDays) || days,
+      nShots
+    );
+    // Prefer preserved 1-shot cost — never derive sequence from scaled dept inputs
+    const perShotCost = parseFloat(shot?.cost_per_shot) || cost;
     const seqCost = sequenceCostForRow({
-      cost_per_shot: cost,
+      cost_per_shot: perShotCost,
       number_of_shots: nShots,
     });
     const notes = tr.querySelector('.batch-notes-inp')?.value
@@ -7152,11 +7846,11 @@ function collectBatchRowsForExport() {
       dept_days: depts,
       total_days: days,
       total_mandays: days,
-      cost,
-      cost_per_shot: cost,
+      cost: perShotCost,
+      cost_per_shot: perShotCost,
       shot_factor: shotFactor,
       total_days_all_shots: allShotDays,
-      sequence_cost: seqCost ?? cost,
+      sequence_cost: seqCost ?? perShotCost,
       confidence: shot?.confidence || 0,
       _included: true,
     });
@@ -7211,7 +7905,7 @@ async function exportBidExcel(btn) {
     'ITEM#', 'SHOT CODE', 'DESCRIPTION', 'METHODOLOGY',
     'NOTES',
     ...BID_DEPTS,
-    'TOTAL PROD DAYS', 'COST PER SHOT',
+    'TOTAL PROD DAYS', 'COST PER SHOT', 'SEQ COST',
     'SHOTS', '× FACTOR', 'TOTAL PROD DAYS (ALL SHOTS)',
     'CONFIDENCE',
   ];
@@ -7223,7 +7917,10 @@ async function exportBidExcel(btn) {
     r.notes || '',
     ...BID_DEPTS.map(d => r.dept_days?.[d] ?? 0),
     r.total_days,
-    toExportMoney(r.cost),
+    toExportMoney(r.cost_per_shot ?? r.cost),
+    (r.number_of_shots || 1) > 1
+      ? toExportMoney(r.sequence_cost ?? ((r.cost_per_shot ?? r.cost) * r.number_of_shots))
+      : '—',
     r.number_of_shots || 1,
     r.shot_factor || 1,
     r.total_days_all_shots ?? r.total_days,
@@ -7233,7 +7930,7 @@ async function exportBidExcel(btn) {
   applySheetColWidths(shotSheet, [
     10, 14, 40, 28, 20,
     ...BID_DEPTS.map(() => 8),
-    12, 12, 8, 10, 18, 10,
+    12, 12, 12, 8, 10, 18, 10,
   ]);
   XLSX.utils.book_append_sheet(wb, shotSheet, 'Shot Breakdown');
 
@@ -7304,7 +8001,10 @@ async function exportBidExcel(btn) {
   // ── TAB 4: Bid Summary ─────────────────────────────
   const stats = computeBatchBidStats(shotRowsData);
   const assetStats = updateAssetSummary();
-  const gross = Math.round(((stats.totalCost || 0) + (assetStats.totalCost || 0)) * 100) / 100;
+  const onsetCost = typeof _onsetTotal === 'number' ? _onsetTotal : 0;
+  const onsetDaysEl = document.getElementById('onset-total-days');
+  const onsetDaysLabel = (onsetDaysEl?.textContent || '').replace('—', '').trim();
+  const gross = Math.round(((stats.totalCost || 0) + (assetStats.totalCost || 0) + onsetCost) * 100) / 100;
   const netSummary = computeBidNetSummary(gross);
   const taxCredit = netSummary.creditAmt;
   const adminFee = netSummary.adminAmt;
@@ -7322,6 +8022,9 @@ async function exportBidExcel(btn) {
     ['Asset Production Days', fmt(assetStats.totalDays || 0)],
     ['Asset Cost', money(assetStats.totalCost || 0)],
     ['Asset Count', assetStats.count || 0],
+    ['', ''],
+    ['Onset Supervision', onsetDaysLabel ? `${onsetDaysLabel}d` : '—'],
+    ['Onset Cost', onsetCost > 0 ? money(onsetCost) : '—'],
     ['', ''],
     ['Gross Total', money(gross)],
     [`Tax Credit (${_taxCreditPct}%)`, money(-taxCredit)],
@@ -7630,6 +8333,7 @@ function defaultCompanyProfile() {
     client: '',
     onset_rate: 0,
     onset_days: 0,
+    onset_roles: null,
     lidar: 0,
     valid_days: 60,
     terms: DEFAULT_COVER_TERMS,
@@ -7659,6 +8363,7 @@ function loadCompanyProfile() {
   set('co-lidar', profile.lidar);
   set('co-valid-days', profile.valid_days);
   set('co-terms', profile.terms || DEFAULT_COVER_TERMS);
+  window._pendingOnsetRoles = Array.isArray(profile.onset_roles) ? profile.onset_roles : null;
   return profile;
 }
 
@@ -7675,6 +8380,7 @@ function readCompanyProfileFromForm() {
     client: (document.getElementById('co-client')?.value || '').trim(),
     onset_rate: num('co-onset-rate'),
     onset_days: num('co-onset-days'),
+    onset_roles: collectOnsetRoles(),
     lidar: num('co-lidar'),
     valid_days: Math.max(1, parseInt(document.getElementById('co-valid-days')?.value, 10) || 60),
     terms: (document.getElementById('co-terms')?.value || DEFAULT_COVER_TERMS).trim(),
@@ -8462,7 +9168,7 @@ async function loadSavedBid(bidId) {
       } catch {}
     }
     closeHistoryDrawer();
-    document.getElementById('batch-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollBidMainToEl(document.getElementById('batch-results'), 'smooth');
     toast(`Loaded: ${bid.project_name} (${shots.length} shots · ${savedCurrency})`);
     return true;
   } catch (e) {
@@ -8591,6 +9297,400 @@ async function deleteSavedBid(bidId, btn) {
   }
 }
 
+
+// ── Onset supervision table ────────────────────────────────────────────────
+let _onsetTotal = 0;
+const DEFAULT_ONSET_ROLES = [
+  { role: 'VFX Supervisor', days: 0, rate: 1500 },
+  { role: 'VFX Producer', days: 0, rate: 1200 },
+];
+
+function collectOnsetRoles() {
+  return [...document.querySelectorAll('#onset-tbody tr')].map(tr => ({
+    role: (tr.querySelector('.onset-role-inp')?.value || '').trim(),
+    days: parseFloat(tr.querySelector('.onset-days-inp')?.value) || 0,
+    rate: parseFloat(tr.querySelector('.onset-rate-inp')?.value) || 0,
+  })).filter(r => r.role || r.days || r.rate);
+}
+
+function initOnsetTable() {
+  const tbody = document.getElementById('onset-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  let roles = window._pendingOnsetRoles;
+  window._pendingOnsetRoles = null;
+  if (!roles || !roles.length) {
+    const legacyDays = parseFloat(document.getElementById('co-onset-days')?.value) || 0;
+    const legacyRate = parseFloat(document.getElementById('co-onset-rate')?.value) || 0;
+    if (legacyDays > 0 || legacyRate > 0) {
+      roles = [{ role: 'VFX Supervisor', days: legacyDays, rate: rateDisplayValue(legacyRate) || legacyRate }];
+    } else {
+      roles = DEFAULT_ONSET_ROLES.map(r => ({
+        ...r,
+        rate: rateDisplayValue(r.rate) || r.rate,
+      }));
+    }
+  }
+  roles.forEach(r => addOnsetRow(r.role, r.days, r.rate));
+  if (!tbody.children.length) {
+    DEFAULT_ONSET_ROLES.forEach(r => addOnsetRow(r.role, r.days, rateDisplayValue(r.rate) || r.rate));
+  }
+  updateOnsetTotals();
+}
+
+function addOnsetRow(role = '', days = 0, rate = 0) {
+  const tbody = document.getElementById('onset-tbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+      <td>
+        <input type="text" class="onset-role-inp" value="${escAttr(role)}"
+               placeholder="e.g. VFX Coordinator" oninput="updateOnsetTotals()">
+      </td>
+      <td class="days">
+        <input type="number" class="onset-days-inp" value="${days || ''}"
+               min="0" step="0.5" placeholder="0" oninput="updateOnsetTotals()">
+      </td>
+      <td class="rate">
+        <input type="number" class="onset-rate-inp" value="${rate || ''}"
+               min="0" step="50" placeholder="0" oninput="updateOnsetTotals()">
+      </td>
+      <td class="num tot"><span class="onset-row-total">—</span></td>
+      <td class="act">
+        <button type="button" class="onset-remove" title="Remove row"
+                onclick="this.closest('tr').remove();updateOnsetTotals()" aria-label="Remove role">✕</button>
+      </td>`;
+  tbody.appendChild(tr);
+  updateOnsetTotals();
+}
+
+function updateOnsetTotals() {
+  const rows = document.querySelectorAll('#onset-tbody tr');
+  let totalDays = 0;
+  let totalCostUsd = 0;
+
+  rows.forEach(tr => {
+    const days = parseFloat(tr.querySelector('.onset-days-inp')?.value || 0) || 0;
+    const rateDisplay = parseFloat(tr.querySelector('.onset-rate-inp')?.value || 0) || 0;
+    const rateUsd = displayToUsd(rateDisplay);
+    const rowTotalUsd = days * rateUsd;
+    totalDays += days;
+    totalCostUsd += rowTotalUsd;
+    const cell = tr.querySelector('.onset-row-total');
+    if (cell) {
+      cell.textContent = rowTotalUsd > 0 ? money(rowTotalUsd) : '—';
+      cell.classList.toggle('has-val', rowTotalUsd > 0);
+    }
+  });
+
+  _onsetTotal = Math.round(totalCostUsd * 100) / 100;
+
+  const daysEl = document.getElementById('onset-total-days');
+  const costEl = document.getElementById('onset-total-cost');
+  if (daysEl) daysEl.textContent = totalDays > 0 ? fmt(totalDays) : '—';
+  if (costEl) costEl.textContent = totalCostUsd > 0 ? money(totalCostUsd) : '—';
+
+  const legacyRate = document.getElementById('co-onset-rate');
+  const legacyDays = document.getElementById('co-onset-days');
+  if (legacyRate) {
+    legacyRate.value = totalDays > 0
+      ? String(Math.round((totalCostUsd / totalDays) * 100) / 100)
+      : '0';
+  }
+  if (legacyDays) legacyDays.value = String(totalDays);
+
+  const onsetLine = document.getElementById('onset-summary-line');
+  const onsetDisplay = document.getElementById('cs-onset-total');
+  if (onsetLine && onsetDisplay) {
+    onsetLine.style.display = totalCostUsd > 0 ? 'flex' : 'none';
+    onsetDisplay.textContent = money(totalCostUsd);
+  }
+
+  if (typeof updateCombinedSummary === 'function') updateCombinedSummary();
+  if (typeof persistCompanyProfile === 'function') persistCompanyProfile();
+}
+
+// ── Charts (BidReel-style dept bars) ───────────────────────────────────────
+function collectChartDeptSeries() {
+  const shotMap = {};
+  const assetMap = {};
+  collectBatchRowsFromTable().forEach(r => {
+    BID_DEPTS.forEach(bidDept => {
+      const d = parseFloat(r.dept_days?.[bidDept]) || 0;
+      if (d > 0) shotMap[bidDept] = (shotMap[bidDept] || 0) + d;
+    });
+  });
+  document.querySelectorAll('#asset-tbody tr:not([data-excluded="1"])').forEach(tr => {
+    tr.querySelectorAll('input.bid-dept-inp[data-asset-dept]').forEach(inp => {
+      const key = inp.dataset.assetDept;
+      const d = parseFloat(inp.value) || 0;
+      if (key && d > 0) assetMap[key] = (assetMap[key] || 0) + d;
+    });
+  });
+  return { shotMap, assetMap };
+}
+
+function renderBidChartBars(el, rows, formatVal) {
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = '<div class="muted" style="font-size:12px">No estimate data yet — run a batch or asset estimate.</div>';
+    return;
+  }
+  const max = Math.max(...rows.map(r => r.value), 0.001);
+  el.innerHTML = rows.map(r => `
+    <div class="bid-chart-row">
+      <div class="bid-chart-label" title="${escAttr(r.label)}">${escHtml(r.label)}</div>
+      <div class="bid-chart-track"><div class="bid-chart-bar${r.hi ? ' hi' : ''}" style="width:${Math.max(2, (r.value / max) * 100)}%"></div></div>
+      <div class="bid-chart-val">${escHtml(formatVal(r.value))}</div>
+    </div>`).join('');
+}
+
+function renderBidCharts() {
+  const daysEl = document.getElementById('chart-days');
+  const costEl = document.getElementById('chart-cost');
+  if (!daysEl && !costEl) return;
+  const { shotMap, assetMap } = collectChartDeptSeries();
+  const dayRows = [];
+  const costRows = [];
+  Object.keys(shotMap).forEach(key => {
+    const totalD = shotMap[key] || 0;
+    if (totalD <= 0) return;
+    const label = bidDeptLabel(key) || key;
+    const rateUsd = getDeptRateUsd(BID_TO_INTERNAL[key] || key);
+    dayRows.push({ label, value: totalD, key: 's-' + key });
+    costRows.push({ label, value: totalD * rateUsd, key: 's-' + key });
+  });
+  Object.keys(assetMap).forEach(key => {
+    const totalD = assetMap[key] || 0;
+    if (totalD <= 0) return;
+    const label = (ASSET_DEPT_LABELS[key] || key) + ' (Asset)';
+    const rateUsd = getAssetDeptRateUsd(key);
+    dayRows.push({ label, value: totalD, key: 'a-' + key });
+    costRows.push({ label, value: totalD * rateUsd, key: 'a-' + key });
+  });
+  dayRows.sort((a, b) => b.value - a.value);
+  costRows.sort((a, b) => b.value - a.value);
+  if (costRows[0]) costRows[0].hi = true;
+  renderBidChartBars(daysEl, dayRows.slice(0, 14), v => fmt(v) + 'd');
+  renderBidChartBars(costEl, costRows.slice(0, 14), v => money(v));
+  const daysCap = document.getElementById('chart-days-cap');
+  const costCap = document.getElementById('chart-cost-cap');
+  if (daysCap) {
+    daysCap.textContent = dayRows.length
+      ? `Highest: ${dayRows[0].label} (${fmt(dayRows[0].value)}d)`
+      : '';
+  }
+  if (costCap) {
+    costCap.textContent = costRows.length
+      ? `Highest: ${costRows[0].label} (${money(costRows[0].value)})`
+      : '';
+  }
+}
+
+// ── Compare bids ───────────────────────────────────────────────────────────
+let _compareCache = {};
+
+async function refreshCompareBidList() {
+  const sel = document.getElementById('compare-bid-select');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    const params = new URLSearchParams({ limit: '30' });
+    const uid = getSessionUserId() || getUserId();
+    const projectId = projectIdForSave();
+    if (uid) params.set('user_id', uid);
+    if (projectId) params.set('project_id', String(projectId));
+    const r = await fetch(`${API}/bid-history?${params.toString()}`);
+    const data = await r.json();
+    const bids = data.bids || [];
+    sel.innerHTML = '<option value="">— Select a saved bid —</option>' + bids.map(b => {
+      const cur = (b.display_currency || b.currency || 'USD').toUpperCase();
+      const label = `${b.project_name || 'Untitled'} · ${b.shot_count ?? 0} shots · ${cur}`;
+      return `<option value="${b.id}">${escHtml(label)}</option>`;
+    }).join('');
+    if (prev) sel.value = prev;
+  } catch {
+    sel.innerHTML = '<option value="">Could not load history</option>';
+  }
+}
+
+async function renderCompare() {
+  const body = document.getElementById('compare-body');
+  const sel = document.getElementById('compare-bid-select');
+  if (!body || !sel) return;
+  const bidId = sel.value;
+  if (!bidId) {
+    body.innerHTML = '<span class="muted">Select a saved bid from History to compare side by side.</span>';
+    return;
+  }
+  body.innerHTML = loadingInlineHtml('Comparing…');
+  try {
+    let bid = _compareCache[bidId];
+    if (!bid) {
+      const r = await fetch(`${API}/bid-history/${bidId}`);
+      if (!r.ok) throw new Error('Bid not found');
+      bid = await r.json();
+      _compareCache[bidId] = bid;
+    }
+    const current = updateCombinedSummary() || {};
+    const shotStats = currentShotStats();
+    const assetStats = updateAssetSummary();
+    const a = {
+      name: getBatchProject() || 'Current bid',
+      shots: shotStats.shotCount || 0,
+      shotDays: shotStats.totalDays || 0,
+      shotCost: shotStats.totalCost || 0,
+      assets: assetStats.count || 0,
+      assetDays: assetStats.totalDays || 0,
+      assetCost: assetStats.totalCost || 0,
+      onset: _onsetTotal || 0,
+      gross: current.grossCost || 0,
+      net: current.net || 0,
+    };
+    const bShots = (bid.shots || []).length;
+    const bDays = Number(bid.total_mandays || 0);
+    const dayRateUsd = Number(bid.day_rate_usd || 700);
+    const bShotCost = bDays * dayRateUsd;
+    const b = {
+      name: bid.project_name || 'Saved bid',
+      shots: bid.shot_count ?? bShots,
+      shotDays: bDays,
+      shotCost: bShotCost,
+      assets: bid.asset_count || 0,
+      assetDays: Number(bid.asset_mandays || 0),
+      assetCost: Number(bid.asset_cost_usd || 0),
+      onset: Number(bid.onset_cost_usd || 0),
+      gross: Number(bid.gross_usd || (bShotCost + Number(bid.asset_cost_usd || 0))),
+      net: Number(bid.net_usd || 0),
+    };
+    const rows = [
+      ['Shots', a.shots, b.shots, 'i'],
+      ['Shot days', a.shotDays, b.shotDays, 'd'],
+      ['Shot cost', a.shotCost, b.shotCost, 'm'],
+      ['Assets', a.assets, b.assets, 'i'],
+      ['Asset days', a.assetDays, b.assetDays, 'd'],
+      ['Asset cost', a.assetCost, b.assetCost, 'm'],
+      ['Onset', a.onset, b.onset, 'm'],
+      ['Gross total', a.gross, b.gross, 'm'],
+      ['Net total', a.net, b.net, 'm'],
+    ];
+    const fmtCell = (v, t) => {
+      if (t === 'm') return money(v);
+      if (t === 'd') return fmt(v) + 'd';
+      return String(Math.round(v));
+    };
+    body.innerHTML = `
+      <div class="batch-dept-summary-wrap">
+        <table class="batch-dept-summary">
+          <thead>
+            <tr>
+              <th style="text-align:left">Metric</th>
+              <th style="text-align:right">A · ${escHtml(a.name)}</th>
+              <th style="text-align:right">B · ${escHtml(b.name)}</th>
+              <th style="text-align:right">Diff (B − A)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(([k, av, bv, t]) => {
+              const diff = bv - av;
+              const col = diff > 0 ? 'var(--red)' : diff < 0 ? 'var(--green)' : 'var(--muted)';
+              const sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
+              return `<tr>
+                <td>${escHtml(k)}</td>
+                <td style="text-align:right">${fmtCell(av, t)}</td>
+                <td style="text-align:right">${fmtCell(bv, t)}</td>
+                <td style="text-align:right;color:${col}">${sign}${fmtCell(Math.abs(diff), t)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch (e) {
+    body.innerHTML = `<span style="color:var(--red)">Compare failed: ${escHtml(e.message)}</span>`;
+  }
+}
+
+// ── Bid sidebar (BidReel-style rail) ───────────────────────────────────────
+const SIDEBAR_OPEN_KEY = 'vfx_sidebar_open';
+
+function isBidSidebarOpen() {
+  try {
+    const v = localStorage.getItem(SIDEBAR_OPEN_KEY);
+    if (v === null) return true;
+    return v === '1' || v === 'true';
+  } catch (_) { return true; }
+}
+
+function applyBidSidebarState(open) {
+  const shell = document.getElementById('bid-shell');
+  if (!shell) return;
+  shell.classList.toggle('rail-collapsed', !open);
+  const btn = document.getElementById('bid-rail-toggle');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function toggleBidSidebar() {
+  const open = !isBidSidebarOpen();
+  try { localStorage.setItem(SIDEBAR_OPEN_KEY, open ? '1' : '0'); } catch (_) {}
+  applyBidSidebarState(open);
+}
+
+function scrollBidMainToEl(el, behavior) {
+  const main = document.getElementById('bid-main');
+  if (!el) return;
+  if (!main) {
+    el.scrollIntoView({ behavior: behavior || 'smooth', block: 'start' });
+    return;
+  }
+  const top = el.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - 12;
+  main.scrollTo({ top: Math.max(0, top), behavior: behavior || 'smooth' });
+}
+
+function scrollToBidSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  scrollBidMainToEl(el, 'smooth');
+  document.querySelectorAll('.bid-navitem').forEach(n => {
+    n.classList.toggle('on', n.getAttribute('data-target') === id);
+  });
+  if (id === 'sec-charts') renderBidCharts();
+  if (id === 'sec-compare') {
+    refreshCompareBidList();
+    renderCompare();
+  }
+}
+
+function initBidSidebar() {
+  applyBidSidebarState(isBidSidebarOpen());
+  document.querySelectorAll('.bid-navitem').forEach(n => {
+    n.addEventListener('click', () => {
+      const id = n.getAttribute('data-target');
+      if (id) scrollToBidSection(id);
+    });
+  });
+  const main = document.getElementById('bid-main');
+  if (!main) return;
+  const sections = [...document.querySelectorAll('.bid-section[id]')];
+  let ticking = false;
+  main.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const mainTop = main.getBoundingClientRect().top;
+      let current = sections[0]?.id;
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top - mainTop <= 48) current = s.id;
+      }
+      if (!current) return;
+      document.querySelectorAll('.bid-navitem').forEach(n => {
+        n.classList.toggle('on', n.getAttribute('data-target') === current);
+      });
+    });
+  }, { passive: true });
+}
+
 // ── Init ────────────────────────────────────────────────────────────────────
 // Wake Render on load, keep alive every 10 min
 fetch(`${API}/ping`).catch(() => {});
@@ -8601,6 +9701,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 (async()=>{
+  initBidSidebar();
   setTableWrapperFallbacks();
   loadUserId();
   applyProjectContext();
@@ -8608,6 +9709,8 @@ document.addEventListener('visibilitychange', () => {
   setInlineStatus(document.getElementById('asset-rates-summary'), 'Loading rates…', true);
   loadDisplayCurrency();
   loadCompanyProfile();
+  initOnsetTable();
+  updateBidReadout({ shotCost: 0, assetCost: 0, onsetCost: _onsetTotal || 0, grossCost: 0, net: 0 });
   restoreSavedLogo();
   restoreCoverColors();
   loadTaxCreditPct();
@@ -8615,6 +9718,8 @@ document.addEventListener('visibilitychange', () => {
   setupBatchDropZone();
   setupAssetDropZone();
   buildColCheckboxes();
+  renderBidCharts();
+  refreshCompareBidList();
   document.addEventListener('click', e => {
     if (!e.target.closest('.method-cell')) closeMethodologySuggestions();
   });
