@@ -6,6 +6,7 @@
   "outputDirectory": "frontend",
   "rewrites": [
     { "source": "/access", "destination": "/access.html" },
+    { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/dashboard", "destination": "/dashboard-page.html" },
     { "source": "/estimate", "destination": "/estimate.html" },
     { "source": "/signin", "destination": "/signin-page.html" }

@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FrameBid Pricing — Plans for every bidding desk</title>
+  <meta name="description" content="FrameBid pricing: Community free, Producer $149/mo, Studio $499/mo, and Enterprise custom. Compare features, limits, and deployment options.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #050506;
+      --foreground: #f7f7f7;
+      --muted: #1f1f24;
+      --muted-foreground: #8a8b94;
+      --accent: #456aed;
+      --accent-foreground: #ffffff;
+      --border: rgba(255, 255, 255, 0.1);
+      --card: #0c0c0e;
+      --font-display: "Outfit", sans-serif;
+      --font-body: "IBM Plex Sans", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    img { display: block; max-width: 100%; }
+
+    .coming-soon-banner {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.55rem 1.25rem;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      text-align: center;
+    }
+    .coming-soon-banner .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0.85;
+      flex-shrink: 0;
+    }
+
+    .site-header {
+      position: fixed;
+      inset: 2.2rem 0 auto;
+      z-index: 50;
+      background: rgba(5, 5, 6, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .header-inner { padding: 1rem 2.5rem; }
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo {
+      height: 40px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .brand-word-clip {
+      display: block;
+      overflow: hidden;
+      height: 1.15em;
+      width: 7.85em;
+      margin-left: -10px;
+      margin-top: 3px;
+    }
+    .brand-word {
+      display: block;
+      white-space: nowrap;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #7a91a3;
+      line-height: 1.15;
+    }
+
+    .header-nav {
+      display: none;
+      align-items: center;
+      gap: 2.25rem;
+    }
+    @media (min-width: 768px) {
+      .header-nav { display: flex; }
+    }
+    .header-nav a {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted-foreground);
+      transition: color .3s;
+    }
+    .header-nav a:hover,
+    .header-nav a.is-active { color: var(--foreground); }
+
+    .btn-soon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted-foreground);
+      cursor: default;
+    }
+    .btn-soon.solid {
+      background: #fff;
+      color: #050506;
+      border-color: #fff;
+    }
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #fff;
+      color: #050506;
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      transition: opacity .2s;
+    }
+    .btn-link:hover { opacity: 0.92; }
+    .btn-link.ghost {
+      background: transparent;
+      color: var(--foreground);
+      border: 1px solid var(--border);
+    }
+    .btn-link.ghost:hover { border-color: rgba(255,255,255,0.28); }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .shell { padding: 0 2.5rem; }
+    }
+
+    .page-hero {
+      padding: 8.5rem 0 3.5rem;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(69, 106, 237, 0.18), transparent 60%),
+        #050506;
+    }
+    @media (min-width: 768px) {
+      .page-hero { padding: 9.5rem 0 4.5rem; }
+    }
+    .sec-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+    }
+    .page-hero h1 {
+      margin-top: 1rem;
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.75rem);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      max-width: 14ch;
+    }
+    .page-hero .lede {
+      margin-top: 1.35rem;
+      max-width: 36rem;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--muted-foreground);
+    }
+
+    .billing-toggle {
+      margin-top: 2.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .billing-toggle button {
+      border-radius: 999px;
+      padding: 0.55rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted-foreground);
+      transition: background .2s, color .2s;
+    }
+    .billing-toggle button[aria-pressed="true"] {
+      background: rgba(69, 106, 237, 0.22);
+      color: var(--foreground);
+    }
+    .billing-note {
+      margin-top: 0.85rem;
+      font-size: 0.8rem;
+      color: var(--muted-foreground);
+    }
+    .billing-note strong { color: rgba(247,247,247,0.88); font-weight: 500; }
+
+    .tiers {
+      padding: 3.5rem 0 2rem;
+    }
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 720px) {
+      .tier-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1100px) {
+      .tier-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .tier-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 1.75rem;
+      min-height: 100%;
+      transition: border-color .3s, background .3s;
+    }
+    .tier-card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tier-card.featured {
+      border-color: rgba(69, 106, 237, 0.55);
+      background: linear-gradient(165deg, rgba(69, 106, 237, 0.14), transparent 55%), rgba(255, 255, 255, 0.02);
+    }
+    .tier-card .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      min-height: 1rem;
+    }
+    .tier-card h2 {
+      margin-top: 0.75rem;
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .tier-card .price-row {
+      margin-top: 1.25rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      min-height: 3rem;
+    }
+    .tier-card .amount {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .tier-card .period {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-foreground);
+    }
+    .tier-card .annual-hint {
+      width: 100%;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--muted-foreground);
+    }
+    .tier-card .blurb {
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--muted-foreground);
+      flex: 1;
+    }
+    .tier-card .audience {
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(138, 139, 148, 0.9);
+    }
+    .tier-card ul {
+      list-style: none;
+      margin: 1.4rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.55rem;
+    }
+    .tier-card li {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: rgba(247, 247, 247, 0.88);
+    }
+    .tier-card li::before {
+      content: "";
+      width: 0.4rem;
+      height: 0.4rem;
+      margin-top: 0.4rem;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .tier-card .card-cta {
+      margin-top: 1.75rem;
+    }
+    .tier-card .card-cta .btn-soon,
+    .tier-card .card-cta .btn-link {
+      width: 100%;
+    }
+
+    .compare {
+      padding: 4rem 0 5rem;
+      border-top: 1px solid var(--border);
+    }
+    .compare-intro {
+      max-width: 40rem;
+      margin-bottom: 2.5rem;
+    }
+    .compare-intro h2 {
+      margin-top: 0.85rem;
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3vw, 2.35rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .compare-intro p {
+      margin-top: 1rem;
+      color: var(--muted-foreground);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    table.compare-table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .compare-table th,
+    .compare-table td {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .compare-table thead th {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted-foreground);
+      background: rgba(255, 255, 255, 0.03);
+      position: sticky;
+      top: 0;
+    }
+    .compare-table thead th:first-child { color: var(--foreground); }
+    .compare-table tbody th {
+      font-weight: 500;
+      color: rgba(247, 247, 247, 0.92);
+      width: 28%;
+    }
+    .compare-table td {
+      color: var(--muted-foreground);
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-table tr.section th {
+      padding-top: 1.35rem;
+      padding-bottom: 0.55rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      background: rgba(69, 106, 237, 0.06);
+      border-bottom-color: rgba(69, 106, 237, 0.2);
+    }
+    .compare-table tr.section td {
+      background: rgba(69, 106, 237, 0.06);
+      border-bottom-color: rgba(69, 106, 237, 0.2);
+    }
+    .compare-table tbody tr:last-child th,
+    .compare-table tbody tr:last-child td { border-bottom: 0; }
+    .cell-yes { color: #7dcea0; }
+    .cell-no { color: rgba(138, 139, 148, 0.55); }
+    .cell-val { color: rgba(247, 247, 247, 0.88); }
+
+    .enterprise {
+      padding: 0 0 5rem;
+    }
+    .enterprise-panel {
+      border: 1px solid rgba(69, 106, 237, 0.35);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      background:
+        linear-gradient(135deg, rgba(69, 106, 237, 0.12), transparent 50%),
+        rgba(255, 255, 255, 0.02);
+      display: grid;
+      gap: 1.5rem;
+    }
+    @media (min-width: 800px) {
+      .enterprise-panel {
+        grid-template-columns: 1.4fr 1fr;
+        align-items: center;
+        padding: 2.5rem;
+      }
+    }
+    .enterprise-panel h2 {
+      margin-top: 0.75rem;
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .enterprise-panel p {
+      margin-top: 0.85rem;
+      color: var(--muted-foreground);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .enterprise-panel ul {
+      list-style: none;
+      display: grid;
+      gap: 0.65rem;
+    }
+    .enterprise-panel li {
+      font-size: 0.9rem;
+      color: rgba(247, 247, 247, 0.9);
+      padding-left: 1rem;
+      position: relative;
+    }
+    .enterprise-panel li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55rem;
+      width: 0.35rem;
+      height: 0.35rem;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 2.5rem;
+    }
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .footer-brand p {
+      margin-top: 0.85rem;
+      max-width: 22rem;
+      font-size: 0.85rem;
+      color: var(--muted-foreground);
+      line-height: 1.55;
+    }
+    .footer-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+    }
+    .footer-bottom a:hover { color: var(--foreground); }
+  </style>
+</head>
+<body>
+  <div class="coming-soon-banner" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    Coming soon — FrameBid is in private preview
+    <span class="dot" aria-hidden="true"></span>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="FrameBid">
+        <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+        <span class="brand-word-clip" aria-hidden="true">
+          <span class="brand-word">FRAMEBID</span>
+        </span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="/#overview">Overview</a>
+        <a href="/#process">Process</a>
+        <a href="/pricing" class="is-active" aria-current="page">Pricing</a>
+        <a href="/#capabilities">Capabilities</a>
+        <a href="/#second-opinion">Second opinion</a>
+      </nav>
+      <div class="header-actions">
+        <span class="btn-soon" aria-disabled="true">Coming soon</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="shell">
+      <p class="sec-label">/ Pricing</p>
+      <h1>Plans for every bidding desk.</h1>
+      <p class="lede">
+        From free evaluation to studio collaboration and enterprise deployment.
+        Pick the footprint that matches your pipeline — checkout opens at launch.
+      </p>
+      <div class="billing-toggle" role="group" aria-label="Billing period">
+        <button type="button" id="bill-monthly" aria-pressed="true">Monthly</button>
+        <button type="button" id="bill-annual" aria-pressed="false">Annual</button>
+      </div>
+      <p class="billing-note">Annual billing includes <strong>2 months free</strong>.</p>
+    </div>
+  </section>
+
+  <section class="tiers" aria-label="Plans">
+    <div class="shell">
+      <div class="tier-grid">
+        <article class="tier-card">
+          <p class="eyebrow">Evaluation</p>
+          <h2>Community</h2>
+          <div class="price-row">
+            <span class="amount">Free</span>
+            <span class="period">forever</span>
+          </div>
+          <p class="blurb">Free forever. Designed for students, indie filmmakers and producers evaluating FrameBid.</p>
+          <p class="audience">Evaluation / Education</p>
+          <ul>
+            <li>1 active project</li>
+            <li>50 shots &amp; assets per project</li>
+            <li>3 uploads each for breakdowns, notes, assumptions</li>
+            <li>10 PDF / Excel / CSV exports</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+
+        <article class="tier-card featured">
+          <p class="eyebrow">Most popular</p>
+          <h2>Producer</h2>
+          <div class="price-row">
+            <span class="amount" data-price-monthly="$149" data-price-annual="$1,490">$149</span>
+            <span class="period" data-period-monthly="/ month" data-period-annual="/ year">/ month</span>
+            <span class="annual-hint" data-annual-hint hidden>Billed annually · 2 months free</span>
+          </div>
+          <p class="blurb">For freelance VFX producers and boutique studios with unlimited estimating and advanced estimator features.</p>
+          <p class="audience">Freelance producers &amp; boutique studios</p>
+          <ul>
+            <li>10 active projects</li>
+            <li>1,000 shots / month</li>
+            <li>Unlimited uploads &amp; project history</li>
+            <li>Full export suite (shots, assets, bid packages)</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon solid" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+
+        <article class="tier-card">
+          <p class="eyebrow">Teams</p>
+          <h2>Studio</h2>
+          <div class="price-row">
+            <span class="amount" data-price-monthly="$499" data-price-annual="$4,990">$499</span>
+            <span class="period" data-period-monthly="/ month" data-period-annual="/ year">/ month</span>
+            <span class="annual-hint" data-annual-hint hidden>Billed annually · 2 months free</span>
+          </div>
+          <p class="blurb">For collaborative VFX studios with shared libraries, collaboration and enterprise-scale reporting.</p>
+          <p class="audience">Studios &amp; production companies</p>
+          <ul>
+            <li>Unlimited active projects &amp; AI volume</li>
+            <li>Shared libraries</li>
+            <li>Multi-user collaboration</li>
+            <li>Batch &amp; historical archive exports</li>
+          </ul>
+          <div class="card-cta">
+            <span class="btn-soon" aria-disabled="true">Coming soon</span>
+          </div>
+        </article>
+
+        <article class="tier-card">
+          <p class="eyebrow">Enterprise</p>
+          <h2>Enterprise</h2>
+          <div class="price-row">
+            <span class="amount">Custom</span>
+            <span class="period">quote</span>
+          </div>
+          <p class="blurb">For major studios and streamers that need private cloud or on-premises deployment with dedicated consultation.</p>
+          <p class="audience">Major studios / streamers</p>
+          <ul>
+            <li>Everything in Studio</li>
+            <li>Private cloud or on-premises</li>
+            <li>Deployment consultation</li>
+            <li>Custom security &amp; governance</li>
+          </ul>
+          <div class="card-cta">
+            <a class="btn-link ghost" href="/#second-opinion">Talk to us</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="compare" id="compare">
+    <div class="shell">
+      <div class="compare-intro">
+        <p class="sec-label">/ Compare</p>
+        <h2>Feature matrix</h2>
+        <p>
+          Side-by-side limits and capabilities across Community, Producer LITE,
+          Producer, and Studio. Enterprise includes Studio capabilities plus private deployment.
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th scope="col">Feature</th>
+              <th scope="col">Community<br><span style="font-weight:400;letter-spacing:0.08em;opacity:.75">Free</span></th>
+              <th scope="col">Producer LITE<br><span style="font-weight:400;letter-spacing:0.08em;opacity:.75">$50/mo</span></th>
+              <th scope="col">Producer<br><span style="font-weight:400;letter-spacing:0.08em;opacity:.75">$149/mo</span></th>
+              <th scope="col">Studio<br><span style="font-weight:400;letter-spacing:0.08em;opacity:.75">$499/mo</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section"><th scope="rowgroup" colspan="5">Dashboard</th></tr>
+            <tr>
+              <th scope="row">Launch New Estimate</th>
+              <td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Bid Single Shot</th>
+              <td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Active Projects</th>
+              <td class="cell-val">1</td><td class="cell-val">3</td><td class="cell-val">10</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Production Day Summary</th>
+              <td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">AI Recommendations</th>
+              <td class="cell-val">50 shots</td><td class="cell-val">300 / month</td><td class="cell-val">1,000 / month</td><td class="cell-yes">✓</td>
+            </tr>
+
+            <tr class="section"><th scope="rowgroup" colspan="5">Estimator</th></tr>
+            <tr>
+              <th scope="row">Shots / Project</th>
+              <td class="cell-val">50 shots</td><td class="cell-val">300 / month</td><td class="cell-val">1,000 / month</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Assets / Project</th>
+              <td class="cell-val">50</td><td class="cell-val">300 / month</td><td class="cell-val">1,000 / month</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Multiple Currencies</th>
+              <td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Department Day Rates</th>
+              <td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Upload Breakdown</th>
+              <td class="cell-val">3</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Upload Director Notes</th>
+              <td class="cell-val">3</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Upload Assumptions</th>
+              <td class="cell-val">3</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Project History</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+
+            <tr class="section"><th scope="rowgroup" colspan="5">Exports / Downloads</th></tr>
+            <tr>
+              <th scope="row">Export PDF / Excel / CSV</th>
+              <td class="cell-val">10</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Shot Reports</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Asset Reports</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Complete Bid Package</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Department Summaries</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Batch Export Projects</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Entire Project Library</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Export Historical Bid Archive</th>
+              <td class="cell-no">—</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td><td class="cell-yes">✓</td>
+            </tr>
+
+            <tr class="section"><th scope="rowgroup" colspan="5">Collaboration</th></tr>
+            <tr>
+              <th scope="row">Shared Libraries</th>
+              <td class="cell-no">—</td><td class="cell-no">—</td><td class="cell-no">—</td><td class="cell-yes">✓</td>
+            </tr>
+            <tr>
+              <th scope="row">Multi-user Collaboration</th>
+              <td class="cell-no">—</td><td class="cell-no">—</td><td class="cell-no">—</td><td class="cell-yes">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:1rem;font-size:0.8rem;color:var(--muted-foreground);line-height:1.5">
+        Producer LITE ($50/mo) is available as an entry paid tier with the limits shown above.
+        Published Producer and Studio list prices follow annual-friendly packaging ($149 / $499 monthly).
+      </p>
+    </div>
+  </section>
+
+  <section class="enterprise" aria-label="Enterprise deployment">
+    <div class="shell">
+      <div class="enterprise-panel">
+        <div>
+          <p class="sec-label">/ Enterprise deployment</p>
+          <h2>Private cloud or on-premises.</h2>
+          <p>
+            Major studios and streamers can run FrameBid in a private cloud or on-premises
+            environment. Deployment consultation is available by request on every plan —
+            Enterprise includes a custom commercial package.
+          </p>
+        </div>
+        <ul>
+          <li>Private cloud or on-premises deployment</li>
+          <li>Deployment consultation by request</li>
+          <li>Account-isolated bid data with TLS in transit</li>
+          <li>Custom security, SSO, and governance</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="shell footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="FrameBid">
+          <img class="brand-logo" src="/assets/framebid-logo.png" alt="" width="87" height="40">
+          <span class="brand-word-clip" aria-hidden="true">
+            <span class="brand-word">FRAMEBID</span>
+          </span>
+        </a>
+        <p>AI bidding for visual effects. Price every shot with the confidence of a supervisor.</p>
+      </div>
+      <div class="footer-bottom">
+        <span>© FrameBid · AI bidding for visual effects</span>
+        <a href="/">Back to home</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (() => {
+    const monthlyBtn = document.getElementById('bill-monthly');
+    const annualBtn = document.getElementById('bill-annual');
+
+    function setBilling(mode) {
+      const annual = mode === 'annual';
+      monthlyBtn.setAttribute('aria-pressed', annual ? 'false' : 'true');
+      annualBtn.setAttribute('aria-pressed', annual ? 'true' : 'false');
+
+      document.querySelectorAll('[data-price-monthly]').forEach((el) => {
+        el.textContent = annual ? el.dataset.priceAnnual : el.dataset.priceMonthly;
+      });
+      document.querySelectorAll('[data-period-monthly]').forEach((el) => {
+        el.textContent = annual ? el.dataset.periodAnnual : el.dataset.periodMonthly;
+      });
+      document.querySelectorAll('[data-annual-hint]').forEach((el) => {
+        el.hidden = !annual;
+      });
+    }
+
+    monthlyBtn.addEventListener('click', () => setBilling('monthly'));
+    annualBtn.addEventListener('click', () => setBilling('annual'));
+  })();
+  </script>
+</body>
+</html>
