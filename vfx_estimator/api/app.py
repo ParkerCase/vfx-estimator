@@ -977,8 +977,28 @@ Return JSON only:
         prompt = f"""You are a VFX producer reviewing shot descriptions
 to identify what CG ASSETS need to be built for this project.
 {project_line}
-Read all shot descriptions and identify every distinct CG asset
-that requires a build (modelling, rigging, lookdev, etc.).
+Read all shot descriptions and identify EVERY distinct CG asset
+that needs to be built for the described shot(s). Do not stop at one.
+
+Identify EVERY distinct CG asset that needs to be built
+for the described shot. Do not stop at one.
+
+Common assets to check for:
+- CG environment or set extension (almost always needed
+  if the shot is outdoors or has a CG background)
+- CG creature or animal
+- CG vehicle
+- CG hero prop
+- Digital double or face replacement
+- Crowd elements
+
+If ANY CG element is present, there is almost always
+an environment asset too (even if it's just a partial
+CG background or DMP extension).
+
+Return ALL of them — not just the most prominent one.
+"suggested_assets" should be a list of every asset
+that would need to be built.
 
 RULES:
 - Only list assets that need to be BUILT from scratch
@@ -986,12 +1006,14 @@ RULES:
 - Do NOT list the same asset twice under different names
 - Only include CG builds — not 2D compositing work
 - Common asset types: creature, digital double, vehicle,
-  environment/set, hero prop, destruction/FX element
+  environment/set, hero prop, destruction/FX element, crowd
 - A "CG castle" seen in 6 shots = ONE environment asset
 - Background crowd = ONE crowd asset (not per-shot)
 - Do NOT include camera tracks, wire removal, or 2D work
 - Return every shot code that references each asset in associated_shot_codes
 - Use only the shot codes shown in square brackets below
+- Prefer returning multiple assets per shot when the description
+  implies more than one build (e.g. creature + environment)
 
 SHOT DESCRIPTIONS:
 {combined}

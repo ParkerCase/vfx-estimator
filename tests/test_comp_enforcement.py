@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from vfx_estimator.estimate.service import (
+    COMP_SCALE_FACTOR,
     ESTIMATION_SCALE_FACTOR,
     EstimatorService,
     enforce_department_minimums,
@@ -18,8 +19,8 @@ class TestEnforceDepartmentMinimums:
         "description,dept_in,total,min_comp",
         [
             ("Wire removal from stunt", {"comp_roto": 1.0, "comp_paint": 1.0}, 4.0, 1.0),
-            ("CG castle establishing shot", {"layout": 3.0, "lighting": 6.0, "dmp": 2.0}, 18.0, 5.0),
-            ("CG creature hero shot with fire", {"animation": 6.0, "fx": 5.0, "lighting": 4.0}, 20.0, 6.0),
+            ("CG castle establishing shot", {"layout": 3.0, "lighting": 6.0, "dmp": 2.0}, 18.0, 7.0),
+            ("CG creature hero shot with fire", {"animation": 6.0, "fx": 5.0, "lighting": 4.0}, 20.0, 8.0),
         ],
     )
     def test_required_shots_get_comp_minimum(self, description, dept_in, total, min_comp):
@@ -83,6 +84,40 @@ class TestEnforceDepartmentMinimums:
         )
         assert dept.get("ai", 0) == 0
 
+    def test_cg_shot_gets_camera_track_floor(self):
+        dept = enforce_department_minimums(
+            {"animation": 6.0, "lighting": 4.0},
+            12.0,
+            description="CG creature walking through the street",
+        )
+        assert dept.get("camera_track", 0) >= 1.0
+
+    def test_locked_off_cg_skips_camera_track_floor(self):
+        dept = enforce_department_minimums(
+            {"animation": 6.0, "lighting": 4.0},
+            12.0,
+            description="Locked-off CG creature insert on tripod",
+        )
+        assert dept.get("camera_track", 0) == 0
+
+    def test_associated_assets_get_camera_track(self):
+        dept = enforce_department_minimums(
+            {"compositing": 2.0},
+            5.0,
+            description="Courtyard — exterior establishing shot",
+            has_associated_assets=True,
+        )
+        assert dept.get("camera_track", 0) >= 1.0
+
+    def test_no_assets_no_cg_skips_camera_track(self):
+        dept = enforce_department_minimums(
+            {"compositing": 2.0},
+            5.0,
+            description="Courtyard — exterior establishing shot",
+            has_associated_assets=False,
+        )
+        assert dept.get("camera_track", 0) == 0
+
 
 class TestEstimateCompMinimums:
     def _make_service(self) -> EstimatorService:
@@ -102,8 +137,8 @@ class TestEstimateCompMinimums:
         "description,min_comp",
         [
             ("Wire removal from stunt", 1.0),
-            ("CG castle establishing shot", 5.0),
-            ("CG creature hero shot with fire", 6.0),
+            ("CG castle establishing shot", 7.0),
+            ("CG creature hero shot with fire", 8.0),
         ],
     )
     def test_estimate_always_returns_comp(self, description, min_comp):
@@ -127,8 +162,11 @@ class TestEstimateCompMinimums:
                 "screenplay_scene_matches": [],
             }
         est = svc.estimate(description, mode="numeric_only")
-        # Complex shots (>3d) are scaled by ESTIMATION_SCALE_FACTOR after floors
-        expected = min_comp if est.per_shot_mandays <= 3.0 else min_comp * ESTIMATION_SCALE_FACTOR
+        # Complex shots (>3d): compositing uses COMP_SCALE_FACTOR, not ESTIMATION_SCALE_FACTOR
+        if est.per_shot_mandays <= 3.0:
+            expected = min_comp
+        else:
+            expected = round(min_comp * COMP_SCALE_FACTOR * 2) / 2
         assert est.dept_days.get("compositing", 0) >= expected - 0.01
 
     def test_phone_insert_estimate_stays_near_two_days(self):

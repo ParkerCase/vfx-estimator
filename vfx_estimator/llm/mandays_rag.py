@@ -84,6 +84,42 @@ COMPLEXITY_MODIFIERS: Dict[str, Dict[str, float]] = {
     "background_quality": {"all": 0.75},
 }
 
+CRITICAL_PRESET_ANCHOR = """
+CRITICAL — PRESET ANCHORING (read this first, every time):
+
+You have a shot type knowledge base below. These are REAL
+production day allocations from actual VFX bids. They are
+your PRIMARY reference — not your training data intuitions.
+
+BEFORE estimating any shot you MUST:
+1. Identify which preset category this shot belongs to:
+   cleanup, screen insert, environment, creature, vehicle,
+   fx, weather, crowd, digital human, or destruction.
+2. Find the matching preset in the baselines table below.
+3. Use that preset's values as your STARTING POINT.
+4. Only increase values if the description has explicit
+   complexity indicators: hero close-up, handheld camera,
+   night scene, multiple CG elements, long duration.
+5. NEVER exceed 1.5x the preset total without an explicit
+   reason stated in the description.
+
+AIM TO BE CONSERVATIVE:
+- Prefer the lower end of every range.
+- A background CG car does NOT need hero-quality days.
+- A simple environment extension does NOT need creature days.
+- If in doubt, use the closest preset as-is.
+- Under-bidding by 10% is better than overbidding by 30%.
+
+CAMERA TRACK RULE (non-negotiable):
+Any CG integration shot where the camera is MOVING must
+include camera_track days. Minimum 0.5d. The only exception
+is an explicitly locked-off or tripod shot.
+
+"""
+
+# Back-compat alias for any imports/tests still using the old name
+CRITICAL_PRESET_ANCHOR_BLOCK = CRITICAL_PRESET_ANCHOR.strip()
+
 VFX_RULES = """
 ABSOLUTE RULES — override similar shots if they conflict:
 
@@ -160,8 +196,10 @@ COMP PAINT (comp_paint) guidelines:
    matte painting, background replacement, 2.5D.
    If "sky replacement" or "set extension" appears — DMP must be > 0.
 
-5. CAMERA TRACK is REQUIRED when: camera moves (crane, dolly, handheld,
-   tracking shot). NOT needed for locked-off cameras.
+5. CAMERA TRACK is REQUIRED when a CG element is integrated into a MOVING
+   camera shot (crane, dolly, handheld, tracking shot).
+   Minimum 0.5d for simple moves, 1.0-2.0d for complex.
+   Exception: explicitly locked-off / tripod / static camera shots (camera_track = 0).
 
 6. WIRE REMOVAL / CLEANUP shots: ONLY comp_roto + comp_paint + compositing.
    layout = 0, animation = 0, lighting = 0, fx = 0. No exceptions.
@@ -223,7 +261,7 @@ def build_vfx_rules(custom_baselines: Optional[Dict[str, Dict[str, Any]]] = None
     for key, data in baselines.items():
         categories.setdefault(_preset_category(key), []).append((key, data))
 
-    baseline_text = "\n\nSHOT TYPE REFERENCE DATA (from studio knowledge base):\n"
+    baseline_text = "\n\nSHOT TYPE BASELINES:\n"
     baseline_text += "Use these as anchors. Adjust for complexity modifiers.\n\n"
     for category, items in sorted(categories.items()):
         baseline_text += f"  {category.replace('_', ' ').upper()}:\n"
@@ -245,7 +283,7 @@ def build_vfx_rules(custom_baselines: Optional[Dict[str, Dict[str, Any]]] = None
         baseline_text += "\n"
 
     modifier_text = """
-COMPLEXITY MODIFIERS (multiply baseline days by):
+COMPLEXITY MODIFIERS:
   establishing shot:    all depts x1.5, lighting x1.8, comp x1.6
   hero/close-up:        all depts x1.4
   background/distant:   all depts x0.7
@@ -264,7 +302,15 @@ ESTIMATION PROCESS:
 6. Apply the absolute rules below (COMP minimum, etc.)
 7. Return final adjusted department days
 """
-    return baseline_text + modifier_text + "\n\n" + VFX_RULES
+
+    # Anchoring first, then baselines, then modifiers, then hard rules.
+    return (
+        CRITICAL_PRESET_ANCHOR
+        + baseline_text
+        + modifier_text
+        + "\n\n"
+        + VFX_RULES
+    )
 
 
 def _load_studio_presets(settings: Settings) -> Dict[str, Dict[str, Any]]:

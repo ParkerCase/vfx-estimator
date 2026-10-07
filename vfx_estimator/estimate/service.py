@@ -26,10 +26,14 @@ from vfx_estimator.types import BidPreQual, ShotEstimate, UserCorrection
 
 
 # Global estimation scale factor.
-# AI tends to overbid — apply a 1/3 reduction to all
+# AI tends to overbid — apply a ~45% reduction to all
 # dept day estimates before returning results.
+# High-confidence / preset-anchored shots scale less aggressively.
 # Frontend sliders still apply on top of this.
-ESTIMATION_SCALE_FACTOR: float = 2 / 3  # ≈ 0.6667
+ESTIMATION_SCALE_FACTOR: float = 0.75
+# Comp is the integration layer — it doesn't compress proportionally with 3D.
+# Never scale compositing as aggressively as other departments.
+COMP_SCALE_FACTOR: float = max(ESTIMATION_SCALE_FACTOR, 0.88)
 
 
 def _round_half(x: float) -> float:
@@ -38,7 +42,11 @@ def _round_half(x: float) -> float:
 
 CG_DEPARTMENTS = ("layout", "animation", "cfx", "fx")
 CG_DESCRIPTION_RE = re.compile(
-    r"\b(cg|cgi|computer[- ]generated|3d|digital creature|digital double)\b",
+    r"\b(cg|cgi|computer[- ]generated|3d|"
+    r"digital creature|digital double|"
+    r"cg\s+\w+|full\s+cg|all\s+cg|"
+    r"cg\s+(?:asset|element|environment|creature|"
+    r"vehicle|character|prop|background|crowd))\b",
     re.IGNORECASE,
 )
 MIN_CG_LIGHTING_DAYS = 3.0
@@ -70,6 +78,7 @@ def enforce_department_minimums(
     *,
     description: str = "",
     cg_ratio: Optional[int] = None,
+    has_associated_assets: bool = False,
 ) -> Dict[str, float]:
     """
     Hard rules that override both Gemini and numeric predictions.
@@ -162,27 +171,50 @@ def enforce_department_minimums(
         dept["lighting"] = lit
         total = max(total, sum(dept.values()))
 
+    # ── CAMERA TRACK: required for CG shots + asset shots ──
+    # Any shot with a CG element (or linked CG assets) and a
+    # moving camera needs camera tracking. Gemini often omits this.
+    # Locked-off camera = 0 (already handled by modifier).
+    _needs_camera = (
+        cg > 0 and _has_cg_element(dept, description)
+    ) or has_associated_assets
+    if _needs_camera and dept.get("camera_track", 0) <= 0:
+        desc_norm = desc_lower.replace("-", " ")
+        if not any(
+            kw in desc_norm
+            for kw in (
+                "locked off",
+                "locked-off",
+                "locked camera",
+                "static camera",
+                "static shot",
+                "tripod",
+            )
+        ):
+            dept["camera_track"] = 1.0
+            total = max(total, sum(dept.values()))
+
     if dept.get("compositing", 0) == 0:
         if is_wire_cleanup:
             dept["compositing"] = 1.0
         elif total <= 2:
-            dept["compositing"] = 1.0
-        elif total <= 5:
             dept["compositing"] = 1.5
+        elif total <= 5:
+            dept["compositing"] = 2.5
         elif total <= 10:
-            dept["compositing"] = 3.0
-        elif total <= 20:
             dept["compositing"] = 4.0
+        elif total <= 20:
+            dept["compositing"] = 6.0
         else:
-            dept["compositing"] = max(5.0, total * 0.20)
+            dept["compositing"] = max(7.0, total * 0.25)
 
     has_3d = any(dept.get(d, 0) > 0 for d in ("layout", "animation", "lighting", "fx", "dmp"))
     if has_3d and not is_wire_cleanup:
-        min_comp = max(dept.get("compositing", 0), total * 0.25)
+        min_comp = max(dept.get("compositing", 0), total * 0.30)
         if total >= 18:
-            min_comp = max(min_comp, 5.0)
+            min_comp = max(min_comp, 7.0)
         if total >= 20:
-            min_comp = max(min_comp, 6.0)
+            min_comp = max(min_comp, 8.0)
         dept["compositing"] = _round_half(min_comp)
 
     desc_norm = desc_lower.replace("-", " ")
@@ -362,6 +394,9 @@ class EstimatorService:
             final,
             description=desc_user,
             cg_ratio=cg_ratio,
+            has_associated_assets=bool(
+                getattr(pre_qual, "has_cg_assets", False) if pre_qual else False
+            ),
         )
         dept_sum = sum(float(v) for v in dept.values())
         if dept_sum > final:
@@ -369,24 +404,49 @@ class EstimatorService:
         elif cg_rules_active(cg_ratio) and dept_sum > 0:
             final = _round_half(dept_sum)
 
-        # Apply global scale factor (reduce by ~33%) — once, after
-        # enforce_department_minimums and before total_mandays is finalized.
+        # Apply global scale factor — once, after enforce_department_minimums
+        # and before total_mandays is finalized.
         # Skip scaling for simple shots (≤3d): inserts/cleanup are already
         # at their correct floor; scaling them down under-bids.
+        # High retrieval confidence / preset-anchored shots scale less
+        # aggressively — those days are already calibrated.
+        # Compositing is protected: integration work doesn't compress
+        # proportionally with 3D departments.
+        scale = ESTIMATION_SCALE_FACTOR
+        if confidence >= 0.75:
+            scale = max(ESTIMATION_SCALE_FACTOR, 0.85)  # less aggressive
+        elif confidence >= 0.60:
+            scale = max(ESTIMATION_SCALE_FACTOR, 0.80)
+
+        # Skip scaling entirely for shots already at or below
+        # the known preset total for that shot type
+        # (baseline_days is returned by Gemini in the response)
+        baseline = float(baseline_days or 0)
+        if baseline > 0 and final <= baseline * 0.9:
+            # Already below the preset — don't scale further
+            scale = 1.0
+
         _SCALE_THRESHOLD = 3.0  # days — below this, don't scale
 
         if dept:
             current_total = sum(float(v) for v in dept.values())
             if current_total > _SCALE_THRESHOLD:
                 dept = {
-                    k: _round_half(float(v) * ESTIMATION_SCALE_FACTOR)
+                    k: _round_half(
+                        float(v)
+                        * (
+                            max(scale, COMP_SCALE_FACTOR)
+                            if k == "compositing"
+                            else scale
+                        )
+                    )
                     for k, v in dept.items()
                     if float(v or 0) > 0
                 }
             final = max(0.25, _round_half(sum(float(v) for v in dept.values())))
         else:
             if final > _SCALE_THRESHOLD:
-                final = max(0.25, _round_half(final * ESTIMATION_SCALE_FACTOR))
+                final = max(0.25, _round_half(final * scale))
             else:
                 final = max(0.25, _round_half(final))
 

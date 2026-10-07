@@ -48,6 +48,7 @@ class BidBatchShotItem(BaseModel):
     # Simple paste / legacy fallback
     description: Optional[str] = None
     shot_number: Optional[str] = None
+    has_cg_assets: bool = False
 
 
 class BatchEstimateRequest(BaseModel):
@@ -224,6 +225,8 @@ def estimate_single_shot(
     if n == 0:
         return _excluded_bid_row(shot)
     pq = _merge_pre_qual(pre_qual, project=project, allotment_n=n)
+    if getattr(shot, "has_cg_assets", False):
+        pq = pq.model_copy(update={"has_cg_assets": True})
     desc = build_shot_description(shot)
     est = svc.estimate(desc, pre_qual=pq, mode=mode, dept_rates=dept_rates)
     return _estimate_bid_row(

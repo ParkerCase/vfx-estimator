@@ -12,35 +12,45 @@
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <style>
     :root {
-      --bg:      #050506;
-      --surface: #0a0a0c;
-      --card:    #0c0c0e;
-      --card2:   #121216;
-      --border:  rgba(247,247,247,.10);
-      --accent:  #456aed;
-      --accent2: #7b8cff;
-      --green:   #6fd9a8;
-      --orange:  #e2a53a;
-      --red:     #ff7a6e;
-      --text:    #f7f7f7;
+      /* Backgrounds — dark slate, layered */
+      --bg:       #13151c;
+      --surface:  #1a1d27;
+      --card:     #1e2130;
+      --card2:    #232638;
+
+      /* Borders — subtle but visible */
+      --border:   rgba(255,255,255,0.09);
+
+      /* Text — high contrast on dark */
+      --text:     #e8ecf4;
       --text-strong:#ffffff;
-      --muted:   #8a8b94;
-      --muted-soft:#5c5d66;
+      --muted:    #8892a4;
+      --muted-soft:#6b7285;
+
+      /* Accent — slightly brighter for dark bg */
+      --accent:   #4f8ef7;
+      --accent2:  #a855f7;
+
+      /* Status */
+      --green:    #3fb950;
+      --red:      #f85149;
+      --orange:   #e3b341;
+
       --font:    "IBM Plex Sans", "Helvetica Neue", sans-serif;
       --font-display: "Outfit", "Avenir Next", sans-serif;
       --r:       10px;
       --scroll-size: 8px;
       --scroll-track: transparent;
-      --scroll-thumb: rgba(174,184,204,.28);
-      --scroll-thumb-hover: rgba(69,106,237,.55);
+      --scroll-thumb: rgba(136,146,164,.32);
+      --scroll-thumb-hover: rgba(79,142,247,.55);
     }
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;margin:0}
     body{
       background:
-        radial-gradient(1000px 560px at 88% -12%, rgba(69,106,237,.14), transparent 55%),
-        radial-gradient(780px 420px at 6% 12%, rgba(111,217,168,.05), transparent 50%),
-        linear-gradient(180deg,#0a0a0c 0%, var(--bg) 45%, #050506 100%);
+        radial-gradient(1000px 560px at 88% -12%, rgba(79,142,247,.10), transparent 55%),
+        radial-gradient(780px 420px at 6% 12%, rgba(63,185,80,.04), transparent 50%),
+        linear-gradient(180deg,#1a1d27 0%, var(--bg) 45%, #10121a 100%);
       color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;
       display:flex;flex-direction:column;height:100vh;overflow:hidden
     }
@@ -95,7 +105,7 @@
       padding:5px 24px 5px 8px;font-size:12px;border-radius:8px;min-width:72px;
       color:var(--text);background-color:var(--card2);color-scheme:dark;
       appearance:none;-webkit-appearance:none;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f7f7f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8ecf4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
       background-repeat:no-repeat;background-position:right 8px center
     }
     .hdr-brand{
@@ -127,7 +137,7 @@
       .hdr-brand.brand-animate .brand-logo{animation:none;opacity:1;transform:none}
       .hdr-brand.brand-animate .brand-word{animation:none;clip-path:none}
     }
-    .page-progress{border-bottom:1px solid var(--border);background:rgba(5,5,6,.92);backdrop-filter:blur(10px);
+    .page-progress{border-bottom:1px solid var(--border);background:rgba(19,21,28,.92);backdrop-filter:blur(10px);
       padding:10px 24px 12px}
     .page-progress-inner{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1600px;margin:0 auto}
     .page-progress-track-block{min-width:0}
@@ -171,40 +181,45 @@
     /* ── Layout ── */
     .wrap{max-width:1600px;margin:0 auto;padding:0 0 48px}
 
-    /* ── BidReel-inspired shell (Bid IQ colors) ── */
+    /* ── BidReel-inspired shell (light content + dark rail) ── */
     .bid-shell{display:flex;flex:1;min-height:0;width:100%}
-    .bid-rail{
-      width:190px;flex:0 0 auto;background:var(--surface);
-      border-right:1px solid var(--border);padding:14px 10px;
+    .bid-rail,
+    #bid-sidebar,
+    .bid-sidebar{
+      width:190px;flex:0 0 auto;background:#1e2333;
+      border-right:1px solid #2d3348;padding:14px 10px;
       display:flex;flex-direction:column;gap:3px;overflow:hidden;
       transition:width .2s ease,padding .2s ease
     }
     .bid-rail .bid-eyebrow{
-      color:var(--muted-soft);font-size:10px;letter-spacing:.2em;
+      color:#7a8499;font-size:10px;letter-spacing:.2em;
       text-transform:uppercase;padding:6px 10px 10px;font-weight:700
     }
     .bid-navitem{
       display:flex;align-items:center;gap:10px;padding:10px 12px;
-      border-radius:7px;color:var(--muted);font-weight:600;font-size:13px;
+      border-radius:7px;color:#a0aec0;font-weight:600;font-size:13px;
       border:1px solid transparent;background:transparent;cursor:pointer;
       transition:.14s;width:100%;text-align:left;font-family:inherit
     }
     .bid-navitem .n{
       font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-      font-size:11px;color:var(--muted-soft);flex:0 0 auto;min-width:1.6em
+      font-size:11px;color:var(--accent);flex:0 0 auto;min-width:1.6em
     }
     .bid-navitem .bid-nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .bid-navitem:hover{background:var(--card2);color:var(--text)}
-    .bid-navitem.on{background:var(--card2);color:var(--text);border-color:var(--border)}
+    .bid-navitem:hover,
+    .bid-navitem.on{
+      color:#ffffff;background:rgba(255,255,255,0.08);border-color:transparent
+    }
     .bid-navitem.on .n{color:var(--accent)}
+    .sidebar-logo{color:#ffffff}
     .bid-rail-toggle{
       display:flex;align-items:center;justify-content:center;gap:6px;
       margin:4px 6px 10px;padding:7px 10px;border-radius:7px;
-      border:1px solid var(--border);background:var(--card);color:var(--text);
+      border:1px solid #2d3348;background:rgba(255,255,255,0.04);color:#c5cedb;
       font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
       transition:.14s;width:calc(100% - 12px)
     }
-    .bid-rail-toggle:hover{color:var(--text-strong);border-color:var(--accent)}
+    .bid-rail-toggle:hover{color:#ffffff;border-color:var(--accent)}
     .bid-rail-toggle span{color:inherit}
     .bid-rail-burger{
       width:14px;height:10px;display:inline-block;position:relative;flex:0 0 auto
@@ -213,12 +228,12 @@
     .bid-rail-burger{box-shadow:inset 0 0 0 1px transparent}
     .bid-rail-burger::before,.bid-rail-burger::after{
       content:"";position:absolute;left:0;right:0;height:2px;border-radius:1px;
-      background:var(--text)
+      background:#c5cedb
     }
-    .bid-rail-burger::before{top:0;box-shadow:0 4px 0 var(--text)}
+    .bid-rail-burger::before{top:0;box-shadow:0 4px 0 #c5cedb}
     .bid-rail-burger::after{bottom:0}
     .bid-rail .bid-rail-foot{
-      margin-top:auto;color:var(--muted-soft);font-size:10.5px;
+      margin-top:auto;color:#7a8499;font-size:10.5px;
       line-height:1.5;padding:10px
     }
     .bid-shell.rail-collapsed .bid-rail{width:56px;padding:14px 6px}
@@ -287,7 +302,7 @@
     }
     .onset-table input[type=text]:focus,
     .onset-table input[type=number]:focus{
-      border-color:var(--accent);box-shadow:0 0 0 1px rgba(69,106,237,.25)
+      border-color:var(--accent);box-shadow:0 0 0 1px rgba(79,142,247,.25)
     }
     .onset-table input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
     .onset-table th.days,.onset-table td.days{width:80px}
@@ -302,7 +317,7 @@
       border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;
       width:28px;height:28px;border-radius:6px;line-height:1
     }
-    .onset-table .onset-remove:hover{color:var(--red);background:rgba(255,122,110,.12)}
+    .onset-table .onset-remove:hover{color:var(--red);background:rgba(220,38,38,.10)}
     .onset-table tfoot td{
       border-bottom:none;border-top:1px solid var(--border);background:var(--card2);
       font-weight:800;padding:12px;color:var(--text)
@@ -323,30 +338,33 @@
 
     /* ── Inputs ── */
     textarea,input,select{
-      background-color:var(--card2);border:1px solid var(--border);border-radius:var(--r);
+      background:var(--card2);border:1px solid var(--border);border-radius:var(--r);
       color:var(--text);font-family:var(--font);font-size:13px;outline:none;
       transition:border-color .2s;color-scheme:dark
     }
-    textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(69,106,237,.22)}
+    textarea:focus,input:focus,select:focus{
+      border-color:rgba(79,142,247,0.5);box-shadow:none;outline:none
+    }
     textarea::placeholder,input::placeholder{color:var(--muted-soft)}
-    select option{background:var(--card)}
+    select option{background:var(--card);color:var(--text)}
     select{
       appearance:none;-webkit-appearance:none;
       padding-right:28px;
       background-color:var(--card2);
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f7f7f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8ecf4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
       background-repeat:no-repeat;background-position:right 8px center
     }
-    /* Hide native number steppers — they fight the dark theme */
-    input[type=number],
+    /* Remove spinners on rate inputs and form fields only */
+    /* NOT on .bid-dept-inp / .asset-dept-inp — those keep their arrows */
+    input[type=number]:not(.bid-dept-inp):not(.asset-dept-inp),
     .onset-table input[type=number],
     .rate-field input[type=number],
     .rate-input{
       -moz-appearance:textfield !important;
       appearance:textfield !important
     }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]:not(.bid-dept-inp):not(.asset-dept-inp)::-webkit-inner-spin-button,
+    input[type=number]:not(.bid-dept-inp):not(.asset-dept-inp)::-webkit-outer-spin-button,
     .onset-table input[type=number]::-webkit-inner-spin-button,
     .onset-table input[type=number]::-webkit-outer-spin-button,
     .rate-input::-webkit-inner-spin-button,
@@ -356,6 +374,21 @@
       margin:0 !important;
       display:none !important;
       width:0 !important;height:0 !important;opacity:0 !important
+    }
+    /* Dept inputs keep spinners but style them to be subtle */
+    .bid-dept-inp::-webkit-inner-spin-button,
+    .bid-dept-inp::-webkit-outer-spin-button,
+    .asset-dept-inp::-webkit-inner-spin-button,
+    .asset-dept-inp::-webkit-outer-spin-button{
+      -webkit-appearance:inner-spin-button;
+      opacity:0.5;
+      cursor:pointer
+    }
+    .bid-dept-inp:hover::-webkit-inner-spin-button,
+    .bid-dept-inp:hover::-webkit-outer-spin-button,
+    .asset-dept-inp:hover::-webkit-inner-spin-button,
+    .asset-dept-inp:hover::-webkit-outer-spin-button{
+      opacity:1
     }
 
     /* ── Pre-qual panel ── */
@@ -449,8 +482,8 @@
     }
     .resource-week-table th:first-child,.resource-week-table td:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
     .resource-week-cell{font-variant-numeric:tabular-nums;font-weight:700}
-    .resource-week-cell.peak{background:rgba(226,165,58,.18);color:var(--orange)}
-    .resource-week-cell.mid{background:rgba(69,106,237,.12)}
+    .resource-week-cell.peak{background:rgba(217,119,6,.14);color:var(--orange)}
+    .resource-week-cell.mid{background:rgba(79,142,247,.10)}
     .resource-realistic-ok{color:var(--green);font-weight:700}
     .resource-realistic-warn{color:var(--orange);font-weight:700}
 
@@ -487,7 +520,7 @@
     }
     .bid-ro .cur{color:var(--muted-soft);font-size:11px;font-weight:500;margin-left:5px}
     .bid-ro.rebate .v{color:var(--orange)}
-    .bid-ro.final{background:rgba(69,106,237,.10);flex:1.25}
+    .bid-ro.final{background:rgba(79,142,247,.08);flex:1.25}
     .bid-ro.final .k{color:var(--accent2)}
     .bid-ro.final .v{color:var(--accent2);font-size:20px}
     @media (max-width:720px){
@@ -518,19 +551,19 @@
     /* ── Buttons ── */
     button{border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);
            font-weight:600;transition:all .15s}
-    .btn-blue{background:var(--accent);color:#fff;padding:11px 22px;font-size:14px}
-    .btn-blue:hover{filter:brightness(1.06)}
-    .btn-blue:disabled{opacity:.45;cursor:default;filter:none}
-    .btn-green{background:var(--green);color:#0a1410;padding:10px 18px;font-size:13px}
+    .btn-blue,.btn-accent{background:var(--accent);color:#ffffff;padding:11px 22px;font-size:14px}
+    .btn-blue:hover,.btn-accent:hover{filter:brightness(1.06)}
+    .btn-blue:disabled,.btn-accent:disabled{opacity:.45;cursor:default;filter:none}
+    .btn-green{background:var(--green);color:#ffffff;padding:10px 18px;font-size:13px}
     .btn-green:hover{filter:brightness(1.06)}
-    .btn-purple{background:var(--accent2);color:#0a0a12;padding:10px 18px;font-size:13px}
+    .btn-purple{background:var(--accent2);color:#ffffff;padding:10px 18px;font-size:13px}
     .btn-purple:hover{filter:brightness(1.06)}
     .btn-red{background:transparent;color:var(--red);border:1px solid var(--red);
              padding:9px 16px;font-size:13px}
     .btn-red:hover{background:var(--red);color:#fff}
-    .btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border);
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);
                padding:9px 14px;font-size:12px}
-    .btn-ghost:hover{border-color:var(--accent);color:var(--text)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
     .btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
 
     .suggested-asset-cell{min-width:160px;max-width:220px}
@@ -549,7 +582,7 @@
     }
     .suggested-asset-pill .btn-accent-sm:hover{filter:brightness(1.08)}
     .suggested-asset-pill .btn-accent-sm:disabled{
-      opacity:.7;cursor:default;background:var(--green);color:#0a1410;
+      opacity:.7;cursor:default;background:var(--green);color:#ffffff;
     }
     .suggested-asset-loading{font-size:11px;color:var(--muted);font-weight:600}
     .spinner-sm{
@@ -567,13 +600,13 @@
     }
     .global-activity-bar.hidden{opacity:0;max-height:0;padding-top:0;padding-bottom:0;border:none;pointer-events:none}
     .global-activity-bar[data-kind="save"]{
-      background:rgba(46,204,113,.1);border-color:rgba(46,204,113,.28);color:var(--green);
+      background:rgba(63,185,80,.1);border-color:rgba(63,185,80,.28);color:var(--green);
     }
     .global-activity-bar[data-kind="load"]{
       background:rgba(255,255,255,.04);border-color:var(--border);color:var(--text);
     }
     .global-activity-bar[data-kind="export"]{
-      background:rgba(124,92,252,.1);border-color:rgba(124,92,252,.28);color:var(--accent2);
+      background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.28);color:var(--accent2);
     }
     .loading-inline{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
     .loading-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
@@ -601,8 +634,8 @@
     .asset-table-row-loading .batch-row-cost{color:var(--muted)!important}
 
     /* ── Cards ── */
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-          padding:18px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+          padding:18px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
 
     /* ── Stats ── */
     .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:14px}
@@ -614,7 +647,7 @@
     #toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);
            border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;
            box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;pointer-events:none;
-           transition:opacity .25s;max-width:320px;z-index:200}
+           transition:opacity .25s;max-width:320px;z-index:200;color:var(--text)}
     #toast.show{opacity:1}
     #toast.ok{border-color:var(--green);color:var(--green)}
     #toast.warn{border-color:var(--orange);color:var(--orange)}
@@ -624,7 +657,7 @@
       padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text)}
     .csv-audit-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .csv-audit-details{margin-top:12px;max-height:260px;overflow:auto;border-top:1px solid var(--border);padding-top:10px}
-    .csv-audit-row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+    .csv-audit-row{padding:8px 0;border-bottom:1px solid var(--border)}
     .csv-audit-row:last-child{border-bottom:none}
     .csv-audit-raw{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);
       white-space:pre-wrap;word-break:break-word;margin-top:3px}
@@ -673,12 +706,13 @@
       text-align:left;vertical-align:top}
     .batch-table th:first-child,.batch-table td:first-child{border-left:1px solid var(--border)}
     .batch-table thead tr:first-child th{border-top:1px solid var(--border)}
-    .batch-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text);font-weight:800;
-                   background:var(--surface);position:sticky;top:0;z-index:3;
+    .batch-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:800;
+                   background:var(--card2);position:sticky;top:0;z-index:3;
+                   border-bottom:1px solid var(--border);
                    box-shadow:0 1px 0 var(--border)}
-    .batch-table td{color:var(--text)}
-    .batch-table tbody tr.batch-data-row:nth-child(4n+1) td{background:rgba(255,255,255,0.02)}
-    .batch-table tr.batch-data-row:hover td{background:rgba(69,106,237,.04)}
+    .batch-table td{color:var(--text);background:transparent}
+    .batch-table tbody tr.batch-data-row:nth-child(even) td{background:rgba(255,255,255,0.015)}
+    .batch-table tr.batch-data-row:hover td{background:rgba(255,255,255,0.03)}
     .batch-table tr.row-excluded{opacity:.45;border-left:3px solid var(--red)}
     .batch-table tr.row-toggled-off{opacity:.4;border-left:3px solid var(--red)}
     .batch-table tr.row-excluded td{color:var(--muted)}
@@ -709,7 +743,30 @@
     .batch-table input.bid-dept-inp{width:40px;padding:3px 4px;font-size:11px;text-align:center}
     .batch-table .col-desc{max-width:160px;font-size:11px}
     .batch-table .col-notes{min-width:180px}
-    .batch-table textarea.batch-notes-inp,.batch-table textarea.asset-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:none;border:1px solid var(--border);background:var(--card2);border-radius:6px;color:var(--text)}
+    .batch-table textarea.asset-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:none;border:1px solid var(--border);background:var(--card2);border-radius:6px;color:var(--text)}
+    .batch-table textarea.batch-notes-inp{
+      width:100%;
+      min-height:38px;
+      max-height:38px;
+      padding:6px 8px;
+      font-size:11px;
+      resize:none;
+      border:1px solid var(--border);
+      background:var(--card2);
+      border-radius:6px;
+      color:var(--text);
+      overflow:hidden;
+      transition:max-height 0.2s ease, box-shadow 0.15s;
+      line-height:1.5;
+    }
+    .batch-table textarea.batch-notes-inp:focus{
+      max-height:200px;
+      overflow-y:auto;
+      box-shadow:0 0 0 2px var(--accent);
+      outline:none;
+      z-index:10;
+      position:relative;
+    }
     .batch-table .col-hidden{display:none!important}
     .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
     .col-toggle-bar{margin-bottom:12px}
@@ -720,7 +777,7 @@
     .col-toggle-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
     .col-check-item{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);
       border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
-    .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(69,106,237,0.08)}
+    .col-check-item.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.08)}
     .col-check-item input{display:none}
     .col-toggle-actions{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
     .conf-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;display:inline-block}
@@ -849,7 +906,7 @@
     .presets-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:980px}
     .presets-table th,.presets-table td{padding:8px 10px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
     .presets-table th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;background:var(--surface);color:var(--text)}
-    .presets-table tr.studio td{background:rgba(69,106,237,.06)}
+    .presets-table tr.studio td{background:rgba(79,142,247,.06)}
     .presets-table input{width:58px;padding:5px 6px;font-size:12px}
     .presets-table input.preset-desc{width:240px}
     .presets-table input:disabled{opacity:.55;cursor:not-allowed}
@@ -869,13 +926,13 @@
     .preset-meta{font-size:11px;color:var(--muted);white-space:nowrap}
     .preset-badge.reference{color:var(--orange)}
     .preset-badge.system{color:var(--muted)}
-    .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(69,106,237,.35);
-      border-radius:8px;background:rgba(69,106,237,.07);font-size:12px;color:var(--text);line-height:1.5}
+    .methodology-hint{margin:12px 0;padding:10px 12px;border:1px solid rgba(79,142,247,.28);
+      border-radius:8px;background:rgba(79,142,247,.06);font-size:12px;color:var(--text);line-height:1.5}
     .method-cell{min-width:180px;max-width:260px;font-size:11px;color:var(--muted);position:relative}
     .method-cell.method-loading .method-readonly,
     .method-cell.method-loading .method-empty{
       animation:methodLoadPulse 1.1s ease-in-out infinite;
-      border-radius:8px;background:rgba(69,106,237,.08)
+      border-radius:8px;background:rgba(79,142,247,.08)
     }
     .method-loading-dial{
       display:inline-flex;align-items:center;gap:6px;margin-top:6px;
@@ -883,7 +940,7 @@
     }
     .method-loading-dial .dial{
       width:14px;height:14px;border-radius:50%;
-      border:2px solid rgba(69,106,237,.25);border-top-color:var(--accent);
+      border:2px solid rgba(79,142,247,.25);border-top-color:var(--accent);
       animation:spin .7s linear infinite
     }
     @keyframes methodLoadPulse{0%,100%{opacity:.55}50%{opacity:1}}
@@ -1031,7 +1088,9 @@
   <button type="button" class="bid-navitem" data-target="sec-assets"><span class="n">04</span><span class="bid-nav-label">Assets</span></button>
   <button type="button" class="bid-navitem" data-target="sec-summary"><span class="n">05</span><span class="bid-nav-label">Summary</span></button>
   <button type="button" class="bid-navitem" data-target="sec-charts"><span class="n">06</span><span class="bid-nav-label">Charts</span></button>
+  <!-- Compare hidden until bid-history compare UX is ready
   <button type="button" class="bid-navitem" data-target="sec-compare"><span class="n">07</span><span class="bid-nav-label">Compare</span></button>
+  -->
   <button type="button" class="bid-navitem" data-target="sec-resources"><span class="n">08</span><span class="bid-nav-label">Resources</span></button>
   <button type="button" class="bid-navitem" data-target="sec-cover"><span class="n">09</span><span class="bid-nav-label">Cover Page</span></button>
   <div class="bid-rail-foot">Scroll the bid sections.<br>Sidebar state is saved in this browser.</div>
@@ -1653,6 +1712,7 @@
       <div id="chart-cost-cap" class="muted" style="font-size:11px;margin-top:8px"></div>
     </div>
   </section>
+  <!-- Compare hidden until bid-history compare UX is ready
   <section id="sec-compare" class="bid-section">
     <h2 class="bid-h1"><span class="n">07</span> Compare</h2>
     <p class="bid-lead">Compare the current bid against a saved bid from History.</p>
@@ -1669,6 +1729,7 @@
       <div id="compare-body" class="compare-body">Select a saved bid from History to compare side by side.</div>
     </div>
   </section>
+  -->
   <section id="sec-resources" class="bid-section">
     <h2 class="bid-h1"><span class="n">08</span> Resources</h2>
     <p class="bid-lead">Staff the pipeline from weeks, artist counts, or start/end dates.</p>
@@ -1768,6 +1829,58 @@
         <p id="rp-note" class="muted" style="font-size:11px;margin-top:10px;line-height:1.5">
           Departments in one stage run in parallel; stages run sequentially.
         </p>
+      </div>
+    </div>
+
+    <div id="single-shot-card" class="card" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="sec-label">Manual Single Shot</div>
+        <span class="muted" style="font-size:12px">
+          Estimate one shot and add to the breakdown
+        </span>
+      </div>
+
+      <textarea id="single-desc"
+                rows="3"
+                placeholder="Describe the shot: e.g. CG creature hero close-up, night exterior, handheld camera..."
+                style="width:100%;resize:vertical;margin-bottom:10px"></textarea>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text"
+               id="single-shot-code"
+               placeholder="Shot code (optional)"
+               style="width:160px">
+        <input type="number"
+               id="single-shot-count"
+               value="1" min="1" max="100"
+               style="width:70px"
+               title="Number of shots">
+        <span class="muted" style="align-self:center;font-size:12px">shots</span>
+      </div>
+
+      <button type="button" class="btn-blue"
+              id="single-run-btn"
+              onclick="runSingleShot()">
+        Estimate Shot
+      </button>
+
+      <div id="single-result" class="hidden"
+           style="margin-top:14px;padding:12px;background:var(--card2);border-radius:var(--r)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div id="single-result-depts"
+               style="font-size:12px;color:var(--muted)"></div>
+          <div style="text-align:right">
+            <div id="single-result-days"
+                 style="font-size:22px;font-weight:800;color:var(--accent)"></div>
+            <div id="single-result-cost"
+                 style="font-size:14px;color:var(--green);margin-top:2px"></div>
+          </div>
+        </div>
+        <button type="button" class="btn-ghost btn-sm"
+                style="margin-top:10px"
+                onclick="addSingleShotToBatch()">
+          + Add to Batch Breakdown
+        </button>
       </div>
     </div>
   </section>
@@ -1908,6 +2021,38 @@
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
       <button type="button" class="btn-blue" onclick="confirmColumnMap()">Use These Columns</button>
       <button type="button" class="btn-ghost" onclick="closeColMap()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="col-unmap-modal" class="modal-overlay hidden">
+  <div class="modal-card" style="max-width:580px" onclick="event.stopPropagation()">
+    <div class="modal-title">We found columns we couldn't match automatically</div>
+    <p class="muted" style="font-size:13px;margin-bottom:14px">
+      Tell us what each column contains and we'll import it correctly.
+      You only need to do this once per new file format.
+    </p>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:6px 10px;font-size:11px;color:var(--muted)">
+            COLUMN IN YOUR FILE
+          </th>
+          <th></th>
+          <th style="text-align:left;padding:6px 10px;font-size:11px;color:var(--muted)">
+            MAPS TO
+          </th>
+        </tr>
+      </thead>
+      <tbody id="col-unmap-rows"></tbody>
+    </table>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+      <button type="button" id="col-unmap-confirm" class="btn-blue">
+        Use These Mappings
+      </button>
+      <button type="button" id="col-unmap-skip" class="btn-ghost">
+        Skip Unknown Columns
+      </button>
     </div>
   </div>
 </div>
@@ -2574,39 +2719,124 @@ function methodologyImpliesCgAsset(methodology) {
   return CG_INDICATORS.some(kw => lower.includes(kw));
 }
 
-function suggestedAssetCellHtml(asset, shotIdx) {
-  if (!asset) {
-    return `<button type="button" class="row-mini-btn"
-      onclick="suggestAssetForShotRow(${shotIdx}, true)">${iconSvg('star', 'icon icon-sm')} Suggest</button>`;
-  }
-  if (asset.adding) {
-    return `<div class="suggestion-loading">
-      <span class="spinner-sm" aria-hidden="true"></span>
-      <span style="font-size:11px;color:var(--muted)">AI estimating build days…</span>
-    </div>`;
-  }
-  if (asset.loading) {
-    return `<div class="suggestion-loading">
-      <span class="spinner-sm" aria-hidden="true"></span>
-      <span style="font-size:11px;color:var(--muted)">AI finding asset…</span>
-    </div>`;
-  }
-  if (!asset.asset_name) {
-    return `<button type="button" class="row-mini-btn"
-      onclick="suggestAssetForShotRow(${shotIdx}, true)">${iconSvg('star', 'icon icon-sm')} Suggest</button>`;
-  }
-  const added = !!asset.added;
-  return `<div class="suggested-asset-pill" title="${escAttr(asset.reason || asset.description || '')}">
-    <span class="asset-pill-name">${escHtml(asset.asset_name)}</span>
-    <button type="button" class="btn-accent-sm"
-            ${added ? 'disabled' : ''}
-            onclick="addSuggestedAssetToSection(${shotIdx})">
-      ${added ? `${iconSvg('check', 'icon icon-sm')} Added` : '+ Add to Assets'}
-    </button>
-  </div>`;
+function descriptionImpliesCgAsset(shot) {
+  const desc = combinedRowDescription(shot).toLowerCase();
+  return /\bcg\b|\bcgi\b|3d\b|digital creature|digital double|cg environment|cg asset/.test(desc);
 }
 
-function renderSuggestedAssetCell(idx, asset) {
+function shotImpliesCgAsset(shot) {
+  if (!shot) return false;
+  const method = (shot.methodology || '').toLowerCase();
+  return methodologyImpliesCgAsset(method) || descriptionImpliesCgAsset(shot);
+}
+
+function normalizeSuggestedAssets(assets) {
+  if (Array.isArray(assets)) return assets.filter(Boolean);
+  if (assets && typeof assets === 'object') return [assets];
+  return [];
+}
+
+function shotHasAddedSuggestedAsset(shot) {
+  return normalizeSuggestedAssets(shot?.suggestedAssets || shot?.suggestedAsset)
+    .some(a => a.added && a.asset_name);
+}
+
+function shotHasCgAssets(shot, idx) {
+  if (normalizeSuggestedAssets(shot?.suggestedAssets || shot?.suggestedAsset)
+    .some(a => a.asset_name && !a.removed)) {
+    return true;
+  }
+  const code = String(shot?.shot_code || `Shot ${(idx ?? 0) + 1}`).trim();
+  if (!code) return false;
+  return (_assetInputs || []).some(a => {
+    const assoc = a?.associated_shots || [];
+    return Array.isArray(assoc) && assoc.some(s => String(s).trim() === code);
+  });
+}
+
+function suggestedAssetCellHtml(assets, shotIdx) {
+  // assets is now an array (legacy single object still accepted)
+  if (assets && !Array.isArray(assets) && assets.loading) {
+    return `<div class="suggestion-loading">
+      <span class="spinner-sm" aria-hidden="true"></span>
+      <span style="font-size:11px;color:var(--muted)">AI finding assets…</span>
+    </div>`;
+  }
+
+  const list = normalizeSuggestedAssets(assets);
+  if (list.some(a => a.loading) && !list.some(a => a.asset_name)) {
+    return `<div class="suggestion-loading">
+      <span class="spinner-sm" aria-hidden="true"></span>
+      <span style="font-size:11px;color:var(--muted)">AI finding assets…</span>
+    </div>`;
+  }
+  if (list.some(a => a.adding) && list.filter(a => a.asset_name).length <= 1) {
+    const adding = list.find(a => a.adding);
+    if (adding && !adding.asset_name) {
+      return `<div class="suggestion-loading">
+        <span class="spinner-sm" aria-hidden="true"></span>
+        <span style="font-size:11px;color:var(--muted)">AI estimating build days…</span>
+      </div>`;
+    }
+  }
+
+  if (!list.length || !list.some(a => a.asset_name)) {
+    return `<button type="button" class="row-mini-btn"
+      onclick="suggestAssetForShotRow(${shotIdx}, true)">
+      ${iconSvg('star','icon icon-sm')} Suggest</button>`;
+  }
+
+  const pills = list.map((asset, assetIdx) => {
+    if (!asset.asset_name) return '';
+    const added = !!asset.added;
+    if (asset.adding) {
+      return `<div class="suggested-asset-pill" style="margin-bottom:4px"
+                  title="${escAttr(asset.reason || asset.description || '')}">
+        <span class="asset-pill-name">${escHtml(asset.asset_name)}</span>
+        <div class="suggestion-loading" style="margin-top:3px">
+          <span class="spinner-sm" aria-hidden="true"></span>
+          <span style="font-size:11px;color:var(--muted)">Estimating…</span>
+        </div>
+      </div>`;
+    }
+    return `
+      <div class="suggested-asset-pill"
+           style="margin-bottom:4px"
+           title="${escAttr(asset.reason || asset.description || '')}">
+        <span class="asset-pill-name">
+          ${escHtml(asset.asset_name)}
+        </span>
+        <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap">
+          <button type="button" class="btn-accent-sm"
+                  ${added ? 'disabled' : ''}
+                  onclick="addSuggestedAssetToSection(${shotIdx}, ${assetIdx})">
+            ${added
+              ? iconSvg('check','icon icon-sm') + ' Added'
+              : '+ Add'}
+          </button>
+          ${!added
+            ? `<button type="button" class="btn-ghost btn-xs"
+                 style="color:var(--muted);padding:2px 5px"
+                 title="Remove suggestion"
+                 onclick="removeSuggestedAsset(${shotIdx}, ${assetIdx})">
+                 ✕
+               </button>`
+            : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  const loadingMore = list.some(a => a.loading)
+    ? `<div class="suggestion-loading" style="margin-top:2px">
+         <span class="spinner-sm" aria-hidden="true"></span>
+         <span style="font-size:11px;color:var(--muted)">Finding more…</span>
+       </div>`
+    : '';
+
+  return pills + loadingMore;
+}
+
+function renderSuggestedAssetCell(idx, assets) {
   const tr = document.querySelector(`#batch-table-body tr.batch-data-row[data-idx="${idx}"]`);
   const cell = tr?.querySelector('.suggested-asset-cell')
     || document.getElementById(`suggested-asset-${idx}`);
@@ -2614,27 +2844,38 @@ function renderSuggestedAssetCell(idx, asset) {
     console.warn('[Asset Suggestions] Missing suggestion cell for row:', idx);
     return;
   }
-  cell.innerHTML = suggestedAssetCellHtml(asset, idx);
+  cell.innerHTML = suggestedAssetCellHtml(assets, idx);
+}
+
+function removeSuggestedAsset(shotIdx, assetIdx) {
+  const shot = _batchResult?.shots?.[shotIdx];
+  if (!shot?.suggestedAssets) return;
+  shot.suggestedAssets.splice(assetIdx, 1);
+  renderSuggestedAssetCell(shotIdx, shot.suggestedAssets);
 }
 
 async function suggestAssetForShotRow(idx, force=false) {
   const row = _batchResult?.shots?.[idx];
   if (!row) return;
-  const method = (row.methodology || '').trim();
-  if (!force && !methodologyImpliesCgAsset(method)) {
-    if (!row.suggestedAsset?.added) {
-      row.suggestedAsset = null;
+  if (!force && !shotImpliesCgAsset(row)) {
+    if (!shotHasAddedSuggestedAsset(row)) {
+      row.suggestedAssets = [];
+      delete row.suggestedAsset;
       renderSuggestedAssetCell(idx, null);
     }
     return;
   }
-  if (row.suggestedAsset?.added) {
-    renderSuggestedAssetCell(idx, row.suggestedAsset);
-    return;
+  const kept = normalizeSuggestedAssets(row.suggestedAssets || row.suggestedAsset)
+    .filter(a => a.added && a.asset_name);
+  if (kept.length && !force) {
+    row.suggestedAssets = kept;
+    renderSuggestedAssetCell(idx, row.suggestedAssets);
+    // Still continue to discover additional assets
   }
 
-  row.suggestedAsset = { loading: true };
-  renderSuggestedAssetCell(idx, row.suggestedAsset);
+  row.suggestedAssets = kept.length ? [...kept, { loading: true }] : [{ loading: true }];
+  delete row.suggestedAsset;
+  renderSuggestedAssetCell(idx, row.suggestedAssets);
 
   try {
     const combined = combinedRowDescription(row);
@@ -2651,26 +2892,34 @@ async function suggestAssetForShotRow(idx, force=false) {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    const asset = (data.suggested_assets || [])[0];
-    if (!asset?.asset_name) {
-      row.suggestedAsset = null;
+    const suggestions = Array.isArray(data.suggested_assets) ? data.suggested_assets : [];
+    const shotCode = row.shot_code || `Shot ${idx + 1}`;
+    row.suggestedAssets = kept.slice();
+    suggestions.forEach(suggestion => {
+      if (!suggestion?.asset_name) return;
+      const exists = row.suggestedAssets.some(
+        a => a.asset_name === suggestion.asset_name
+      );
+      if (exists) return;
+      row.suggestedAssets.push({
+        ...suggestion,
+        associated_shot_codes: suggestion.associated_shot_codes || [shotCode],
+        added: false,
+      });
+    });
+    if (!row.suggestedAssets.length) {
       renderSuggestedAssetCell(idx, null);
       return;
     }
-    row.suggestedAsset = {
-      ...asset,
-      associated_shot_codes: asset.associated_shot_codes || [row.shot_code || `Shot ${idx + 1}`],
-      added: false,
-    };
     _visibleCols['SUGGESTED ASSET'] = true;
     saveVisibleCols();
-    renderSuggestedAssetCell(idx, row.suggestedAsset);
+    renderSuggestedAssetCell(idx, row.suggestedAssets);
     applyColVisibility();
     buildColCheckboxes();
   } catch (error) {
     console.warn('[Asset Suggestions] Suggestion failed for row:', idx, error);
-    row.suggestedAsset = null;
-    renderSuggestedAssetCell(idx, null);
+    row.suggestedAssets = kept.length ? kept : [];
+    renderSuggestedAssetCell(idx, row.suggestedAssets.length ? row.suggestedAssets : null);
     if (force) toast('Could not suggest an asset for this shot.', 'warn');
   }
 }
@@ -2678,16 +2927,21 @@ async function suggestAssetForShotRow(idx, force=false) {
 async function suggestAssetsFromShots() {
   const candidates = (_batchResult?.shots || [])
     .map((shot, idx) => ({ shot, idx }))
-    .filter(({ shot }) =>
-      shot && isIncludedShot(shot)
-      && methodologyImpliesCgAsset((shot.methodology || '').trim())
-    );
+    .filter(({ shot }) => {
+      if (!shot || !isIncludedShot(shot)) return false;
+      const desc = combinedRowDescription(shot).toLowerCase();
+      const method = (shot.methodology || '').toLowerCase();
+      return methodologyImpliesCgAsset(method)
+        || /\bcg\b|\bcgi\b|3d\b|digital creature|digital double|cg environment|cg asset/.test(desc);
+    });
   if (!candidates.length) return;
 
   candidates.forEach(({ shot, idx }) => {
-    if (shot.suggestedAsset?.added) return;
-    shot.suggestedAsset = { loading: true };
-    renderSuggestedAssetCell(idx, shot.suggestedAsset);
+    const kept = normalizeSuggestedAssets(shot.suggestedAssets || shot.suggestedAsset)
+      .filter(a => a.added && a.asset_name);
+    shot.suggestedAssets = kept.length ? [...kept, { loading: true }] : [{ loading: true }];
+    delete shot.suggestedAsset;
+    renderSuggestedAssetCell(idx, shot.suggestedAssets);
   });
 
   try {
@@ -2710,28 +2964,43 @@ async function suggestAssetsFromShots() {
     );
     let assigned = 0;
 
+    // Drop loading placeholders before merging
+    candidates.forEach(({ shot }) => {
+      shot.suggestedAssets = normalizeSuggestedAssets(shot.suggestedAssets)
+        .filter(a => a.asset_name && !a.loading);
+    });
+
     suggestions.forEach(suggestion => {
       const codes = Array.isArray(suggestion.associated_shot_codes)
         ? suggestion.associated_shot_codes.filter(Boolean)
         : [];
       codes.forEach(code => {
         const match = byCode.get(code);
-        if (!match || match.shot.suggestedAsset?.added) return;
-        match.shot.suggestedAsset = {
-          ...suggestion,
-          associated_shot_codes: codes,
-          added: false,
-        };
-        renderSuggestedAssetCell(match.idx, match.shot.suggestedAsset);
-        assigned += 1;
+        if (!match) return;
+        // ADD to the array, not replace
+        if (!match.shot.suggestedAssets) {
+          match.shot.suggestedAssets = [];
+        }
+        // Avoid duplicates by asset name
+        const exists = match.shot.suggestedAssets.some(
+          a => a.asset_name === suggestion.asset_name
+        );
+        if (!exists && suggestion.asset_name) {
+          match.shot.suggestedAssets.push({
+            ...suggestion,
+            associated_shot_codes: codes,
+            added: false,
+          });
+          assigned += 1;
+        }
+        renderSuggestedAssetCell(match.idx, match.shot.suggestedAssets);
       });
     });
 
     candidates.forEach(({ shot, idx }) => {
-      if (shot.suggestedAsset?.loading) {
-        shot.suggestedAsset = null;
-        renderSuggestedAssetCell(idx, null);
-      }
+      shot.suggestedAssets = normalizeSuggestedAssets(shot.suggestedAssets)
+        .filter(a => a.asset_name && !a.loading);
+      renderSuggestedAssetCell(idx, shot.suggestedAssets.length ? shot.suggestedAssets : null);
     });
     if (assigned > 0) {
       _visibleCols['SUGGESTED ASSET'] = true;
@@ -2742,8 +3011,9 @@ async function suggestAssetsFromShots() {
   } catch (error) {
     console.warn('[Asset Suggestions] Batch suggestion failed:', error);
     candidates.forEach(({ shot, idx }) => {
-      if (shot.suggestedAsset?.loading) shot.suggestedAsset = null;
-      renderSuggestedAssetCell(idx, shot.suggestedAsset);
+      shot.suggestedAssets = normalizeSuggestedAssets(shot.suggestedAssets || shot.suggestedAsset)
+        .filter(a => a.asset_name && !a.loading);
+      renderSuggestedAssetCell(idx, shot.suggestedAssets.length ? shot.suggestedAssets : null);
     });
   }
 }
@@ -2758,9 +3028,12 @@ function nextAssetItemNumber() {
   return String(Math.max(renderedRows, storedRows) + 1);
 }
 
-async function addSuggestedAssetToSection(shotIdx) {
+async function addSuggestedAssetToSection(shotIdx, assetIdx = 0) {
   const shot = _batchResult?.shots?.[shotIdx];
-  const asset = shot?.suggestedAsset;
+  const assets = shot?.suggestedAssets;
+  const asset = Array.isArray(assets)
+    ? assets[assetIdx]
+    : shot?.suggestedAsset;
   if (!asset || asset.added) return;
   const shotCode = shot?.shot_code || `Shot ${shotIdx + 1}`;
   const assetName = String(asset.asset_name || '').trim()
@@ -2785,16 +3058,26 @@ async function addSuggestedAssetToSection(shotIdx) {
     );
     if (assocInput) assocInput.value = existing.associated_shots.join(', ');
     asset.added = true;
-    shot.suggestedAsset = asset;
-    renderSuggestedAssetCell(shotIdx, asset);
+    if (Array.isArray(assets)) {
+      assets[assetIdx] = { ...asset, added: true };
+      shot.suggestedAssets = assets;
+    } else {
+      shot.suggestedAsset = asset;
+    }
+    renderSuggestedAssetCell(shotIdx, shot.suggestedAssets || asset);
     toast(`"${assetName}" already exists — associated shots updated`, 'ok');
     scheduleAutosave();
     return;
   }
 
   asset.adding = true;
-  shot.suggestedAsset = asset;
-  renderSuggestedAssetCell(shotIdx, asset);
+  if (Array.isArray(assets)) {
+    assets[assetIdx] = { ...asset };
+    shot.suggestedAssets = assets;
+  } else {
+    shot.suggestedAsset = asset;
+  }
+  renderSuggestedAssetCell(shotIdx, shot.suggestedAssets || asset);
   toast('Adding asset to breakdown below — estimating build days...', 'info');
   scrollBidMainToEl(document.getElementById('asset-card'), 'smooth');
   document.getElementById('asset-results')?.classList.remove('hidden');
@@ -2811,8 +3094,13 @@ async function addSuggestedAssetToSection(shotIdx) {
 
   asset.adding = false;
   asset.added = !!added;
-  shot.suggestedAsset = asset;
-  renderSuggestedAssetCell(shotIdx, asset);
+  if (Array.isArray(assets)) {
+    assets[assetIdx] = { ...asset };
+    shot.suggestedAssets = assets;
+  } else {
+    shot.suggestedAsset = asset;
+  }
+  renderSuggestedAssetCell(shotIdx, shot.suggestedAssets || asset);
   if (added) toast(`"${assetName}" added to Asset Breakdown`, 'ok');
 }
 
@@ -3245,6 +3533,7 @@ window.addEventListener('resize', sizeTableWrappers);
 // ── Batch / bid file mode ──────────────────────────────────────────────────
 
 let _batchResult = null;
+let _lastSingleResult = null;
 let _batchDragRow = null;
 let _parsedShotsForMerge = [];
 let _lastDragOverRow = null;
@@ -3291,11 +3580,13 @@ const ASSET_PRESET_DEPT_KEYS = ASSET_PRESET_DEPTS.map(([, key]) => key);
 const ASSET_PRESET_DEPT_HEADERS = ASSET_PRESET_DEPTS.map(([header]) => header);
 
 const VISIBLE_COLS_STORAGE_KEY = 'vfx_visible_cols';
-const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', 'SCRIPT HEADING', 'SEQ COST', ...BID_DEPTS];
+const TOGGLE_COLS = ['METHODOLOGY', 'SUGGESTED ASSET', 'SCRIPT HEADING', 'SCENE', 'PAGE', 'SEQ COST', ...BID_DEPTS];
 const COL_DEFAULTS = {
   METHODOLOGY: false,
   'SUGGESTED ASSET': true,
   'SCRIPT HEADING': false,
+  SCENE: false,
+  PAGE: false,
   'SEQ COST': false,
   CAMERA: true,
   MATCHMOVE: false,
@@ -3743,17 +4034,46 @@ function toggleRowErrorDetail(idx) {
 
 function methodologyCellHtml(idx, methodology) {
   const text = String(methodology || '').trim();
-  const content = text
-    ? `<div class="method-readonly">${escHtml(text)}</div>`
-    : `<div class="method-empty">
-         <button type="button" class="row-mini-btn" onclick="editMethodology(${idx})">+ Add</button>
-         <button type="button" class="row-mini-btn method-generate-hint" onclick="generateMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Generate</button>
-       </div>`;
-  return `${content}
+  if (text) {
+    const preview = text.length > 120 ? `${escHtml(text.slice(0, 120))}…` : escHtml(text);
+    return `
+      <div class="method-cell-content">
+        <div class="method-text" style="font-size:11px;color:var(--text);line-height:1.4">
+          ${preview}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+          <button type="button" class="row-mini-btn"
+            onclick="editMethodology(${idx})">Edit</button>
+          <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}"
+            onclick="rerunBatchRow(${idx}, this)">↻ Re-run</button>
+          <button type="button" class="row-mini-btn"
+            style="color:var(--red)"
+            title="Clear methodology"
+            onclick="clearMethodology(${idx})">✕</button>
+        </div>
+      </div>`;
+  }
+  return `<div class="method-empty">
+       <button type="button" class="row-mini-btn" onclick="editMethodology(${idx})">+ Add</button>
+       <button type="button" class="row-mini-btn method-generate-hint" onclick="generateMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Generate</button>
+     </div>
     <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
       <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Suggest</button>
       <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}" onclick="rerunBatchRow(${idx}, this)">↻</button>
     </div>`;
+}
+
+function clearMethodology(idx) {
+  const row = _batchResult?.shots?.[idx];
+  if (!row) return;
+  row.methodology = '';
+  row._has_methodology = false;
+  markBatchRowEdited(idx);
+  document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"] .method-cell`).forEach(cell => {
+    cell.innerHTML = methodologyCellHtml(idx, '');
+  });
+  _batchResult.export_csv_base64 = null;
+  scheduleAutosave();
 }
 
 function showBatchLoading(on) {
@@ -3916,6 +4236,8 @@ function appendBatchResultRow(i, row) {
     </span></td>
     <td>${escHtml(row.item_number || String(i + 1))}</td>
     <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${errorIconHtml}</td>
+    <td class="col-scene" data-dept="SCENE">${escHtml(row.scene || '')}</td>
+    <td class="col-page" data-dept="PAGE">${escHtml(row.page || '')}</td>
     <td class="col-desc">${escHtml(displayDesc)}</td>
     <td class="col-script-heading" data-dept="SCRIPT HEADING"
         style="font-size:11px;color:var(--muted);max-width:140px;white-space:normal">
@@ -3924,7 +4246,7 @@ function appendBatchResultRow(i, row) {
     <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology)}</td>
     <td class="col-suggested-asset" data-dept="SUGGESTED ASSET">
       <div id="suggested-asset-${i}" class="suggested-asset-cell">
-        ${suggestedAssetCellHtml(row.suggestedAsset, i)}
+        ${suggestedAssetCellHtml(row.suggestedAssets || row.suggestedAsset, i)}
       </div>
     </td>
     <td class="col-notes"><textarea class="batch-notes-inp" data-idx="${i}"
@@ -3955,7 +4277,10 @@ function appendBatchResultRow(i, row) {
   row.cost_per_shot = shotCost;
   const baseDays = parseFloat(row.total_mandays) || 0;
   const shotCount = Math.max(1, parseInt(row.number_of_shots, 10) || 1);
-  const shotFactor = row._global_factor ?? calcShotMultiplier(shotCount);
+  // × factor never scales a single shot — only applies when shot count > 1.
+  const shotFactor = shotCount <= 1
+    ? 1
+    : (row._global_factor ?? calcShotMultiplier(shotCount));
   const allShotDays = calcTotalShotDays(baseDays, shotCount);
 
   cells += `
@@ -4465,8 +4790,8 @@ const COLUMN_ALIASES = {
     'heading',
   ],
   page: [
-    'page number', 'page #', 'pg #', 'page', 'pg', 'script page',
-    'pages',
+    'page', 'page number', 'page #', 'pg', 'pg #',
+    'pg.', 'script page', 'pages', 'page no', 'p.',
   ],
   int_ext: [
     'int/ext', 'ext/int', 'int ext', 'interior exterior',
@@ -4580,6 +4905,7 @@ const COL_MAP_FIELD_LABELS = {
   client_notes: 'Client / production notes',
   number_of_shots: 'Number of shots',
   scene: 'Scene number',
+  page: 'Page number',
   script_heading: 'Script heading / slug',
   type_of_shot: 'Shot type',
 };
@@ -4796,6 +5122,10 @@ async function parseFileToShots(file) {
     return await promptColumnMapping(rows, headerIdx >= 0 ? headerIdx : guessHeaderRow(rows));
   }
 
+  // Offer mapping for unmatched headers even when auto-map is usable
+  const headers = rows[headerIdx] || [];
+  colMap = await maybeShowColumnMappingUI(headers, colMap);
+
   const parsed = mapRowsToShots(rows, headerIdx, colMap);
   console.log(
     '[CSV debug] mapRowsToShots produced',
@@ -4806,6 +5136,98 @@ async function parseFileToShots(file) {
     parsed.skipLog.length
   );
   return parsed;
+}
+
+const UNMAP_DISPLAY_FIELDS = {
+  description: 'Shot Description',
+  shot_code: 'Shot Code',
+  scene: 'Scene',
+  page: 'Page Number',
+  methodology: 'Methodology',
+  client_notes: 'Notes',
+  number_of_shots: 'Number of Shots',
+  vfx_notes: 'VFX Notes',
+  script_heading: 'Script Heading',
+};
+
+async function maybeShowColumnMappingUI(headers, colMap) {
+  const mapped = new Set(Object.values(colMap).filter(v => Number.isFinite(v)));
+  const unmapped = headers
+    .map((h, i) => ({ h: String(h || '').trim(), i }))
+    .filter(({ h, i }) => h && !mapped.has(i));
+
+  // Only prompt for columns that look like data headers (not blank / numeric junk)
+  const interesting = unmapped.filter(({ h }) => {
+    if (/^\d+(\.\d+)?$/.test(h)) return false;
+    if (isDeptColumnName(h)) return false;
+    const n = normalizeHeader(h);
+    return n.length >= 2;
+  });
+
+  if (!interesting.length) return colMap;
+  return await showUnmappedColumnModal(headers, { ...colMap }, interesting);
+}
+
+function autoGuessField(header) {
+  const h = String(header || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  if (/desc|action|scene.*desc|shot.*desc/.test(h)) return 'description';
+  if (/note|assumption|vfx.*note/.test(h)) return 'client_notes';
+  if (/shot.*(code|id|num)|vfx.*id/.test(h)) return 'shot_code';
+  if (/\bscene\b/.test(h)) return 'scene';
+  if (/page|\bpg\b/.test(h)) return 'page';
+  if (/method|approach|technique/.test(h)) return 'methodology';
+  if (/shot.*count|num.*shot|\bcount\b/.test(h)) return 'number_of_shots';
+  if (/heading|slug/.test(h)) return 'script_heading';
+  return '';
+}
+
+function showUnmappedColumnModal(headers, colMap, unmapped) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('col-unmap-modal');
+    const container = document.getElementById('col-unmap-rows');
+    if (!modal || !container) {
+      resolve(colMap);
+      return;
+    }
+
+    container.innerHTML = unmapped.map(({ h, i }) => `
+      <tr>
+        <td style="font-family:monospace;font-size:12px;padding:6px 10px">${escHtml(h)}</td>
+        <td style="padding:6px 10px;color:var(--muted)">→</td>
+        <td style="padding:6px 10px">
+          <select class="col-unmap-sel" data-col-idx="${i}" style="width:100%">
+            <option value="">Ignore this column</option>
+            ${Object.entries(UNMAP_DISPLAY_FIELDS).map(([f, label]) =>
+              `<option value="${f}" ${autoGuessField(h) === f ? 'selected' : ''}>${escHtml(label)}</option>`
+            ).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('');
+
+    const confirmBtn = document.getElementById('col-unmap-confirm');
+    const skipBtn = document.getElementById('col-unmap-skip');
+
+    const finish = (nextMap) => {
+      modal.classList.add('hidden');
+      modal.classList.remove('open');
+      resolve(nextMap);
+    };
+
+    confirmBtn.onclick = () => {
+      const next = { ...colMap };
+      container.querySelectorAll('.col-unmap-sel').forEach(sel => {
+        const idx = parseInt(sel.dataset.colIdx, 10);
+        const field = sel.value;
+        if (field && Number.isFinite(idx)) next[field] = idx;
+      });
+      finish(next);
+    };
+    skipBtn.onclick = () => finish(colMap);
+
+    modal.classList.remove('hidden');
+    modal.classList.add('open');
+  });
 }
 
 async function readFileToRows(file) {
@@ -5116,6 +5538,8 @@ function mapRowsToShots(rows, headerIdx, colMap) {
       shot_code: shotCode || null,
       episode: csvCell(row, colMap.episode) || null,
       sequence: csvCell(row, colMap.sequence) || null,
+      scene: scene || '',
+      page: (colMap.page !== undefined ? csvCell(row, colMap.page) : '') || '',
       script_description: desc || shotCode,
       script_heading: scriptHeading || '',
       methodology,
@@ -5575,7 +5999,7 @@ function appendAssetResultRow(idx, asset, result) {
     const raw = depts[key];
     const days = typeof raw === 'object' ? raw?.days : raw;
     const value = Number.isFinite(parseFloat(days)) ? parseFloat(days) : '';
-    return `<td><input type="number" class="bid-dept-inp" value="${value}" placeholder="0" min="0" step="0.5"
+    return `<td><input type="number" class="bid-dept-inp asset-dept-inp" value="${value}" placeholder="0" min="0" step="0.5"
       data-asset-idx="${idx}" data-asset-dept="${escAttr(bidDept)}" oninput="updateAssetRowTotal(this)"></td>`;
   }).join('');
   const deptSum = visibleDepts.reduce((s, bidDept) => {
@@ -6585,7 +7009,11 @@ async function runBatchStream(shots, project, preQual) {
   _parsedShotsForMerge = shots;
   _batchResult = { count: totalShots, project, dept_rates: getDeptRates(), shots: new Array(totalShots) };
 
-  const payload = { shots, dept_rates: getDeptRates(), project };
+  const shotsPayload = shots.map((s, i) => ({
+    ...s,
+    has_cg_assets: shotHasCgAssets(s, i),
+  }));
+  const payload = { shots: shotsPayload, dept_rates: getDeptRates(), project };
   if (preQual) payload.pre_qual = preQual;
 
   _batchAbortController = new AbortController();
@@ -6770,7 +7198,7 @@ async function runBatchEstimate() {
 function buildBatchTableHeader() {
   let html = `<th class="batch-include-cell"><input type="checkbox" id="batch-include-all" checked
     title="Select or deselect all rows" onchange="toggleAllBatchRowsIncluded(this.checked)">
-    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th class="col-desc">DESCRIPTION</th><th data-dept="SCRIPT HEADING">SCRIPT HEADING</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th data-dept="SUGGESTED ASSET">SUGGESTED ASSET</th><th>NOTES</th>`;
+    <label class="include-toggle on" for="batch-include-all" title="Select or deselect all rows"></label></th><th></th><th>#</th><th>SHOT CODE</th><th data-dept="SCENE">SCENE</th><th data-dept="PAGE">PAGE</th><th class="col-desc">DESCRIPTION</th><th data-dept="SCRIPT HEADING">SCRIPT HEADING</th><th data-dept="METHODOLOGY">METHODOLOGY</th><th data-dept="SUGGESTED ASSET">SUGGESTED ASSET</th><th>NOTES</th>`;
   html += BID_DEPTS.map(d =>
     `<th data-dept="${escAttr(d)}">${BID_DEPT_SHORT[d] || d}</th>`
   ).join('');
@@ -6874,8 +7302,13 @@ function autoShowPopulatedCols(results) {
     if (hasData && !_visibleCols[dept]) _visibleCols[dept] = true;
   });
   if (results.some(r => (r?.methodology || '').trim())) _visibleCols.METHODOLOGY = true;
-  if (results.some(r => r?.suggestedAsset?.asset_name)) _visibleCols['SUGGESTED ASSET'] = true;
+  if (results.some(r => r?.suggestedAsset?.asset_name
+    || (Array.isArray(r?.suggestedAssets) && r.suggestedAssets.some(a => a?.asset_name)))) {
+    _visibleCols['SUGGESTED ASSET'] = true;
+  }
   if (results.some(r => (r?.script_heading || '').trim())) _visibleCols['SCRIPT HEADING'] = true;
+  if (results.some(r => (r?.scene || '').trim())) _visibleCols.SCENE = true;
+  if (results.some(r => (r?.page || '').trim())) _visibleCols.PAGE = true;
   if (results.some(r => Math.max(1, parseInt(r?.number_of_shots, 10) || 1) > 1)) {
     _visibleCols['SEQ COST'] = true;
   }
@@ -7152,13 +7585,27 @@ function showRowRerun(idx) {
 }
 
 function combinedRowDescription(row, methodologyOverride) {
-  const raw = row._raw_description || row.description || row.script_description || '';
-  const base = String(raw).replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '').trim() || String(raw).trim();
+  let base = String(row._raw_description || row.script_description || '').trim();
+  if (!base) {
+    // Fall back to baked description, but drop dynamic NOTES / METHODOLOGY so
+    // live fields can be re-appended from current shot state.
+    base = String(row.description || '')
+      .replace(/\s*\|\s*METHODOLOGY:\s*[\s\S]*$/i, '')
+      .replace(/\s*\|\s*NOTES:\s*[^|]*/gi, '')
+      .trim();
+  } else {
+    // Strip any stale NOTES suffix that may have been left on raw text
+    base = base.replace(/\s*\|\s*NOTES:\s*[\s\S]*$/i, '').trim();
+  }
   const method = String(
     methodologyOverride !== undefined ? methodologyOverride : (row.methodology || '')
   ).trim();
-  if (!method) return base;
-  return `${base} | METHODOLOGY: ${method}`;
+  const notes = String(row._notes ?? row.client_notes ?? '').trim();
+  const parts = [];
+  if (base) parts.push(base);
+  if (method) parts.push(`METHODOLOGY: ${method}`);
+  if (notes) parts.push(`NOTES: ${notes}`);
+  return parts.join(' | ') || base;
 }
 
 function readRowMethodology(idx) {
@@ -7219,6 +7666,15 @@ function updateBatchRowDeptDays(rowIdx, deptDays) {
     });
     updateBatchRowTotals(tr, true);
   });
+
+  // Restore notes if they were cleared during dept update
+  if (row._notes || row.client_notes) {
+    const tr = document.querySelector(`tr.batch-data-row[data-idx="${rowIdx}"]`);
+    const ta = tr?.querySelector('textarea.batch-notes-inp');
+    if (ta && !ta.value) {
+      ta.value = row._notes || row.client_notes || '';
+    }
+  }
 }
 
 async function setMethodology(idx, value, opts = {}) {
@@ -7241,8 +7697,9 @@ async function setMethodology(idx, value, opts = {}) {
   }
   if (text) {
     suggestAssetForShotRow(idx);
-  } else if (!_batchResult.shots[idx].suggestedAsset?.added) {
-    _batchResult.shots[idx].suggestedAsset = null;
+  } else if (!shotHasAddedSuggestedAsset(_batchResult.shots[idx])) {
+    _batchResult.shots[idx].suggestedAssets = [];
+    delete _batchResult.shots[idx].suggestedAsset;
     renderSuggestedAssetCell(idx, null);
   }
 }
@@ -7400,6 +7857,15 @@ async function rerunBatchRow(idx, btn) {
   const row = _batchResult?.shots?.[idx];
   if (!row) return;
   const tr = document.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
+
+  // ── READ CURRENT NOTES BEFORE OVERWRITING ──────────
+  const currentNotes = tr?.querySelector('textarea.batch-notes-inp')?.value ?? '';
+  if (currentNotes) {
+    row._notes = currentNotes;
+    row.client_notes = currentNotes;
+  }
+  // ────────────────────────────────────────────────────
+
   const methodFromCell = readRowMethodology(idx);
   if (methodFromCell) {
     row.methodology = methodFromCell;
@@ -7412,12 +7878,14 @@ async function rerunBatchRow(idx, btn) {
   setGlobalActivity(`AI re-estimating ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
 
   try {
+    const preQual = getPreQualData() || {};
+    preQual.has_cg_assets = shotHasCgAssets(row, idx);
     const r = await fetch(`${API}/estimate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         description: combinedRowDescription(row, methodFromCell),
-        pre_qual: getPreQualData(),
+        pre_qual: preQual,
         dept_rates: getDeptRates(),
         mode: 'hybrid',
       }),
@@ -7438,6 +7906,11 @@ async function rerunBatchRow(idx, btn) {
       // refresh totals/cost cells already handled in updateBatchRowDeptDays
       updateBatchRowTotals(rowTr, true);
     });
+    // Restore notes if textarea was cleared
+    const notesTA = tr?.querySelector('textarea.batch-notes-inp');
+    if (notesTA && currentNotes && !notesTA.value) {
+      notesTA.value = currentNotes;
+    }
     refreshBatchBidSummary();
     autoShowPopulatedCols([row]);
     applyColVisibility();
@@ -7453,14 +7926,126 @@ async function rerunBatchRow(idx, btn) {
   }
 }
 
-function updateBatchRowNotes(input) {
-  const idx = batchRowIndex(input.closest('tr.batch-data-row'));
-  if (!Number.isFinite(idx) || !_batchResult?.shots[idx]) return;
-  _batchResult.shots[idx]._notes = input.value;
-  _batchResult.shots[idx].client_notes = input.value;
-  _batchResult.shots[idx].vfx_notes = input.value;
+function updateBatchRowNotes(textarea) {
+  const idx = Number.isFinite(parseInt(textarea.dataset.idx, 10))
+    ? parseInt(textarea.dataset.idx, 10)
+    : batchRowIndex(textarea.closest('tr.batch-data-row'));
+  const notes = textarea.value.trim();
+  if (!Number.isFinite(idx) || !_batchResult?.shots?.[idx]) return;
+
+  const shot = _batchResult.shots[idx];
+  const prev = (shot.client_notes || shot._notes || '').trim();
+  shot._notes = notes;
+  shot.client_notes = notes;
+  shot.vfx_notes = notes;
   markBatchRowEdited(idx);
   _batchResult.export_csv_base64 = null;
+
+  // If notes were just cleared (had content, now empty):
+  // re-run the estimate for this row without the old notes
+  if (prev.length > 0 && notes.length === 0) {
+    clearTimeout(textarea._rerunTimer);
+    textarea._rerunTimer = setTimeout(() => {
+      const tr = textarea.closest('tr');
+      if (tr) showRowRerunSpinner(tr);
+      rerunBatchRow(idx);
+    }, 800);
+    return;
+  }
+
+  // New notes typed into a previously empty field — show ↻ so user can re-estimate
+  if (prev.length === 0 && notes.length > 0) {
+    showRowRerun(idx);
+  }
+}
+
+async function runSingleShot() {
+  const desc = document.getElementById('single-desc')?.value.trim();
+  if (!desc) {
+    toast('Enter a shot description first', 'warn');
+    return;
+  }
+  const btn = document.getElementById('single-run-btn');
+  setButtonLoading(btn, true, 'Estimating…');
+  document.getElementById('single-result')?.classList.add('hidden');
+
+  try {
+    const r = await fetch(`${API}/estimate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: desc,
+        pre_qual: getPreQualData(),
+        dept_rates: getDeptRates(),
+        mode: 'hybrid',
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const est = await r.json();
+    _lastSingleResult = est;
+    _lastSingleResult._desc = desc;
+    _lastSingleResult._shotCode =
+      document.getElementById('single-shot-code')?.value.trim() || '';
+    _lastSingleResult._shotCount =
+      parseInt(document.getElementById('single-shot-count')?.value, 10) || 1;
+
+    const bidDepts = estimateDeptDaysToBidDepts(est.dept_days);
+    const total = est.per_shot_mandays ?? est.total_mandays ?? 0;
+    const cost = computeClientShotCost(bidDepts, getDeptRates(), {
+      mandaysFallback: total,
+    });
+
+    const deptStrs = Object.entries(bidDepts)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => `${BID_DEPT_SHORT[k] || k}: ${fmt(v)}d`)
+      .join('  ·  ');
+    document.getElementById('single-result-depts').textContent = deptStrs;
+    document.getElementById('single-result-days').textContent = fmt(total) + 'd';
+    document.getElementById('single-result-cost').textContent = money(cost);
+    document.getElementById('single-result')?.classList.remove('hidden');
+  } catch (e) {
+    toast('Estimate failed: ' + e.message, 'err');
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+function addSingleShotToBatch() {
+  if (!_lastSingleResult) return;
+  const est = _lastSingleResult;
+  const bidDepts = estimateDeptDaysToBidDepts(est.dept_days);
+  const total = est.per_shot_mandays ?? est.total_mandays ?? 0;
+  const cost = computeClientShotCost(bidDepts, getDeptRates(), {
+    mandaysFallback: total,
+  });
+
+  const shot = {
+    shot_code: est._shotCode || null,
+    description: est._desc || '',
+    _raw_description: est._desc || '',
+    total_mandays: total,
+    per_shot_mandays: total,
+    confidence: est.confidence || 0,
+    cost_per_shot: cost,
+    number_of_shots: est._shotCount || 1,
+    dept_days: bidDepts,
+  };
+
+  if (!_batchResult) {
+    _batchResult = { shots: [] };
+    buildBatchTableHeader();
+    document.getElementById('batch-results')?.classList.remove('hidden');
+  }
+
+  const idx = _batchResult.shots.length;
+  _batchResult.shots.push(shot);
+  appendBatchResultRow(idx, shot);
+  refreshBatchBidSummary();
+  _batchResult.export_csv_base64 = null;
+
+  toast('Shot added to breakdown');
+  document.getElementById('batch-results')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function updateShotMultiplierCells(input) {
@@ -7472,17 +8057,23 @@ function updateShotMultiplierCells(input) {
   const shot = Number.isFinite(idx) ? _batchResult?.shots?.[idx] : null;
 
   if (shot) {
-    // Only clear custom global factor when the user is editing SHOTS directly
-    if (input?.classList?.contains('shot-count-inp') && document.activeElement === input) {
-      delete shot._global_factor;
-    }
+    // Keep a user-set x factor (_global_factor) when shot count changes.
+    // Only clear per-dept overrides when collapsing back to a single shot.
     if (shots === 1) shot._dept_factors = {};
     shot.number_of_shots = shots;
   }
 
-  const factor = (shot && shot._global_factor != null)
+  const storedFactor = (shot && shot._global_factor != null)
     ? Number(shot._global_factor)
-    : calcShotMultiplier(shots);
+    : null;
+  // Single-shot rows stay at 1× — x-factor only multiplies when shots > 1.
+  const factor = shots === 1
+    ? 1
+    : (storedFactor ?? calcShotMultiplier(shots));
+  // At 1 shot always display 1.00× (stored custom factor reapplies when shots > 1).
+  const displayFactor = shots === 1
+    ? 1
+    : (storedFactor ?? calcShotMultiplier(shots));
   const n = shots;
   const totalDays = (parseFloat(baseDays) || 0) * factor;
 
@@ -7490,7 +8081,7 @@ function updateShotMultiplierCells(input) {
   const factorCell = tr.querySelector('.shot-factor-cell');
   const totalCell = tr.querySelector('.shot-total-days-cell');
   if (factorCell && !factorCell.querySelector('input')) {
-    factorCell.textContent = factor.toFixed(2) + '×';
+    factorCell.textContent = displayFactor.toFixed(2) + '×';
   }
   if (totalCell) totalCell.textContent = fmt(totalDays);
 
@@ -7545,6 +8136,7 @@ function updateShotMultiplierCells(input) {
     _batchResult.export_csv_base64 = null;
   }
 
+  refreshBatchBidSummary();
   scheduleAutosave();
 }
 
@@ -7612,6 +8204,22 @@ function applyDeptFactor(rowIdx, dept, factorVal) {
     `#batch-table-body tr.batch-data-row[data-idx="${rowIdx}"]`
   );
   if (!tr) return;
+
+  const nShots = Math.max(
+    1,
+    parseInt(tr.querySelector('.shot-count-inp')?.value, 10)
+      || parseInt(shot.number_of_shots, 10)
+      || 1
+  );
+
+  // Per-dept factor only scales when there is more than one shot.
+  if (nShots <= 1) {
+    tr.querySelectorAll('.dept-factor-popover').forEach(p => p.remove());
+    markBatchRowEdited(rowIdx);
+    _batchResult.export_csv_base64 = null;
+    scheduleAutosave();
+    return;
+  }
 
   const deptInp = tr.querySelector(
     `input.bid-dept-inp[data-dept="${CSS.escape(dept)}"]`
@@ -7695,6 +8303,37 @@ function applyGlobalFactorOverride(rowIdx, factor) {
   if (!tr || !shot) return;
 
   shot._global_factor = factor;
+
+  const nShots = Math.max(
+    1,
+    parseInt(tr.querySelector('.shot-count-inp')?.value, 10)
+      || parseInt(shot.number_of_shots, 10)
+      || 1
+  );
+
+  // At 1 shot: store the factor for later, but never multiply the base days.
+  if (nShots <= 1) {
+    const factorCell = tr.querySelector('.shot-factor-cell');
+    if (factorCell && !factorCell.querySelector('input')) {
+      factorCell.textContent = '1.00×';
+    }
+    tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
+      const base = parseFloat(inp.dataset.baseDays) || 0;
+      inp.value = base > 0 ? String(base) : (inp.value || '');
+    });
+    const baseDays = parseFloat(
+      tr.querySelector('.shot-count-inp')?.dataset.baseDays
+    ) || Object.values(readRowDepts(tr)).reduce((a, b) => a + b, 0);
+    const daysCell = tr.querySelector('.batch-row-days');
+    if (daysCell) daysCell.textContent = fmt(baseDays);
+    const totalCell = tr.querySelector('.shot-total-days-cell');
+    if (totalCell) totalCell.textContent = fmt(baseDays);
+    markBatchRowEdited(rowIdx);
+    _batchResult.export_csv_base64 = null;
+    refreshBatchBidSummary();
+    scheduleAutosave();
+    return;
+  }
 
   tr.querySelectorAll('input.bid-dept-inp').forEach(inp => {
     const dept = inp.dataset.dept;
@@ -9658,10 +10297,11 @@ function scrollToBidSection(id) {
     n.classList.toggle('on', n.getAttribute('data-target') === id);
   });
   if (id === 'sec-charts') renderBidCharts();
-  if (id === 'sec-compare') {
-    refreshCompareBidList();
-    renderCompare();
-  }
+  // Compare hidden until bid-history compare UX is ready
+  // if (id === 'sec-compare') {
+  //   refreshCompareBidList();
+  //   renderCompare();
+  // }
 }
 
 function initBidSidebar() {
@@ -9722,10 +10362,28 @@ document.addEventListener('visibilitychange', () => {
   setupAssetDropZone();
   buildColCheckboxes();
   renderBidCharts();
-  refreshCompareBidList();
+  // refreshCompareBidList(); // Compare tab hidden
   document.addEventListener('click', e => {
     if (!e.target.closest('.method-cell')) closeMethodologySuggestions();
   });
+  document.addEventListener('focus', e => {
+    if (!e.target.classList?.contains('batch-notes-inp')) return;
+    const ta = e.target;
+    ta.style.maxHeight = 'none';
+    const scrollH = ta.scrollHeight;
+    ta.style.maxHeight = Math.min(scrollH + 8, 200) + 'px';
+  }, true);
+  document.addEventListener('blur', e => {
+    if (!e.target.classList?.contains('batch-notes-inp')) return;
+    e.target.style.maxHeight = '38px';
+  }, true);
+  document.addEventListener('input', e => {
+    if (!e.target.classList?.contains('batch-notes-inp')) return;
+    if (document.activeElement !== e.target) return;
+    const ta = e.target;
+    ta.style.maxHeight = 'none';
+    ta.style.maxHeight = Math.min(ta.scrollHeight + 8, 200) + 'px';
+  }, true);
   await loadDeptRates();
   loadAssetDeptRates();
   await loadFxRates();

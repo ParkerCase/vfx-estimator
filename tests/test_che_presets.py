@@ -30,9 +30,18 @@ def test_prompt_groups_reference_presets_by_full_category():
         }
     )
 
+    assert "CRITICAL — PRESET ANCHORING" in rules
+    assert "read this first, every time" in rules
+    assert "SHOT TYPE BASELINES:" in rules
+    assert "COMPLEXITY MODIFIERS:" in rules
+    assert "ABSOLUTE RULES" in rules
     assert "DIGITAL HUMAN:" in rules
     assert "digital_human_hero_sh0001" in rules
     assert "animation=5d" in rules
+    # Anchor must appear before baselines; baselines before modifiers; modifiers before hard rules
+    assert rules.index("CRITICAL — PRESET ANCHORING") < rules.index("SHOT TYPE BASELINES:")
+    assert rules.index("SHOT TYPE BASELINES:") < rules.index("COMPLEXITY MODIFIERS:")
+    assert rules.index("COMPLEXITY MODIFIERS:") < rules.index("ABSOLUTE RULES")
 
 
 def test_presets_are_retrieval_rows_with_training_weight():

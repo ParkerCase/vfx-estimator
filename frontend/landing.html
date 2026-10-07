@@ -1320,6 +1320,68 @@
     }
     .footer-bottom a:hover { color: var(--foreground); }
 
+    /* ── Privacy ── */
+    .privacy-section {
+      padding: 64px 28px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      background: #08080a;
+    }
+    .privacy-inner {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .privacy-heading {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin: 0 0 14px;
+      line-height: 1.3;
+      font-family: var(--font-display, inherit);
+    }
+    .privacy-body {
+      font-size: 15px;
+      color: var(--muted-foreground);
+      line-height: 1.7;
+      margin: 0 0 22px;
+    }
+    .privacy-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--foreground);
+      background: var(--card, rgba(255,255,255,0.04));
+    }
+    .privacy-badge svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .privacy-small {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      line-height: 1.6;
+      margin: 0;
+      opacity: 0.8;
+    }
+
     /* Reveal on scroll */
     .reveal {
       opacity: 0;
@@ -1974,6 +2036,47 @@
     </div>
   </section>
 
+  <section class="privacy-section" id="privacy">
+    <div class="privacy-inner">
+      <h2 class="privacy-heading">
+        Built to the same standard as healthcare data
+      </h2>
+      <p class="privacy-body">
+        Bid IQ is built on infrastructure used by
+        organizations that handle protected health
+        information, backed by a signed Business Associate
+        Agreement. Every bid is encrypted in transit with
+        TLS 1.3 and at rest with AES-256. Your data is
+        isolated to your account — no other studio or user
+        can access it, ever.
+      </p>
+      <div class="privacy-badges">
+        <div class="privacy-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          TLS 1.3 in transit
+        </div>
+        <div class="privacy-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+          AES-256 at rest
+        </div>
+        <div class="privacy-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19.5c1.8-3.2 4.2-4.5 7-4.5s5.2 1.3 7 4.5"/></svg>
+          Per-account isolation
+        </div>
+        <div class="privacy-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 9h6M9 13h6M9 17h4"/></svg>
+          BAA on file
+        </div>
+      </div>
+      <p class="privacy-small">
+        Your bids, rates, and client details never leave
+        your secure environment. We follow the same data
+        handling controls required for sensitive enterprise
+        and healthcare-adjacent data.
+      </p>
+    </div>
+  </section>
+
   <footer>
     <div class="shell footer-inner">
       <div class="footer-top">
@@ -1994,6 +2097,7 @@
             <a href="/pricing">Pricing</a>
             <a href="#capabilities">Capabilities</a>
             <a href="#second-opinion">Second opinion</a>
+            <a href="#privacy">Privacy</a>
           </div>
           <div class="footer-col">
             <span class="label">Company</span>

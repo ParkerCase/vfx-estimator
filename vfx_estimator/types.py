@@ -101,6 +101,7 @@ class BidPreQual(BaseModel):
     screenplay_fdx_path: Optional[str] = None
     calibration_anchors: List[Dict[str, Any]] = Field(default_factory=list)
     dept_calibration: Dict[str, Any] = Field(default_factory=dict)
+    has_cg_assets: bool = False
 
     @field_validator("director_brief", mode="before")
     @classmethod
