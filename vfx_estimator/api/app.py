@@ -917,20 +917,28 @@ Return JSON only:
                 prompt,
                 settings=svc.settings,
                 debug_label="suggest_methodology",
-                timeout_sec=45,
+                timeout_sec=90,
+                max_retries=2,
             )
         except Exception as exc:
             print(
                 f"[suggest_methodology] generate_json raised {type(exc).__name__}: {exc}",
                 flush=True,
             )
-            result = None
+            raise HTTPException(
+                status_code=502,
+                detail=f"Methodology suggestion failed: {exc}",
+            ) from exc
         if not result:
             print(
                 f"[suggest_methodology] generate_json returned None for: {req.description[:80]}",
                 flush=True,
             )
-        elif "suggestions" not in result:
+            raise HTTPException(
+                status_code=502,
+                detail="Methodology suggestion returned empty response from AI",
+            )
+        if "suggestions" not in result:
             print(f"[suggest_methodology] Got result but no 'suggestions' key: {result}", flush=True)
         elif not result["suggestions"]:
             print(
@@ -1050,16 +1058,23 @@ Return ONLY a JSON object:
                 prompt,
                 settings=svc.settings,
                 debug_label="suggest_assets",
-                timeout_sec=60,
+                timeout_sec=90,
+                max_retries=2,
             )
         except Exception as exc:
             print(
                 f"[suggest_assets] generate_json raised {type(exc).__name__}: {exc}",
                 flush=True,
             )
-            result = None
+            raise HTTPException(
+                status_code=502,
+                detail=f"Asset suggestion failed: {exc}",
+            ) from exc
         if not result:
-            return {"suggested_assets": [], "total_cg_assets": 0}
+            raise HTTPException(
+                status_code=502,
+                detail="Asset suggestion returned empty response from AI",
+            )
         assets = result.get("suggested_assets") or []
         if not isinstance(assets, list):
             assets = []

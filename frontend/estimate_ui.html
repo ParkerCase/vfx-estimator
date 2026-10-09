@@ -859,6 +859,49 @@
     .col-map-field{display:flex;flex-direction:column;gap:4px}
     .col-map-field label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text)}
     .col-map-field select,.col-map-field input{padding:8px 10px;font-size:12px}
+    /* Column mapping review modal */
+    .col-unmap-card{max-width:640px}
+    .col-unmap-lead{
+      color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 18px
+    }
+    .col-unmap-table-wrap{
+      border:1px solid var(--border);border-radius:10px;overflow:hidden;
+      background:var(--card2)
+    }
+    .col-unmap-table{width:100%;border-collapse:collapse}
+    .col-unmap-table thead th{
+      text-align:left;padding:12px 14px;font-size:11px;font-weight:800;
+      letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+      background:var(--surface);border-bottom:1px solid var(--border)
+    }
+    .col-unmap-table tbody td{
+      padding:12px 14px;border-bottom:1px solid var(--border);
+      vertical-align:middle;font-size:13px;color:var(--text)
+    }
+    .col-unmap-table tbody tr:last-child td{border-bottom:none}
+    .col-unmap-table tbody tr:hover td{background:rgba(255,255,255,.02)}
+    .col-unmap-src{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:13px;font-weight:600;color:var(--text)
+    }
+    .col-unmap-auto{
+      display:inline-block;margin-left:8px;padding:2px 7px;
+      font-family:var(--font);font-size:10px;font-weight:800;
+      letter-spacing:.3px;text-transform:uppercase;
+      border-radius:999px;border:1px solid rgba(79,142,247,.35);
+      background:rgba(79,142,247,.12);color:var(--accent);vertical-align:middle
+    }
+    .col-unmap-arrow{color:var(--muted);text-align:center;width:28px;padding-left:4px!important;padding-right:4px!important}
+    .col-unmap-table select.col-unmap-sel{
+      width:100%;min-width:180px;padding:10px 12px;font-size:13px;
+      border-radius:8px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text)
+    }
+    .col-unmap-table select.col-unmap-sel:focus{
+      outline:none;border-color:var(--accent);
+      box-shadow:0 0 0 2px rgba(79,142,247,.25)
+    }
+    .modal-title.col-unmap-title{font-size:20px;margin-bottom:10px}
     .col-map-preview{margin-top:14px;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
     .col-map-preview table{width:100%;border-collapse:collapse;font-size:11px}
     .col-map-preview th,.col-map-preview td{padding:6px 8px;border:1px solid var(--border);text-align:left;
@@ -2086,31 +2129,28 @@
 </div>
 
 <div id="col-unmap-modal" class="modal-overlay hidden">
-  <div class="modal-card" style="max-width:580px" onclick="event.stopPropagation()">
-    <div class="modal-title">Review column mapping</div>
-    <p class="muted" style="font-size:13px;margin-bottom:14px">
-      Confirm how each column maps to bid fields. Pre-filled mappings are auto-detected — adjust any that look wrong.
+  <div class="modal-card col-unmap-card" onclick="event.stopPropagation()">
+    <div class="modal-title col-unmap-title">Review column mapping</div>
+    <p class="col-unmap-lead">
+      Confirm how each column maps to Bid IQ fields before estimating.
+      Auto-detected mappings are marked — adjust anything that looks wrong, then confirm to continue.
     </p>
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr>
-          <th style="text-align:left;padding:6px 10px;font-size:11px;color:var(--muted)">
-            COLUMN IN YOUR FILE
-          </th>
-          <th></th>
-          <th style="text-align:left;padding:6px 10px;font-size:11px;color:var(--muted)">
-            MAPS TO
-          </th>
-        </tr>
-      </thead>
-      <tbody id="col-unmap-rows"></tbody>
-    </table>
-    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+    <div class="col-unmap-table-wrap">
+      <table class="col-unmap-table">
+        <thead>
+          <tr>
+            <th>Column in your file</th>
+            <th></th>
+            <th>Maps to</th>
+          </tr>
+        </thead>
+        <tbody id="col-unmap-rows"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="col-unmap-cancel" class="btn-ghost">Cancel</button>
       <button type="button" id="col-unmap-confirm" class="btn-blue">
-        Confirm Mapping
-      </button>
-      <button type="button" id="col-unmap-skip" class="btn-ghost">
-        Import As-Is
+        Confirm &amp; Estimate
       </button>
     </div>
   </div>
@@ -2949,7 +2989,14 @@ async function suggestAssetForShotRow(idx, force=false) {
         project_name: getBatchProject() || null,
       }),
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!r.ok) {
+      let detail = `HTTP ${r.status}`;
+      try {
+        const err = await r.json();
+        if (err?.detail) detail = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+      } catch {}
+      throw new Error(detail);
+    }
     const data = await r.json();
     const suggestions = Array.isArray(data.suggested_assets) ? data.suggested_assets : [];
     const shotCode = row.shot_code || `Shot ${idx + 1}`;
@@ -2968,6 +3015,7 @@ async function suggestAssetForShotRow(idx, force=false) {
     });
     if (!row.suggestedAssets.length) {
       renderSuggestedAssetCell(idx, null);
+      if (force) toast('No CG assets found for this shot.', 'warn');
       return;
     }
     _visibleCols['SUGGESTED ASSET'] = true;
@@ -2979,7 +3027,7 @@ async function suggestAssetForShotRow(idx, force=false) {
     console.warn('[Asset Suggestions] Suggestion failed for row:', idx, error);
     row.suggestedAssets = kept.length ? kept : [];
     renderSuggestedAssetCell(idx, row.suggestedAssets.length ? row.suggestedAssets : null);
-    if (force) toast('Could not suggest an asset for this shot.', 'warn');
+    toast(`Asset suggestion failed: ${error.message || error}`, 'err');
   }
 }
 
@@ -5220,6 +5268,7 @@ async function parseFileToShots(file) {
 const UNMAP_DISPLAY_FIELDS = {
   description: 'Shot Description',
   shot_code: 'Shot Code',
+  item_number: 'Item / Row #',
   scene: 'Scene',
   page: 'Page Number',
   methodology: 'Methodology',
@@ -5261,11 +5310,13 @@ async function maybeShowColumnMappingUI(headers, colMap) {
     }));
 
   if (!interesting.length) return colMap;
+  // Must be confirmed — Cancel rejects and stops the estimate.
   return await showUnmappedColumnModal(headers, { ...colMap }, interesting);
 }
 
 function autoGuessField(header) {
   const h = String(header || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  if (/^item|#\s*$|item\s*(no|number|#)?$/.test(h) || h === 'item' || h === 'item#') return 'item_number';
   if (/desc|action|scene.*desc|shot.*desc/.test(h)) return 'description';
   if (/note|assumption|vfx.*note/.test(h)) return 'client_notes';
   if (/shot.*(code|id|num)|vfx.*id/.test(h)) return 'shot_code';
@@ -5278,7 +5329,7 @@ function autoGuessField(header) {
 }
 
 function showUnmappedColumnModal(headers, colMap, unmapped) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const modal = document.getElementById('col-unmap-modal');
     const container = document.getElementById('col-unmap-rows');
     if (!modal || !container) {
@@ -5288,16 +5339,16 @@ function showUnmappedColumnModal(headers, colMap, unmapped) {
 
     container.innerHTML = unmapped.map(({ h, i, currentField }) => {
       const preselect = currentField || autoGuessField(h) || '';
-      const isMapped = !!currentField;
+      const isMapped = !!preselect;
       return `
       <tr>
-        <td style="font-family:monospace;font-size:12px;padding:6px 10px">
-          ${escHtml(h)}
-          ${isMapped ? `<span style="margin-left:6px;font-family:sans-serif;font-size:10px;background:var(--blue,#2d6be4);color:#fff;border-radius:3px;padding:1px 5px;vertical-align:middle">auto</span>` : ''}
+        <td>
+          <span class="col-unmap-src">${escHtml(h)}</span>
+          ${isMapped ? `<span class="col-unmap-auto">auto</span>` : ''}
         </td>
-        <td style="padding:6px 10px;color:var(--muted)">→</td>
-        <td style="padding:6px 10px">
-          <select class="col-unmap-sel" data-col-idx="${i}" style="width:100%">
+        <td class="col-unmap-arrow">→</td>
+        <td>
+          <select class="col-unmap-sel" data-col-idx="${i}">
             <option value="">Ignore this column</option>
             ${Object.entries(UNMAP_DISPLAY_FIELDS).map(([f, label]) =>
               `<option value="${f}" ${preselect === f ? 'selected' : ''}>${escHtml(label)}</option>`
@@ -5308,24 +5359,37 @@ function showUnmappedColumnModal(headers, colMap, unmapped) {
     }).join('');
 
     const confirmBtn = document.getElementById('col-unmap-confirm');
-    const skipBtn = document.getElementById('col-unmap-skip');
+    const cancelBtn = document.getElementById('col-unmap-cancel');
 
-    const finish = (nextMap) => {
+    const closeModal = () => {
       modal.classList.add('hidden');
       modal.classList.remove('open');
-      resolve(nextMap);
     };
 
     confirmBtn.onclick = () => {
       const next = { ...colMap };
       container.querySelectorAll('.col-unmap-sel').forEach(sel => {
         const idx = parseInt(sel.dataset.colIdx, 10);
+        if (!Number.isFinite(idx)) return;
+        // Clear any field currently mapped to this column index
+        Object.keys(next).forEach(field => {
+          if (next[field] === idx) delete next[field];
+        });
         const field = sel.value;
-        if (field && Number.isFinite(idx)) next[field] = idx;
+        if (field) next[field] = idx;
       });
-      finish(next);
+      if (next.description === undefined && next.vfx_notes === undefined && next.vfx_assumptions === undefined) {
+        toast('Map at least a Shot Description column (or VFX Notes) to continue.', 'warn');
+        return;
+      }
+      closeModal();
+      resolve(next);
     };
-    skipBtn.onclick = () => finish(colMap);
+
+    cancelBtn.onclick = () => {
+      closeModal();
+      reject(Object.assign(new Error('Column mapping cancelled'), { cancelled: true }));
+    };
 
     modal.classList.remove('hidden');
     modal.classList.add('open');
@@ -7242,22 +7306,23 @@ async function runBatchEstimate() {
   const project = getBatchProject();
   const preQual = buildBatchPreQual();
 
-  showBatchLoading(true);
-  clearBatchResults();
-  document.getElementById('batch-results').classList.remove('hidden');
-
+  // Parse + require column-mapping approval BEFORE starting estimate UI / stream
+  let shots = [];
   try {
-    let shots = [];
-
     if (file) {
       let parsed;
       try {
         parsed = await parseFileToShots(file);
       } catch (e) {
-        if (e.cancelled) return;
+        if (e.cancelled) {
+          toast('Mapping cancelled — estimate not started.', 'warn');
+          return;
+        }
         throw e;
       }
       shots = parsed.shots || [];
+      clearBatchResults();
+      document.getElementById('batch-results').classList.remove('hidden');
       const audit = {
         fileName: file.name,
         parsedCount: shots.length,
@@ -7276,11 +7341,18 @@ async function runBatchEstimate() {
       shots = parseBatchPaste(document.getElementById('batch-input').value);
       if (!shots.length) {
         toast('Upload a bid CSV/Excel file or paste shot lines.', 'warn');
-        document.getElementById('batch-results').classList.add('hidden');
         return;
       }
+      clearBatchResults();
+      document.getElementById('batch-results').classList.remove('hidden');
     }
+  } catch (e) {
+    toast(`Could not read bid file: ${e.message}`, 'err');
+    return;
+  }
 
+  showBatchLoading(true);
+  try {
     await runBatchStream(shots, project, preQual);
     scrollBidMainToEl(document.getElementById('batch-results'), 'smooth');
   } catch (e) {
@@ -7833,16 +7905,34 @@ async function fetchMethodologySuggestions(row) {
     row.vfx_notes || '',
     row.vfx_assumptions || '',
   ].map(s => (s || '').trim()).filter(Boolean);
+  const description = (
+    combinedRowDescription(row)
+    || row._raw_description
+    || row.script_description
+    || row.description
+    || row.vfx_notes
+    || ''
+  ).trim();
+  if (!description) {
+    throw new Error('Add a shot description or notes first');
+  }
   const r = await fetch(`${API}/suggest-methodology`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      description: row.description || row.script_description || row.vfx_notes || '',
+      description,
       shot_code: row.shot_code,
       notes: noteParts.join(' | '),
     }),
   });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  if (!r.ok) {
+    let detail = `HTTP ${r.status}`;
+    try {
+      const err = await r.json();
+      if (err?.detail) detail = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+    } catch {}
+    throw new Error(detail);
+  }
   const data = await r.json();
   return data.suggestions || [];
 }

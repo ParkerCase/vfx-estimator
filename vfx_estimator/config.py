@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     gemini_api_key: str = Field(default="", validation_alias="GEMINI_API_KEY")
     google_api_key: str = Field(default="", validation_alias="GOOGLE_API_KEY")
     google_client_id: str = Field(default="", validation_alias="GOOGLE_CLIENT_ID")
-    gemini_model: str = Field(default="gemini-2.0-flash", validation_alias="GEMINI_MODEL")
+    gemini_model: str = Field(default="gemini-3.8-flash", validation_alias="GEMINI_MODEL")
     gemini_mandays_model: str = Field(default="", validation_alias="GEMINI_MANDAYS_MODEL")
 
     xata_api_key: str = Field(default="", validation_alias="XATA_API_KEY")
@@ -67,12 +67,28 @@ class Settings(BaseSettings):
         return (self.gemini_api_key or self.google_api_key or "").strip()
 
     def resolved_gemini_mandays_model(self) -> str:
-        """Return the model to use for mandays estimation."""
-        return (
+        """Return the model to use for mandays estimation.
+
+        Remaps retired model IDs so old env vars (e.g. gemini-2.0-flash)
+        keep working without a Render dashboard change.
+        """
+        model = (
             self.gemini_mandays_model.strip()
             or self.gemini_model.strip()
-            or "gemini-2.0-flash"
+            or "gemini-3.8-flash"
         )
+        # Google retired these; map to current Flash equivalents.
+        deprecated = {
+            "gemini-2.0-flash": "gemini-3.8-flash",
+            "gemini-2.0-flash-001": "gemini-3.8-flash",
+            "gemini-1.5-flash": "gemini-3.8-flash",
+            "gemini-1.5-flash-latest": "gemini-3.8-flash",
+            "gemini-1.5-pro": "gemini-3.8-flash",
+            "gemini-1.5-pro-latest": "gemini-3.8-flash",
+            "gemini-pro": "gemini-3.8-flash",
+            "gemini-2.5-flash-lite": "gemini-3.5-flash-lite",
+        }
+        return deprecated.get(model, model)
 
     def resolved_xata_postgres_url(self) -> str:
         for candidate in (self.xata_postgres_url, self.xata_database_url):
