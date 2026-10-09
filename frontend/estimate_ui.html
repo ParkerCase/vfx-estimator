@@ -741,7 +741,7 @@
     .asset-data-row.row-toggled-off{opacity:.4;border-left:3px solid var(--red)}
     .batch-table input[type=number]{width:72px;padding:6px 8px}
     .batch-table input.bid-dept-inp{width:40px;padding:3px 4px;font-size:11px;text-align:center}
-    .batch-table .col-desc{max-width:160px;font-size:11px}
+    .batch-table .col-desc{max-width:220px;font-size:12px;line-height:1.45}
     .batch-table .col-notes{min-width:180px}
     .batch-table textarea.asset-notes-inp{width:100%;min-height:44px;padding:6px 8px;font-size:11px;resize:none;border:1px solid var(--border);background:var(--card2);border-radius:6px;color:var(--text)}
     .batch-table textarea.batch-notes-inp{
@@ -760,13 +760,64 @@
       line-height:1.5;
     }
     .batch-table textarea.batch-notes-inp:focus{
-      max-height:200px;
+      max-height:160px;
       overflow-y:auto;
       box-shadow:0 0 0 2px var(--accent);
       outline:none;
       z-index:10;
       position:relative;
     }
+    /* Manual shot description — roomier, matches form fields elsewhere */
+    .batch-table .manual-desc-wrap{display:flex;flex-direction:column;gap:8px;min-width:220px}
+    .batch-table textarea.batch-desc-inp{
+      width:100%;
+      min-height:72px;
+      padding:10px 12px;
+      font-size:13px;
+      line-height:1.45;
+      resize:vertical;
+      border:1px solid var(--border);
+      background:var(--card2);
+      border-radius:8px;
+      color:var(--text);
+    }
+    .batch-table textarea.batch-desc-inp:focus{
+      box-shadow:0 0 0 2px rgba(79,142,247,.35);
+      border-color:var(--accent);
+      outline:none;
+    }
+    .batch-table input.batch-shot-code-inp{
+      width:100px;min-height:36px;padding:8px 10px;font-size:13px;
+      border:1px solid var(--border);background:var(--card2);
+      border-radius:8px;color:var(--text)
+    }
+    .batch-table .manual-run-btn{
+      align-self:flex-start;
+      padding:8px 14px;font-size:12px;font-weight:700;
+      border-radius:8px;border:1px solid var(--border);
+      background:var(--card2);color:var(--text);cursor:pointer
+    }
+    .batch-table .manual-run-btn:hover{
+      border-color:var(--accent);color:var(--accent)
+    }
+    .batch-table tr.batch-data-row.row-manual td{
+      vertical-align:middle;padding-top:12px;padding-bottom:12px
+    }
+    .batch-add-shot-row{
+      display:flex;align-items:center;gap:12px;
+      padding:12px 0 4px;margin-top:4px
+    }
+    .batch-add-shot-row .add-shot-btn{
+      background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text)
+    }
+    .batch-add-shot-row .add-shot-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .batch-add-shot-row .hint{font-size:12px;color:var(--muted)}
+    .table-card-header .add-shot-btn{
+      background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text)
+    }
+    .table-card-header .add-shot-btn:hover{border-color:var(--accent);color:var(--accent)}
     .batch-table .col-hidden{display:none!important}
     .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
     .col-toggle-bar{margin-bottom:12px}
@@ -1448,6 +1499,11 @@
       <div class="card hidden" id="batch-table-card" style="padding-bottom:8px">
         <div class="table-card-header">
           <span class="sec-label" style="margin:0">Results</span>
+          <button type="button" class="add-shot-btn" id="add-manual-shot-btn"
+                  onclick="addManualBatchRow()"
+                  title="Add a blank shot — describe it, then Run AI">
+            + Add Shot
+          </button>
         </div>
         <div class="col-toggle-bar">
           <button type="button" class="col-toggle-trigger" onclick="toggleColPanel()">
@@ -1471,6 +1527,10 @@
             </thead>
             <tbody id="batch-table-body"></tbody>
           </table>
+        </div>
+        <div class="batch-add-shot-row">
+          <button type="button" class="add-shot-btn" onclick="addManualBatchRow()">+ Add Shot</button>
+          <span class="hint">Describe the shot, then Run AI to fill days</span>
         </div>
         <div class="batch-mix-panel hidden" id="batch-mix-panel">
           <div class="sec-label" style="margin-bottom:10px">Department Mix — global faders</div>
@@ -4032,20 +4092,27 @@ function toggleRowErrorDetail(idx) {
   document.getElementById(`row-error-detail-${idx}`)?.classList.toggle('hidden');
 }
 
-function methodologyCellHtml(idx, methodology) {
+function methodologyCellHtml(idx, methodology, opts = {}) {
   const text = String(methodology || '').trim();
+  const isManual = !!opts.manual;
+
+  // Manual blank rows: Run AI lives next to the description (always visible)
+  if (isManual && !text) {
+    return `<span class="muted" style="font-size:12px">—</span>`;
+  }
+
   if (text) {
     const preview = text.length > 120 ? `${escHtml(text.slice(0, 120))}…` : escHtml(text);
     return `
       <div class="method-cell-content">
-        <div class="method-text" style="font-size:11px;color:var(--text);line-height:1.4">
+        <div class="method-text" style="font-size:12px;color:var(--text);line-height:1.45">
           ${preview}
         </div>
-        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
           <button type="button" class="row-mini-btn"
             onclick="editMethodology(${idx})">Edit</button>
           <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}"
-            onclick="rerunBatchRow(${idx}, this)">↻ Re-run</button>
+            onclick="rerunBatchRow(${idx}, this)">↻</button>
           <button type="button" class="row-mini-btn"
             style="color:var(--red)"
             title="Clear methodology"
@@ -4070,7 +4137,7 @@ function clearMethodology(idx) {
   row._has_methodology = false;
   markBatchRowEdited(idx);
   document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"] .method-cell`).forEach(cell => {
-    cell.innerHTML = methodologyCellHtml(idx, '');
+    cell.innerHTML = methodologyCellHtml(idx, '', { manual: !!row._manual });
   });
   _batchResult.export_csv_base64 = null;
   scheduleAutosave();
@@ -4214,6 +4281,7 @@ function appendBatchResultRow(i, row) {
   tr.className = 'batch-data-row';
   if (isExcludedShot(row)) tr.classList.add('row-excluded');
   if (!isIncludedShot(row) && !isExcludedShot(row)) tr.classList.add('row-toggled-off');
+  if (row._manual) tr.classList.add('row-manual');
   tr.dataset.idx = String(i);
 
   const methodology = row.methodology || '';
@@ -4235,15 +4303,30 @@ function appendBatchResultRow(i, row) {
       <svg class="icon icon-sm" aria-hidden="true"><use href="#i-grip"></use></svg>
     </span></td>
     <td>${escHtml(row.item_number || String(i + 1))}</td>
-    <td style="white-space:nowrap">${escHtml(row.shot_code || '—')}${errorIconHtml}</td>
+    <td style="white-space:nowrap" class="col-shot-code">
+      ${row._manual
+        ? `<input type="text" class="batch-shot-code-inp" data-idx="${i}"
+             placeholder="Code" value="${escAttr(row.shot_code || '')}"
+             oninput="updateManualShotCode(this)">`
+        : `${escHtml(row.shot_code || '—')}${errorIconHtml}`}
+    </td>
     <td class="col-scene" data-dept="SCENE">${escHtml(row.scene || '')}</td>
     <td class="col-page" data-dept="PAGE">${escHtml(row.page || '')}</td>
-    <td class="col-desc">${escHtml(displayDesc)}</td>
+    <td class="col-desc">${row._manual
+      ? `<div class="manual-desc-wrap">
+           <textarea class="batch-desc-inp" data-idx="${i}" rows="3"
+             placeholder="Describe the shot…"
+             oninput="updateManualShotDesc(this)">${escHtml(displayDesc)}</textarea>
+           <button type="button" class="manual-run-btn" data-manual-run-idx="${i}"
+             onclick="runManualBatchRowAI(${i}, this)">Run AI</button>
+         </div>`
+      : escHtml(displayDesc)}
+    </td>
     <td class="col-script-heading" data-dept="SCRIPT HEADING"
         style="font-size:11px;color:var(--muted);max-width:140px;white-space:normal">
       ${escHtml(scriptHeading)}
     </td>
-    <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology)}</td>
+    <td class="method-cell" data-dept="METHODOLOGY">${methodologyCellHtml(i, methodology, { manual: !!row._manual })}</td>
     <td class="col-suggested-asset" data-dept="SUGGESTED ASSET">
       <div id="suggested-asset-${i}" class="suggested-asset-cell">
         ${suggestedAssetCellHtml(row.suggestedAssets || row.suggestedAsset, i)}
@@ -5156,12 +5239,28 @@ async function maybeShowColumnMappingUI(headers, colMap) {
     .map((h, i) => ({ h: String(h || '').trim(), i }))
     .filter(({ h, i }) => h && !mapped.has(i));
 
-  // Only prompt for columns that look like data headers (not blank / numeric junk)
+  // Build set of header texts already resolved at another index (e.g. duplicate columns in LVL UP CSVs)
+  const mappedHeaderTexts = new Set();
+  headers.forEach((h, i) => {
+    if (mapped.has(i)) mappedHeaderTexts.add(normalizeHeader(String(h || '').trim()));
+  });
+  const seenTexts = new Set();
+
+  // Only prompt for columns that are genuinely novel and unrecognised
   const interesting = unmapped.filter(({ h }) => {
     if (/^\d+(\.\d+)?$/.test(h)) return false;
     if (isDeptColumnName(h)) return false;
     const n = normalizeHeader(h);
-    return n.length >= 2;
+    if (n.length < 2) return false;
+    // Skip headers whose text is already mapped at a different column index (duplicate columns)
+    if (mappedHeaderTexts.has(n)) return false;
+    // Skip if the auto-guesser would land on a field we already have
+    const guessed = autoGuessField(h);
+    if (guessed && colMap[guessed] !== undefined) return false;
+    // Deduplicate within the unmapped list itself
+    if (seenTexts.has(n)) return false;
+    seenTexts.add(n);
+    return true;
   });
 
   if (!interesting.length) return colMap;
@@ -7687,7 +7786,9 @@ async function setMethodology(idx, value, opts = {}) {
   _visibleCols.METHODOLOGY = true;
   saveVisibleCols();
   document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"] .method-cell`).forEach(cell => {
-    cell.innerHTML = methodologyCellHtml(idx, text);
+    cell.innerHTML = methodologyCellHtml(idx, text, {
+      manual: !!_batchResult.shots[idx]._manual,
+    });
   });
   applyColVisibility();
   _batchResult.export_csv_base64 = null;
@@ -8007,6 +8108,177 @@ async function runSingleShot() {
     toast('Estimate failed: ' + e.message, 'err');
   } finally {
     setButtonLoading(btn, false);
+  }
+}
+
+function addManualBatchRow() {
+  if (!_batchResult) {
+    _batchResult = { shots: [], project: getBatchProject(), dept_rates: getDeptRates() };
+  }
+  if (!Array.isArray(_batchResult.shots)) _batchResult.shots = [];
+
+  const idx = _batchResult.shots.length;
+  const shot = {
+    item_number: String(idx + 1),
+    shot_code: '',
+    scene: '',
+    page: '',
+    description: '',
+    script_description: '',
+    _raw_description: '',
+    methodology: '',
+    _has_methodology: false,
+    client_notes: '',
+    _notes: '',
+    number_of_shots: 1,
+    total_mandays: 0,
+    per_shot_mandays: 0,
+    cost_per_shot: 0,
+    confidence: null,
+    dept_days: {},
+    _ai_dept_days: {},
+    _manual: true,
+    _included: true,
+  };
+  _batchResult.shots.push(shot);
+
+  document.getElementById('batch-results')?.classList.remove('hidden');
+  document.getElementById('batch-table-card')?.classList.remove('hidden');
+  if (!document.getElementById('batch-thead-row')?.innerHTML) {
+    buildBatchTableHeader();
+  }
+
+  appendBatchResultRow(idx, shot);
+  refreshBatchBidSummary();
+  _batchResult.export_csv_base64 = null;
+
+  // Focus the new description field
+  const ta = document.querySelector(
+    `tr.batch-data-row[data-idx="${idx}"] textarea.batch-desc-inp`
+  );
+  ta?.focus();
+  ta?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  toast('Blank shot added — type a description, then Run AI', 'info');
+}
+
+function updateManualShotDesc(ta) {
+  const idx = parseInt(ta?.dataset?.idx, 10);
+  if (!Number.isFinite(idx) || !_batchResult?.shots?.[idx]) return;
+  const text = ta.value;
+  const shot = _batchResult.shots[idx];
+  shot._raw_description = text;
+  shot.script_description = text;
+  shot.description = text;
+  markBatchRowEdited(idx);
+  _batchResult.export_csv_base64 = null;
+}
+
+function updateManualShotCode(inp) {
+  const idx = parseInt(inp?.dataset?.idx, 10);
+  if (!Number.isFinite(idx) || !_batchResult?.shots?.[idx]) return;
+  _batchResult.shots[idx].shot_code = inp.value.trim() || null;
+  markBatchRowEdited(idx);
+  _batchResult.export_csv_base64 = null;
+}
+
+async function runManualBatchRowAI(idx, btn) {
+  const row = _batchResult?.shots?.[idx];
+  if (!row) return;
+
+  // Prefer live textarea value
+  const tr = document.querySelector(`tr.batch-data-row[data-idx="${idx}"]`);
+  const liveDesc = tr?.querySelector('textarea.batch-desc-inp')?.value?.trim()
+    || row._raw_description
+    || row.script_description
+    || row.description
+    || '';
+  if (!liveDesc) {
+    toast('Enter a shot description first', 'warn');
+    tr?.querySelector('textarea.batch-desc-inp')?.focus();
+    return;
+  }
+
+  const liveCode = tr?.querySelector('.batch-shot-code-inp')?.value?.trim();
+  if (liveCode != null) row.shot_code = liveCode || null;
+  row._raw_description = liveDesc;
+  row.script_description = liveDesc;
+  row.description = liveDesc;
+
+  const methodFromCell = readRowMethodology(idx);
+  if (methodFromCell) {
+    row.methodology = methodFromCell;
+    row._has_methodology = true;
+  }
+
+  if (btn) setButtonLoading(btn, true, 'Estimating…');
+  showRowRerunSpinner(tr);
+  setGlobalActivity(`AI estimating ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
+
+  try {
+    const preQual = getPreQualData() || {};
+    preQual.has_cg_assets = shotHasCgAssets(row, idx);
+    const r = await fetch(`${API}/estimate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: combinedRowDescription(row, methodFromCell),
+        pre_qual: preQual,
+        dept_rates: getDeptRates(),
+        mode: 'hybrid',
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const est = await r.json();
+    const bidDepts = estimateDeptDaysToBidDepts(est.dept_days);
+
+    // Keep as editable manual row, but mark estimated
+    row._manual = true;
+    row._manual_estimated = true;
+    updateBatchRowDeptDays(idx, bidDepts);
+    if (Number.isFinite(parseFloat(est.per_shot_mandays ?? est.total_mandays))) {
+      row.total_mandays = est.per_shot_mandays ?? est.total_mandays;
+    }
+    if (est.confidence != null) row.confidence = est.confidence;
+    row.cost_per_shot = computeClientShotCost(bidDepts, getDeptRates(), {
+      mandaysFallback: row.total_mandays,
+    });
+
+    // Refresh conf badge + totals; keep Run AI in methodology cell
+    document.querySelectorAll(`tr.batch-data-row[data-idx="${idx}"]`).forEach(rowTr => {
+      const confTd = rowTr.querySelector('td:last-child');
+      if (confTd && !isExcludedShot(row)) {
+        confTd.innerHTML = confBadge(row.confidence);
+      }
+      updateBatchRowTotals(rowTr, true);
+      const methodCell = rowTr.querySelector('.method-cell');
+      if (methodCell) {
+        methodCell.innerHTML = methodologyCellHtml(idx, row.methodology || '', { manual: true });
+      }
+      // Keep Run AI under description after estimate
+      const wrap = rowTr.querySelector('.manual-desc-wrap');
+      if (wrap && !wrap.querySelector('[data-manual-run-idx]')) {
+        const runBtn = document.createElement('button');
+        runBtn.type = 'button';
+        runBtn.className = 'manual-run-btn';
+        runBtn.dataset.manualRunIdx = String(idx);
+        runBtn.textContent = 'Run AI';
+        runBtn.onclick = () => runManualBatchRowAI(idx, runBtn);
+        wrap.appendChild(runBtn);
+      }
+    });
+
+    refreshBatchBidSummary();
+    autoShowPopulatedCols([row]);
+    applyColVisibility();
+    _batchResult.export_csv_base64 = null;
+    toast(`Estimated ${row.shot_code || `row ${idx + 1}`}`, 'info');
+  } catch (e) {
+    toast(`Estimate failed: ${e.message}`, 'err');
+  } finally {
+    hideRowRerunSpinner(tr);
+    setButtonLoading(btn, false);
+    if (btn) btn.textContent = 'Run AI';
+    clearGlobalActivity();
   }
 }
 
