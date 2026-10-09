@@ -423,6 +423,8 @@ def create_app() -> FastAPI:
             "flags": len(flags),
             "mode_default": s.estimate_mode,
             "gemini_configured": bool(s.resolved_gemini_key()),
+            "gemini_model": s.resolved_gemini_mandays_model(),
+            "suggest_api": "v2-remap",
             "legacy_numeric": s.use_legacy_numeric,
             "xata_mode": XataShotSearch(s).mode,
             "xata_corrections": svc.corrections.storage_backend,
@@ -938,19 +940,21 @@ Return JSON only:
                 status_code=502,
                 detail="Methodology suggestion returned empty response from AI",
             )
-        if "suggestions" not in result:
-            print(f"[suggest_methodology] Got result but no 'suggestions' key: {result}", flush=True)
-        elif not result["suggestions"]:
+        suggestions = result.get("suggestions") if isinstance(result, dict) else None
+        if not isinstance(suggestions, list) or not suggestions:
             print(
-                f"[suggest_methodology] suggestions key present but EMPTY. Raw result: {result}",
+                f"[suggest_methodology] empty/invalid suggestions. Raw result: {result}",
                 flush=True,
             )
-        else:
-            print(
-                f"[suggest_methodology] SUCCESS — {len(result['suggestions'])} suggestions",
-                flush=True,
+            raise HTTPException(
+                status_code=502,
+                detail="Methodology suggestion returned no options from AI",
             )
-        return result or {"suggestions": []}
+        print(
+            f"[suggest_methodology] SUCCESS — {len(suggestions)} suggestions",
+            flush=True,
+        )
+        return result
 
     @app.post("/suggest-assets")
     def suggest_assets(req: SuggestAssetsRequest) -> Dict[str, Any]:
