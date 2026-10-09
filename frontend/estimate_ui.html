@@ -2087,10 +2087,9 @@
 
 <div id="col-unmap-modal" class="modal-overlay hidden">
   <div class="modal-card" style="max-width:580px" onclick="event.stopPropagation()">
-    <div class="modal-title">We found columns we couldn't match automatically</div>
+    <div class="modal-title">Review column mapping</div>
     <p class="muted" style="font-size:13px;margin-bottom:14px">
-      Tell us what each column contains and we'll import it correctly.
-      You only need to do this once per new file format.
+      Confirm how each column maps to bid fields. Pre-filled mappings are auto-detected — adjust any that look wrong.
     </p>
     <table style="width:100%;border-collapse:collapse">
       <thead>
@@ -2108,10 +2107,10 @@
     </table>
     <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
       <button type="button" id="col-unmap-confirm" class="btn-blue">
-        Use These Mappings
+        Confirm Mapping
       </button>
       <button type="button" id="col-unmap-skip" class="btn-ghost">
-        Skip Unknown Columns
+        Import As-Is
       </button>
     </div>
   </div>
@@ -4122,12 +4121,9 @@ function methodologyCellHtml(idx, methodology, opts = {}) {
   }
   return `<div class="method-empty">
        <button type="button" class="row-mini-btn" onclick="editMethodology(${idx})">+ Add</button>
-       <button type="button" class="row-mini-btn method-generate-hint" onclick="generateMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Generate</button>
-     </div>
-    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-      <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Suggest</button>
-      <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}" onclick="rerunBatchRow(${idx}, this)">↻</button>
-    </div>`;
+       <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Suggest</button>
+       <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}" onclick="rerunBatchRow(${idx}, this)">↻</button>
+     </div>`;
 }
 
 function clearMethodology(idx) {
@@ -5234,34 +5230,35 @@ const UNMAP_DISPLAY_FIELDS = {
 };
 
 async function maybeShowColumnMappingUI(headers, colMap) {
-  const mapped = new Set(Object.values(colMap).filter(v => Number.isFinite(v)));
-  const unmapped = headers
-    .map((h, i) => ({ h: String(h || '').trim(), i }))
-    .filter(({ h, i }) => h && !mapped.has(i));
-
-  // Build set of header texts already resolved at another index (e.g. duplicate columns in LVL UP CSVs)
-  const mappedHeaderTexts = new Set();
-  headers.forEach((h, i) => {
-    if (mapped.has(i)) mappedHeaderTexts.add(normalizeHeader(String(h || '').trim()));
+  // Build reverse map: column index → field name (for pre-selecting mapped columns)
+  const idxToField = {};
+  Object.entries(colMap).forEach(([field, idx]) => {
+    if (Number.isFinite(idx)) idxToField[idx] = field;
   });
+
+  // Deduplicate by normalised header text (skip repeated columns from multi-block LVL UP CSVs)
   const seenTexts = new Set();
 
-  // Only prompt for columns that are genuinely novel and unrecognised
-  const interesting = unmapped.filter(({ h }) => {
-    if (/^\d+(\.\d+)?$/.test(h)) return false;
-    if (isDeptColumnName(h)) return false;
-    const n = normalizeHeader(h);
-    if (n.length < 2) return false;
-    // Skip headers whose text is already mapped at a different column index (duplicate columns)
-    if (mappedHeaderTexts.has(n)) return false;
-    // Skip if the auto-guesser would land on a field we already have
-    const guessed = autoGuessField(h);
-    if (guessed && colMap[guessed] !== undefined) return false;
-    // Deduplicate within the unmapped list itself
-    if (seenTexts.has(n)) return false;
-    seenTexts.add(n);
-    return true;
-  });
+  // Gather ALL interesting columns — both already-mapped and unmapped — so the user
+  // can see and confirm every field mapping on every upload.
+  const interesting = headers
+    .map((h, i) => ({ h: String(h || '').trim(), i }))
+    .filter(({ h }) => {
+      if (!h) return false;
+      if (/^\d+(\.\d+)?$/.test(h)) return false; // pure-number columns (cost/manday values)
+      if (isDeptColumnName(h)) return false;       // department-specific columns
+      const n = normalizeHeader(h);
+      if (n.length < 2) return false;
+      if (seenTexts.has(n)) return false;          // duplicate header text
+      seenTexts.add(n);
+      return true;
+    })
+    .map(({ h, i }) => ({
+      h,
+      i,
+      // Pre-select: already-mapped field takes priority; fall back to auto-guesser
+      currentField: idxToField[i] || autoGuessField(h) || '',
+    }));
 
   if (!interesting.length) return colMap;
   return await showUnmappedColumnModal(headers, { ...colMap }, interesting);
@@ -5289,20 +5286,26 @@ function showUnmappedColumnModal(headers, colMap, unmapped) {
       return;
     }
 
-    container.innerHTML = unmapped.map(({ h, i }) => `
+    container.innerHTML = unmapped.map(({ h, i, currentField }) => {
+      const preselect = currentField || autoGuessField(h) || '';
+      const isMapped = !!currentField;
+      return `
       <tr>
-        <td style="font-family:monospace;font-size:12px;padding:6px 10px">${escHtml(h)}</td>
+        <td style="font-family:monospace;font-size:12px;padding:6px 10px">
+          ${escHtml(h)}
+          ${isMapped ? `<span style="margin-left:6px;font-family:sans-serif;font-size:10px;background:var(--blue,#2d6be4);color:#fff;border-radius:3px;padding:1px 5px;vertical-align:middle">auto</span>` : ''}
+        </td>
         <td style="padding:6px 10px;color:var(--muted)">→</td>
         <td style="padding:6px 10px">
           <select class="col-unmap-sel" data-col-idx="${i}" style="width:100%">
             <option value="">Ignore this column</option>
             ${Object.entries(UNMAP_DISPLAY_FIELDS).map(([f, label]) =>
-              `<option value="${f}" ${autoGuessField(h) === f ? 'selected' : ''}>${escHtml(label)}</option>`
+              `<option value="${f}" ${preselect === f ? 'selected' : ''}>${escHtml(label)}</option>`
             ).join('')}
           </select>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
 
     const confirmBtn = document.getElementById('col-unmap-confirm');
     const skipBtn = document.getElementById('col-unmap-skip');
@@ -7825,13 +7828,18 @@ function closeMethodologySuggestions() {
 }
 
 async function fetchMethodologySuggestions(row) {
+  const noteParts = [
+    row._notes || row.client_notes || '',
+    row.vfx_notes || '',
+    row.vfx_assumptions || '',
+  ].map(s => (s || '').trim()).filter(Boolean);
   const r = await fetch(`${API}/suggest-methodology`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      description: row.description || row.script_description || '',
+      description: row.description || row.script_description || row.vfx_notes || '',
       shot_code: row.shot_code,
-      notes: row._notes || row.vfx_notes || '',
+      notes: noteParts.join(' | '),
     }),
   });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -7848,14 +7856,23 @@ async function suggestMethodology(idx, btn) {
   setGlobalActivity(`AI suggesting methodology for ${row.shot_code || `shot ${idx + 1}`}…`, true, 'ai');
   try {
     const suggestions = await fetchMethodologySuggestions(row);
+    if (!suggestions.length) {
+      const row2 = _batchResult?.shots?.[idx];
+      const hasDesc = (row2?.description || row2?.vfx_notes || '').trim().length > 0;
+      toast(
+        hasDesc
+          ? 'No suggestions returned — the AI may need more shot detail. Try adding VFX notes.'
+          : 'Add a shot description or VFX notes first so the AI has context to suggest a methodology.',
+        'warn'
+      );
+      return;
+    }
     const wrap = document.createElement('div');
     wrap.className = 'method-suggestions';
-    wrap.innerHTML = suggestions.length
-      ? suggestions.map(s => `<div class="method-card" data-method="${escAttr(s.methodology || '')}">
-          <strong>${escHtml(s.label || 'Methodology')}</strong>
-          <div>${escHtml(s.methodology || '')}</div>
-        </div>`).join('')
-      : '<div class="method-card"><div>No suggestions returned.</div></div>';
+    wrap.innerHTML = suggestions.map(s => `<div class="method-card" data-method="${escAttr(s.methodology || '')}">
+        <strong>${escHtml(s.label || 'Methodology')}</strong>
+        <div>${escHtml(s.methodology || '')}</div>
+      </div>`).join('');
     wrap.querySelectorAll('[data-method]').forEach(card => {
       card.addEventListener('click', () => {
         closeMethodologySuggestions();
