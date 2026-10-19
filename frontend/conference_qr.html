@@ -3,74 +3,519 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FrameBid — AI-powered VFX bidding in seconds</title>
+  <title>FrameBid — AI-powered VFX bidding</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      min-height: 100vh;
-      background: #0a0a0f;
-      color: #f4f6fb;
-      font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 20px;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #07080f;
+      --surface:  #0f111a;
+      --border:   rgba(255,255,255,.08);
+      --blue:     #8ea2ff;
+      --blue-dim: #3d4f9e;
+      --text:     #f0f3fc;
+      --muted:    #8990ae;
+      --green:    #52d991;
+      --gold:     #f5c542;
     }
-    .card {
-      width: min(440px, 100%);
-      text-align: center;
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── HERO ── */
+    .hero {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
+      text-align: center;
+      padding: 56px 24px 48px;
+      gap: 20px;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, #1a1f50 0%, transparent 70%);
     }
-    .logo { height: 48px; width: auto; }
-    h1 {
-      font-size: clamp(32px, 5vw, 44px);
-      letter-spacing: -0.03em;
-      line-height: 1.05;
-      font-weight: 800;
+    .logo { height: 44px; width: auto; }
+    .hero h1 {
+      font-size: clamp(38px, 6vw, 58px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
     }
-    .tag {
-      color: #b7c0d4;
-      font-size: clamp(16px, 2.4vw, 20px);
+    .hero h1 span { color: var(--blue); }
+    .hero .sub {
+      color: var(--muted);
+      font-size: clamp(15px, 2.2vw, 19px);
       font-weight: 500;
+      max-width: 480px;
+    }
+
+    /* QR + CTA block */
+    .qr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 4px;
     }
     #qr {
-      margin-top: 8px;
-      padding: 18px;
-      background: #11131a;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 20px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
       line-height: 0;
     }
     #qr img, #qr canvas { display: block; }
-    .scan {
-      color: #8ea2ff;
-      font-size: 15px;
+    .qr-label {
+      color: var(--blue);
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
+      text-transform: uppercase;
     }
+    .cta-url {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      padding: 52px 24px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 40px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .feat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feat:hover {
+      border-color: var(--blue-dim);
+      transform: translateY(-2px);
+    }
+    .feat-icon {
+      font-size: 30px;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .feat h3 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .feat p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(82, 217, 145, .15);
+      color: var(--green);
+      border: 1px solid rgba(82,217,145,.3);
+      border-radius: 6px;
+      padding: 2px 7px;
+      margin-bottom: 10px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      position: relative;
+      padding-bottom: 36px;
+    }
+    .step:last-child { padding-bottom: 0; }
+    .step-line {
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--blue-dim), transparent);
+    }
+    .step:last-child .step-line { display: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue) 0%, #4f64e8 100%);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .step-body p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+    .plan.featured {
+      border-color: var(--blue);
+      background: linear-gradient(145deg, #0d1230 0%, #0f111a 100%);
+    }
+    .plan-tag {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: #07080f;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      padding: 3px 12px;
+      white-space: nowrap;
+    }
+    .plan-name {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .plan-price {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .plan-price sup { font-size: 18px; vertical-align: super; }
+    .plan-price sub { font-size: 14px; color: var(--muted); font-weight: 500; }
+    .plan-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .plan-feats {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .plan-feats li {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .plan-feats li::before {
+      content: "✓";
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .plan-feats li.no::before { content: "–"; color: #444; }
+    .plan-btn {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: transparent;
+      transition: background .2s, color .2s;
+    }
+    .plan.featured .plan-btn {
+      background: var(--blue);
+      color: #07080f;
+      border-color: var(--blue);
+    }
+    .plan-btn:hover { opacity: .85; }
+
+    /* ── DIVIDER ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0 24px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px 48px;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    footer strong { color: var(--text); }
+    footer a { color: var(--blue); text-decoration: none; }
   </style>
 </head>
 <body>
-  <main class="card">
-    <img class="logo" src="assets/framebid-logo.png" alt="FrameBid">
-    <h1>FrameBid</h1>
-    <p class="tag">AI-powered VFX bidding in seconds</p>
-    <div id="qr" role="img" aria-label="QR code linking to FrameBid"></div>
-    <p class="scan">Scan to get started</p>
-  </main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img class="logo" src="assets/framebid-logo.png" alt="FrameBid" onerror="this.style.display='none'">
+    <h1>VFX bids in<br><span>seconds, not days.</span></h1>
+    <p class="sub">FrameBid uses AI to generate shot-by-shot VFX estimates — with methodology recommendations, asset breakdowns, and department budgets — all from a script or shot list.</p>
+    <div class="qr-block">
+      <div id="qr" role="img" aria-label="QR code linking to FrameBid"></div>
+      <p class="qr-label">Scan to try it now</p>
+      <p class="cta-url">framebid.ai</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <p class="section-label">What it does</p>
+    <h2 class="section-title">Everything a bid needs, automated</h2>
+    <div class="features-grid">
+
+      <div class="feat">
+        <span class="feat-icon">🤖</span>
+        <span class="badge">Live</span>
+        <h3>AI Shot Estimation</h3>
+        <p>Paste in a shot list or script breakdown and get per-shot VFX day estimates in seconds. Each shot is analyzed independently with context from the full episode.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">🎯</span>
+        <span class="badge">Live</span>
+        <h3>Methodology Recommendations</h3>
+        <p>FrameBid suggests the best production methodology for each shot — CG, 2.5D, comp-only, screen replacement and more — ranked by fit score with a Best Match badge.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">🧩</span>
+        <span class="badge">Live</span>
+        <h3>Asset Breakdown</h3>
+        <p>Auto-suggested VFX assets (environments, creatures, vehicles, FX simulations) per shot. Add, remove, or adjust — and the shot's estimate updates instantly.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">📊</span>
+        <span class="badge">Live</span>
+        <h3>Department Day Budgeting</h3>
+        <p>See hours broken out by department — comp, 3D, FX, rigging, lighting, and more. Override any line manually; locked rows stay untouched when the project context changes.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">🎬</span>
+        <span class="badge">Live</span>
+        <h3>Multi-Episode Projects</h3>
+        <p>Bid a full series in one session. Each episode inherits shared context — series-wide assets, established methodology patterns, and day-rate settings stay consistent.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">📤</span>
+        <span class="badge">Coming soon</span>
+        <h3>Export &amp; Share</h3>
+        <p>Export polished bid PDFs or Excel breakdowns to send to clients and producers. Share a live read-only link so supervisors can review estimates without editing access.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">🔒</span>
+        <span class="badge">Coming soon</span>
+        <h3>Row Locking &amp; Versioning</h3>
+        <p>Lock individual shots to protect negotiated figures while the rest of the bid re-estimates. Save named versions to compare budget scenarios side by side.</p>
+      </div>
+
+      <div class="feat">
+        <span class="feat-icon">⚡</span>
+        <span class="badge">Coming soon</span>
+        <h3>Template Library</h3>
+        <p>Save your studio's preferred day-rates, methodology presets, and department ratios as templates — reusable across every new project you bring in.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">From script to bid in three steps</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Paste your shot list or script</h4>
+          <p>Drop in a scene breakdown, shot list, or even raw script pages. FrameBid parses it and creates a row per VFX shot automatically.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Set your project context</h4>
+          <p>Choose shot type, complexity, scale, CG ratio, and your studio's day rates. FrameBid uses this as a lens when generating every estimate.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-line"></div>
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Review, adjust, and lock</h4>
+          <p>AI estimates populate in seconds. Override any department day manually, add or remove assets, lock finalized shots, and export the completed bid.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PRICING -->
+  <section class="section">
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">Plans for every studio</h2>
+    <div class="pricing-grid">
+
+      <div class="plan">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><sup>$</sup>0<sub>/mo</sub></div>
+        <p class="plan-desc">Try FrameBid with no commitment. Perfect for freelancers and small projects.</p>
+        <ul class="plan-feats">
+          <li>Up to 3 active projects</li>
+          <li>AI shot estimation</li>
+          <li>Methodology recommendations</li>
+          <li>Asset suggestions</li>
+          <li class="no">Department breakdown export</li>
+          <li class="no">Multi-episode bidding</li>
+          <li class="no">Template library</li>
+        </ul>
+        <a class="plan-btn" href="https://www.framebid.ai">Get started free</a>
+      </div>
+
+      <div class="plan featured">
+        <div class="plan-tag">Most Popular</div>
+        <div class="plan-name">Studio</div>
+        <div class="plan-price"><sup>$</sup>149<sub>/mo</sub></div>
+        <p class="plan-desc">For active VFX studios bidding multiple shows. Everything you need to win more work.</p>
+        <ul class="plan-feats">
+          <li>Unlimited projects</li>
+          <li>AI shot estimation</li>
+          <li>Methodology recommendations</li>
+          <li>Asset suggestions</li>
+          <li>Department breakdown export</li>
+          <li>Multi-episode bidding</li>
+          <li>Template library</li>
+          <li>Row locking &amp; versioning</li>
+          <li>PDF &amp; Excel export</li>
+        </ul>
+        <a class="plan-btn" href="https://www.framebid.ai">Start Studio trial</a>
+      </div>
+
+      <div class="plan">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:26px; padding-top:5px;">Custom</div>
+        <p class="plan-desc">For large studios, networks, and multi-studio deals. Priority support, custom integrations, and volume pricing.</p>
+        <ul class="plan-feats">
+          <li>Everything in Studio</li>
+          <li>Custom day-rate structures</li>
+          <li>SSO &amp; team permissions</li>
+          <li>API access</li>
+          <li>Dedicated onboarding</li>
+          <li>SLA-backed support</li>
+        </ul>
+        <a class="plan-btn" href="mailto:hello@framebid.ai">Contact us</a>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- BOTTOM QR REPEAT -->
+  <section class="section" style="text-align:center; padding-top:40px; padding-bottom:40px;">
+    <p class="section-label" style="margin-bottom:16px;">Try it right now</p>
+    <div class="qr-block">
+      <div id="qr2" role="img" aria-label="QR code linking to FrameBid"></div>
+      <p class="qr-label">framebid.ai</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p><strong>FrameBid</strong> — built for VFX supervisors and production companies.</p>
+    <p><a href="https://www.framebid.ai">framebid.ai</a> · <a href="mailto:hello@framebid.ai">hello@framebid.ai</a></p>
+  </footer>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
-    new QRCode(document.getElementById("qr"), {
-      text: "https://www.framebid.ai",
-      width: 256,
-      height: 256,
-      colorDark: "#ffffff",
-      colorLight: "#00000000"
-    });
+    const QR_URL = "https://www.framebid.ai";
+    const opts = { text: QR_URL, width: 220, height: 220, colorDark: "#ffffff", colorLight: "#00000000" };
+    new QRCode(document.getElementById("qr"),  opts);
+    new QRCode(document.getElementById("qr2"), opts);
   </script>
 </body>
 </html>
