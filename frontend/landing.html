@@ -679,7 +679,7 @@
     .caps-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1rem;
+      gap: 16px;
     }
     @media (min-width: 768px) {
       .caps-grid {
@@ -697,16 +697,31 @@
       justify-content: space-between;
       height: 100%;
       min-height: 180px;
-      border-radius: 0.5rem;
+      border-radius: 24px;
       border: 1px solid var(--border);
+      border-top: 1px solid rgba(142, 162, 255, 0.3);
       background: rgba(255, 255, 255, 0.02);
-      padding: 2rem;
-      transition: border-color .5s, background .5s;
+      padding: 28px;
+      transition: all 0.25s ease;
     }
-    .cap-wide .cap-card { min-height: 320px; }
+    .cap-wide .cap-card {
+      min-height: 320px;
+      border-radius: 32px;
+      border-top: 1px solid rgba(142, 162, 255, 0.2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+    }
     .cap-card:hover {
-      border-color: rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.04);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      border-color: rgba(142, 162, 255, 0.3);
+    }
+    .cap-icon {
+      background: rgba(142, 162, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px;
+      display: inline-flex;
+      margin-bottom: 12px;
+      width: fit-content;
     }
     .cap-card svg {
       width: 1.5rem;
@@ -1632,7 +1647,7 @@
         </div>
         <div class="reveal">
           <div class="cap-card">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+            <span class="cap-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></span>
             <div class="cap-copy">
               <h3>Predictive AI</h3>
               <p>Trained on real production data to flag complexity before it bites.</p>
@@ -1641,7 +1656,7 @@
         </div>
         <div class="reveal">
           <div class="cap-card">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"/><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"/><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"/><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"/><path d="M12 16h3.5a3.5 3.5 0 1 1 0 7H12v-7z"/></svg>
+            <span class="cap-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"/><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"/><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"/><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"/><path d="M12 16h3.5a3.5 3.5 0 1 1 0 7H12v-7z"/></svg></span>
             <div class="cap-copy">
               <h3>Render estimation</h3>
               <p>Forecast render hours and cloud cost per shot with confidence.</p>
@@ -1650,7 +1665,7 @@
         </div>
         <div class="reveal">
           <div class="cap-card">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span class="cap-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span>
             <div class="cap-copy">
               <h3>Margin protection</h3>
               <p>Set target margins and get alerted when a bid puts them at risk.</p>
@@ -1659,7 +1674,7 @@
         </div>
         <div class="reveal">
           <div class="cap-card">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            <span class="cap-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span>
             <div class="cap-copy">
               <h3>Version history</h3>
               <p>Every revision tracked and comparable.</p>
@@ -1668,7 +1683,7 @@
         </div>
         <div class="reveal">
           <div class="cap-card">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            <span class="cap-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
             <div class="cap-copy">
               <h3>Studio exports</h3>
               <p>One-click PDF &amp; CSV bids, formatted for producers.</p>
