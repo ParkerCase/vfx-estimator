@@ -950,10 +950,23 @@ Return JSON only:
                 status_code=502,
                 detail="Methodology suggestion returned no options from AI",
             )
+        from vfx_estimator.estimate.methodology_rank import rank_methodology_suggestions
+
+        context = " ".join(
+            part for part in (req.description, req.notes or "") if part and part.strip()
+        )
+        ranked = rank_methodology_suggestions(context, suggestions)
+        if not ranked:
+            raise HTTPException(
+                status_code=502,
+                detail="Methodology suggestion returned no options from AI",
+            )
         print(
-            f"[suggest_methodology] SUCCESS — {len(suggestions)} suggestions",
+            f"[suggest_methodology] SUCCESS — {len(ranked)} suggestions"
+            f" best={ranked[0].get('label')!r} score={ranked[0].get('score')}",
             flush=True,
         )
+        result["suggestions"] = ranked
         return result
 
     @app.post("/suggest-assets")

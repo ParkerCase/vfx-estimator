@@ -808,16 +808,16 @@
       padding:12px 0 4px;margin-top:4px
     }
     .batch-add-shot-row .add-shot-btn{
-      background:var(--surface);border:1px solid var(--border);border-radius:8px;
-      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text)
+      background:#3b82f6;border:1px solid #3b82f6;border-radius:8px;
+      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:#fff
     }
-    .batch-add-shot-row .add-shot-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .batch-add-shot-row .add-shot-btn:hover{background:#2563eb;border-color:#2563eb;color:#fff}
     .batch-add-shot-row .hint{font-size:12px;color:var(--muted)}
     .table-card-header .add-shot-btn{
-      background:var(--surface);border:1px solid var(--border);border-radius:8px;
-      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text)
+      background:#3b82f6;border:1px solid #3b82f6;border-radius:8px;
+      padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:#fff
     }
-    .table-card-header .add-shot-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .table-card-header .add-shot-btn:hover{background:#2563eb;border-color:#2563eb;color:#fff}
     .batch-table .col-hidden{display:none!important}
     .table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
     .col-toggle-bar{margin-bottom:12px}
@@ -1053,8 +1053,20 @@
       border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(0,0,0,.45);padding:8px}
     .method-card{padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;background:var(--surface)}
     .method-card:hover{border-color:var(--accent)}
+    .method-card.best-match{border-color:#3b82f6;background:rgba(59,130,246,.12);box-shadow:0 0 0 1px rgba(59,130,246,.35)}
+    .method-card.best-match:hover{border-color:#2563eb}
+    .method-best-badge{display:inline-block;margin-bottom:6px;padding:2px 7px;border-radius:999px;
+      background:#3b82f6;color:#fff;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
     .method-card strong{display:block;margin-bottom:4px;color:var(--text)}
     .method-card div{font-size:11px;color:var(--muted);line-height:1.4}
+    .row-mini-btn.primary{background:#3b82f6;border-color:#3b82f6;color:#fff}
+    .row-mini-btn.primary:hover{background:#2563eb;border-color:#2563eb;color:#fff}
+    .btn-upgrade{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:6px 12px;
+      font-size:12px;font-weight:700;cursor:pointer}
+    .btn-upgrade:hover{background:#2563eb}
+    .manual-asset-form{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+    .manual-asset-form input{flex:1;min-width:180px;padding:8px 10px}
+    #context-recalc-status{font-size:12px;font-weight:700;color:#3b82f6;display:inline-flex;align-items:center;gap:6px}
     .check-label{display:flex!important;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:700}
     .check-label input{width:auto!important}
     .field-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
@@ -1138,6 +1150,7 @@
              oninput="saveUserId()" onchange="saveUserId()">
     </label>
     <!-- <span id="corr-pill" class="pill">0 corrections</span> -->
+    <button type="button" id="upgrade-btn" class="btn-upgrade hidden" onclick="openUpgrade()">Upgrade / Subscribe</button>
     <button type="button" class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="togglePresetsPanel()"
       title="Shot type baselines">Presets</button>
     <button type="button" class="btn-ghost" style="font-size:12px;padding:6px 12px" onclick="openHistoryDrawer()"
@@ -1212,7 +1225,7 @@
         <div class="pq-grid">
           <div class="pq-field">
             <label>Shot Type Override</label>
-            <select id="batch-pq-shot-type">
+            <select id="batch-pq-shot-type" onchange="scheduleContextRecalc()">
               <option value="">Auto-detect</option>
               <option value="establishing">Establishing</option>
               <option value="hero">Hero</option>
@@ -1224,7 +1237,7 @@
 
           <div class="pq-field">
             <label>Complexity Band</label>
-            <select id="batch-pq-complexity">
+            <select id="batch-pq-complexity" onchange="scheduleContextRecalc()">
               <option value="">Not specified</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -1235,7 +1248,7 @@
 
           <div class="pq-field">
             <label>Bid Scale Tier</label>
-            <select id="batch-pq-scale">
+            <select id="batch-pq-scale" onchange="scheduleContextRecalc()">
               <option value="">Not specified</option>
               <option value="indie_low">Indie/Low Budget</option>
               <option value="mid_tier_tv">Mid-tier TV</option>
@@ -1249,7 +1262,7 @@
             <div class="pq-ratio-row">
               <span style="font-size:11px;color:var(--orange);min-width:68px">Practical</span>
               <input type="range" id="batch-pq-cg-ratio" min="0" max="100" value="100" step="5"
-                     oninput="updateBatchCGRatio()">
+                     oninput="updateBatchCGRatio(); scheduleContextRecalc()">
               <span style="font-size:11px;color:var(--accent);min-width:36px">CG</span>
               <span class="pq-ratio-label" id="batch-pq-ratio-label">100% CG</span>
             </div>
@@ -1273,7 +1286,8 @@
               </label>
             </div>
             <textarea id="batch-pq-director-brief"
-              placeholder="e.g. Photoreal result indistinguishable from plate. Inspired by Blade Runner 2049…"></textarea>
+              placeholder="e.g. Photoreal result indistinguishable from plate. Inspired by Blade Runner 2049…"
+              oninput="scheduleContextRecalc()"></textarea>
           </div>
 
           <div class="pq-field pq-full">
@@ -1286,7 +1300,8 @@
               </label>
             </div>
             <textarea id="batch-pq-assumptions"
-              placeholder="e.g. Background is full CG. Hero actor is practical on greenscreen…"></textarea>
+              placeholder="e.g. Background is full CG. Hero actor is practical on greenscreen…"
+              oninput="scheduleContextRecalc()"></textarea>
           </div>
         </div>
       </div>
@@ -1587,6 +1602,7 @@
         </div>
         <div class="batch-bar">
           <span id="batch-summary-bar" style="font-size:13px;color:var(--text);font-weight:700">—</span>
+          <span id="context-recalc-status" class="hidden"></span>
           <span id="batch-save-status" style="font-size:12px;color:var(--text);font-weight:700"></span>
         </div>
       </div>
@@ -1619,8 +1635,14 @@
 <div class="card" id="asset-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="sec-label">Asset Breakdown</div>
-        <span class="muted" style="font-size:12px">Build days for CG assets — modelling, rigging, etc.</span>
+        <button type="button" id="add-asset-manual-btn" class="btn-ghost btn-sm" onclick="toggleManualAssetForm()">+ Add Asset</button>
       </div>
+      <div id="manual-asset-form" class="manual-asset-form hidden">
+        <input type="text" id="manual-asset-name" placeholder="Asset name…" autocomplete="off"
+               onkeydown="onManualAssetKeydown(event)">
+        <button type="button" class="btn-ghost btn-sm" onclick="confirmManualAsset()">Confirm</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin:0 0 12px">Build days for CG assets — modelling, rigging, etc.</p>
       <div class="batch-drop-zone" id="asset-drop-zone" onclick="document.getElementById('asset-file-input').click()">
         <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">
           Drop asset CSV or Excel here, or click to upload
@@ -2191,6 +2213,8 @@ const API = (window.location.hostname === 'localhost' ||
              window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
   : 'https://vfx-estimator.onrender.com';
+// Paste a Stripe Payment Link (https://buy.stripe.com/...) to show Upgrade.
+const STRIPE_PAYMENT_LINK = '';
 const urlParams = new URLSearchParams(location.search);
 const PROJECT_ID = urlParams.get('project_id');
 const PROJECT_NAME = urlParams.get('project_name');
@@ -2693,6 +2717,7 @@ function onDeptRateChange(dept, raw) {
   try { localStorage.setItem(DEPT_RATES_STORAGE_KEY, JSON.stringify(_deptRates)); } catch {}
   updateRatesSummary();
   if (_batchResult) recalcBatchTotals();
+  scheduleContextRecalc();
 }
 
 function loadAssetDeptRates() {
@@ -3552,6 +3577,7 @@ function handleBriefUpload(input, targetId) {
       const target = document.getElementById(targetId);
       if (target) target.value = e.target.result || '';
       toast(`Loaded ${file.name}`, 'info');
+      scheduleContextRecalc();
     };
     reader.onerror = () => toast(`Could not read ${file.name}`, 'err');
     reader.readAsText(file);
@@ -3579,6 +3605,7 @@ async function extractTextFromFile(file, targetId) {
       const target = document.getElementById(targetId);
       if (target) target.value = data.text;
       toast(`Loaded ${file.name}`, 'info');
+      scheduleContextRecalc();
     } else {
       toast(data.error ? `Could not extract text: ${data.error}` : 'Could not extract text from file', 'warn');
     }
@@ -4174,7 +4201,7 @@ function methodologyCellHtml(idx, methodology, opts = {}) {
       </div>`;
   }
   return `<div class="method-empty">
-       <button type="button" class="row-mini-btn" onclick="editMethodology(${idx})">+ Add</button>
+       <button type="button" class="row-mini-btn primary" onclick="editMethodology(${idx})">+ Add</button>
        <button type="button" class="row-mini-btn" onclick="suggestMethodology(${idx}, this)">${iconSvg('star', 'icon icon-sm')} Suggest</button>
        <button type="button" class="row-mini-btn rerun" data-rerun-idx="${idx}" onclick="rerunBatchRow(${idx}, this)">↻</button>
      </div>`;
@@ -4394,7 +4421,7 @@ function appendBatchResultRow(i, row) {
           <div class="dept-cell-wrap" style="position:relative">
             <input type="number" class="bid-dept-inp" min="0" step="0.5"
               data-dept="${escAttr(dept)}" data-idx="${i}" data-base-days="${v}" value="${v}"
-              oninput="updateBatchRowTotals(this.closest('tr.batch-data-row'))">
+              oninput="onUserDeptDayInput(this)">
             <div class="dept-factor-indicator hidden"
                  data-dept="${escAttr(dept)}"
                  style="font-size:10px;color:var(--muted);margin-top:2px;cursor:pointer;user-select:none"
@@ -7940,7 +7967,13 @@ async function fetchMethodologySuggestions(row) {
     throw new Error(detail);
   }
   const data = await r.json();
-  return data.suggestions || [];
+  return rankMethodologySuggestions(data.suggestions || []);
+}
+
+function rankMethodologySuggestions(list) {
+  return [...(list || [])].sort(
+    (a, b) => (Number(b?.score) || 0) - (Number(a?.score) || 0)
+  );
 }
 
 async function suggestMethodology(idx, btn) {
@@ -7963,12 +7996,18 @@ async function suggestMethodology(idx, btn) {
       );
       return;
     }
+    const ranked = [...suggestions].sort(
+      (a, b) => (Number(b?.score) || 0) - (Number(a?.score) || 0)
+    );
     const wrap = document.createElement('div');
     wrap.className = 'method-suggestions';
-    wrap.innerHTML = suggestions.map(s => `<div class="method-card" data-method="${escAttr(s.methodology || '')}">
+    wrap.innerHTML = ranked.map((s, i) => {
+      return `<div class="method-card${i === 0 ? ' best-match' : ''}" data-method="${escAttr(s.methodology || '')}">
+        ${i === 0 ? '<span class="method-best-badge">Best Match</span>' : ''}
         <strong>${escHtml(s.label || 'Methodology')}</strong>
         <div>${escHtml(s.methodology || '')}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     wrap.querySelectorAll('[data-method]').forEach(card => {
       card.addEventListener('click', () => {
         closeMethodologySuggestions();
@@ -8140,7 +8179,7 @@ async function rerunBatchRow(idx, btn) {
   }
 }
 
-function updateBatchRowNotes(textarea) {
+function updateBatchRowNotes(textarea, opts = {}) {
   const idx = Number.isFinite(parseInt(textarea.dataset.idx, 10))
     ? parseInt(textarea.dataset.idx, 10)
     : batchRowIndex(textarea.closest('tr.batch-data-row'));
@@ -8148,29 +8187,29 @@ function updateBatchRowNotes(textarea) {
   if (!Number.isFinite(idx) || !_batchResult?.shots?.[idx]) return;
 
   const shot = _batchResult.shots[idx];
-  const prev = (shot.client_notes || shot._notes || '').trim();
   shot._notes = notes;
   shot.client_notes = notes;
   shot.vfx_notes = notes;
   markBatchRowEdited(idx);
   _batchResult.export_csv_base64 = null;
+  scheduleAutosave();
+  showRowRerun(idx);
 
-  // If notes were just cleared (had content, now empty):
-  // re-run the estimate for this row without the old notes
-  if (prev.length > 0 && notes.length === 0) {
+  const sent = (shot._notes_at_estimate ?? '').trim();
+  if (notes === sent && !opts.force) {
     clearTimeout(textarea._rerunTimer);
-    textarea._rerunTimer = setTimeout(() => {
-      const tr = textarea.closest('tr');
-      if (tr) showRowRerunSpinner(tr);
-      rerunBatchRow(idx);
-    }, 800);
     return;
   }
 
-  // New notes typed into a previously empty field — show ↻ so user can re-estimate
-  if (prev.length === 0 && notes.length > 0) {
-    showRowRerun(idx);
-  }
+  clearTimeout(textarea._rerunTimer);
+  const run = () => {
+    shot._notes_at_estimate = notes;
+    const tr = textarea.closest('tr');
+    if (tr) showRowRerunSpinner(tr);
+    rerunBatchRow(idx);
+  };
+  if (opts.immediate) run();
+  else textarea._rerunTimer = setTimeout(run, 1200);
 }
 
 async function runSingleShot() {
@@ -9941,6 +9980,151 @@ async function saveCurrentCurrencySnapshot(btn) {
   }
 }
 
+function onUserDeptDayInput(input) {
+  const tr = input.closest('tr.batch-data-row');
+  const idx = batchRowIndex(tr);
+  if (_batchResult?.shots?.[idx]) _batchResult.shots[idx]._days_overridden = true;
+  updateBatchRowTotals(tr);
+}
+
+let _contextRecalcTimer = null;
+let _contextRecalcGen = 0;
+let _activeShotIdx = null;
+
+function rowSkipsContextRecalc(row) {
+  if (!row || isExcludedShot(row)) return true;
+  if (row._locked || row.locked || row._days_overridden) return true;
+  const desc = String(row._raw_description || row.script_description || row.description || '').trim();
+  const notes = String(row._notes || row.client_notes || '').trim();
+  return !desc && !notes;
+}
+
+function setContextRecalcStatus(on) {
+  const el = document.getElementById('context-recalc-status');
+  if (!el) return;
+  if (!on) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.classList.remove('hidden');
+  el.innerHTML = `${spinnerHtml()} Recalculating…`;
+}
+
+function scheduleContextRecalc() {
+  if (_contextRecalcTimer) clearTimeout(_contextRecalcTimer);
+  _contextRecalcTimer = setTimeout(() => {
+    _contextRecalcTimer = null;
+    runContextRecalc();
+  }, 1500);
+}
+
+async function runContextRecalc() {
+  const shots = _batchResult?.shots || [];
+  const idxs = [];
+  shots.forEach((row, idx) => {
+    if (!rowSkipsContextRecalc(row)) idxs.push(idx);
+  });
+  if (!idxs.length) return;
+  const gen = ++_contextRecalcGen;
+  toast('Recalculating all shots…', 'info');
+  setContextRecalcStatus(true);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < idxs.length) {
+      if (gen !== _contextRecalcGen) return;
+      const idx = idxs[cursor++];
+      try { await rerunBatchRow(idx); }
+      catch (err) { console.warn('[context recalc]', idx, err); }
+    }
+  }
+  const workers = Math.min(3, idxs.length);
+  await Promise.all(Array.from({ length: workers }, () => worker()));
+  if (gen !== _contextRecalcGen) return;
+  setContextRecalcStatus(false);
+  toast('Done — all shots updated', 'ok');
+}
+
+function planIsPaid() {
+  try { return localStorage.getItem('plan') === 'paid'; }
+  catch { return false; }
+}
+
+function syncUpgradeButton() {
+  const btn = document.getElementById('upgrade-btn');
+  if (!btn) return;
+  const link = String(STRIPE_PAYMENT_LINK || '').trim();
+  const show = /^https?:\/\//i.test(link) && !planIsPaid();
+  btn.classList.toggle('hidden', !show);
+}
+
+function openUpgrade() {
+  const link = String(STRIPE_PAYMENT_LINK || '').trim();
+  if (!/^https?:\/\//i.test(link)) return;
+  window.open(link, '_blank', 'noopener');
+}
+
+function handlePaymentReturn() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('payment') !== 'success') return;
+  try { localStorage.setItem('plan', 'paid'); } catch {}
+  toast('Payment successful — thank you!', 'ok');
+  syncUpgradeButton();
+  params.delete('payment');
+  const next = params.toString();
+  history.replaceState({}, '', location.pathname + (next ? `?${next}` : '') + location.hash);
+}
+
+function hideManualAssetForm() {
+  const form = document.getElementById('manual-asset-form');
+  const input = document.getElementById('manual-asset-name');
+  form?.classList.add('hidden');
+  if (input) input.value = '';
+}
+
+function toggleManualAssetForm() {
+  const form = document.getElementById('manual-asset-form');
+  if (!form) return;
+  const open = form.classList.contains('hidden');
+  form.classList.toggle('hidden', !open);
+  if (open) document.getElementById('manual-asset-name')?.focus();
+}
+
+function onManualAssetKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    confirmManualAsset();
+  } else if (event.key === 'Escape') {
+    event.preventDefault();
+    hideManualAssetForm();
+  }
+}
+
+async function confirmManualAsset() {
+  const input = document.getElementById('manual-asset-name');
+  const name = String(input?.value || '').trim();
+  if (!name) {
+    toast('Enter an asset name.', 'warn');
+    return;
+  }
+  const shotIdx = Number.isFinite(_activeShotIdx) ? _activeShotIdx : null;
+  const shot = shotIdx != null ? _batchResult?.shots?.[shotIdx] : null;
+  const shotCode = String(shot?.shot_code || '').trim();
+  hideManualAssetForm();
+  const added = await estimateSingleSuggestedAsset({
+    item_number: nextAssetItemNumber(),
+    asset_name: name,
+    description: name,
+    variations: 1,
+    assumptions: shotCode ? `Added for ${shotCode}` : 'Added manually',
+    asset_type: '',
+    associated_shots: shotCode ? [shotCode] : [],
+  });
+  if (!added) return;
+  toast('Asset added', 'ok');
+  if (shot) await rerunBatchRow(shotIdx);
+}
+
 function scheduleAutosave() {
   if (_autosaveTimer) clearTimeout(_autosaveTimer);
   _autosaveTimer = setTimeout(() => {
@@ -10750,7 +10934,25 @@ document.addEventListener('visibilitychange', () => {
   // refreshCompareBidList(); // Compare tab hidden
   document.addEventListener('click', e => {
     if (!e.target.closest('.method-cell')) closeMethodologySuggestions();
+    const assetForm = document.getElementById('manual-asset-form');
+    if (assetForm && !assetForm.classList.contains('hidden')
+        && !e.target.closest('#manual-asset-form')
+        && !e.target.closest('#add-asset-manual-btn')) {
+      hideManualAssetForm();
+    }
   });
+  document.addEventListener('focusin', e => {
+    const tr = e.target.closest?.('tr.batch-data-row');
+    if (!tr) return;
+    const idx = parseInt(tr.dataset.idx, 10);
+    if (Number.isFinite(idx)) _activeShotIdx = idx;
+  });
+  document.addEventListener('change', e => {
+    if (!e.target.classList?.contains('batch-notes-inp')) return;
+    updateBatchRowNotes(e.target, { immediate: true });
+  });
+  syncUpgradeButton();
+  handlePaymentReturn();
   document.addEventListener('focus', e => {
     if (!e.target.classList?.contains('batch-notes-inp')) return;
     const ta = e.target;

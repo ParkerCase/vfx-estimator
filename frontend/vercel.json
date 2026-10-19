@@ -8,7 +8,8 @@
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/dashboard", "destination": "/dashboard-page.html" },
     { "source": "/estimate", "destination": "/estimate.html" },
-    { "source": "/signin", "destination": "/signin-page.html" }
+    { "source": "/signin", "destination": "/signin-page.html" },
+    { "source": "/conference_qr", "destination": "/conference_qr.html" }
   ],
   "headers": []
 }
